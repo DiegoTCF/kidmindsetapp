@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Play, CheckCircle, Clock, Target, Heart, Brain, Activity } from "lucide-react";
+import { Play, CheckCircle, Clock, Target, Heart, Brain, Activity, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,6 +7,9 @@ import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import NewActivity from "@/components/Stadium/NewActivity";
+import ActivityForm from "@/components/Stadium/ActivityForm";
 
 interface PreGameActivity {
   id: string;
@@ -58,6 +61,9 @@ const defaultPreGameActivities: PreGameActivity[] = [
 export default function Stadium() {
   const { toast } = useToast();
   
+  const [showNewActivity, setShowNewActivity] = useState(false);
+  const [showActivityForm, setShowActivityForm] = useState(false);
+  const [currentActivity, setCurrentActivity] = useState<any>(null);
   const [preGameActivities, setPreGameActivities] = useState<PreGameActivity[]>(defaultPreGameActivities);
   const [confidenceLevel, setConfidenceLevel] = useState<number>(5);
   const [intention, setIntention] = useState("");
@@ -201,15 +207,55 @@ export default function Stadium() {
     return (completed / preGameActivities.length) * 100;
   };
 
+  const handleNewActivitySubmit = (activity: { name: string; type: string; date: Date }) => {
+    setCurrentActivity(activity);
+    setShowNewActivity(false);
+    setShowActivityForm(true);
+  };
+
+  const handleActivityFormComplete = () => {
+    setShowActivityForm(false);
+    setCurrentActivity(null);
+  };
+
+  if (showNewActivity) {
+    return (
+      <NewActivity
+        onSubmit={handleNewActivitySubmit}
+        onCancel={() => setShowNewActivity(false)}
+      />
+    );
+  }
+
+  if (showActivityForm && currentActivity) {
+    return (
+      <ActivityForm
+        activity={currentActivity}
+        onComplete={handleActivityFormComplete}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground mb-2">
-          🏟️ Stadium
-        </h1>
-        <p className="text-muted-foreground">
-          Prepare for your game and reflect afterwards
-        </p>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground mb-2">
+              🏟️ Stadium
+            </h1>
+            <p className="text-muted-foreground">
+              Prepare for your game and reflect afterwards
+            </p>
+          </div>
+          <Button
+            onClick={() => setShowNewActivity(true)}
+            className="flex items-center gap-2 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+          >
+            <Plus className="w-4 h-4" />
+            New Activity
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="pre-game" className="space-y-6">
@@ -488,8 +534,4 @@ export default function Stadium() {
       </Tabs>
     </div>
   );
-}
-
-function cn(...classes: string[]) {
-  return classes.filter(Boolean).join(' ');
 }
