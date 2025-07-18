@@ -220,7 +220,7 @@ export default function Home() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">
-              Welcome back, {playerData.name || "Champion"}! 🎮
+              Welcome back, {playerData.name}! 🧠
             </h1>
             <div className="flex items-center gap-4 mt-2">
               <div className="flex items-center gap-1 px-3 py-1 bg-level-bg rounded-full">
