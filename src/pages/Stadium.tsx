@@ -61,6 +61,7 @@ export default function Stadium() {
             </p>
           </div>
           
+          {/* New Activity Card */}
           <Card className="w-full max-w-md shadow-soft">
             <CardContent className="p-6">
               <div className="text-center space-y-4">
@@ -81,6 +82,63 @@ export default function Stadium() {
                     New Activity
                   </Button>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Tools to Get Ready */}
+          <Card className="w-full max-w-md shadow-soft">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2 justify-center">
+                ⚙️ Tools to Get Ready
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground text-center mb-4">
+                Use these tools to help your mind and body before any activity.
+              </p>
+              <div className="space-y-3">
+                <Button
+                  variant="outline"
+                  className="w-full h-auto p-4 text-left border-2 hover:border-primary/30"
+                  disabled
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🧘</span>
+                    <div>
+                      <p className="font-medium">Yoga Video</p>
+                      <p className="text-xs text-muted-foreground">(Coming Soon)</p>
+                    </div>
+                  </div>
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  className="w-full h-auto p-4 text-left border-2 hover:border-primary/30"
+                  disabled
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🎧</span>
+                    <div>
+                      <p className="font-medium">Visualisation Audio</p>
+                      <p className="text-xs text-muted-foreground">(Coming Soon)</p>
+                    </div>
+                  </div>
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  className="w-full h-auto p-4 text-left border-2 hover:border-primary/30"
+                  disabled
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🌬️</span>
+                    <div>
+                      <p className="font-medium">Breathing Audio</p>
+                      <p className="text-xs text-muted-foreground">(Coming Soon)</p>
+                    </div>
+                  </div>
+                </Button>
               </div>
             </CardContent>
           </Card>

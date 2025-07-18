@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { CheckCircle, Clock, Target, Heart, Brain, Activity, Play, Music, Video, ArrowLeft } from "lucide-react";
+import { CheckCircle, Clock, Target, Heart, Brain, Activity, Play, Music, Video, ArrowLeft, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,6 +7,7 @@ import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +26,15 @@ interface PreActivityItem {
   name: string;
   completed: boolean;
   points: number;
+  skipped: boolean;
+}
+
+interface SuperBehaviour {
+  id: string;
+  name: string;
+  emoji: string;
+  selected: boolean;
+  description: string;
 }
 
 interface PostActivityReflection {
@@ -45,6 +55,7 @@ interface PostActivityReflection {
     couldImprove: string;
     whatAffected: string;
   };
+  intentionAchieved: string | null;
 }
 
 interface ActivityFormProps {
@@ -61,10 +72,17 @@ const moodOptions = [
 ];
 
 const defaultPreActivityItems: PreActivityItem[] = [
-  { id: "kit-ready", name: "Kit Ready", completed: false, points: 5 },
-  { id: "yoga-stretch", name: "Yoga / Stretch", completed: false, points: 25 },
-  { id: "visualisation", name: "Visualisation", completed: false, points: 25 },
-  { id: "breathing", name: "Breathing", completed: false, points: 5 },
+  { id: "kit-ready", name: "Kit Ready", completed: false, points: 5, skipped: false },
+  { id: "yoga-stretch", name: "Yoga / Stretch", completed: false, points: 25, skipped: false },
+  { id: "visualisation", name: "Visualisation", completed: false, points: 25, skipped: false },
+  { id: "breathing", name: "Breathing", completed: false, points: 5, skipped: false },
+];
+
+const superBehaviours: SuperBehaviour[] = [
+  { id: "brave-on-ball", name: "Brave on the ball", emoji: "⚽", selected: false, description: "" },
+  { id: "brave-off-ball", name: "Brave off the ball", emoji: "🛡️", selected: false, description: "" },
+  { id: "electric", name: "Electric", emoji: "⚡", selected: false, description: "" },
+  { id: "aggressive", name: "Aggressive", emoji: "💥", selected: false, description: "" },
 ];
 
 export default function ActivityForm({ activity, onComplete }: ActivityFormProps) {
@@ -72,6 +90,7 @@ export default function ActivityForm({ activity, onComplete }: ActivityFormProps
   
   const [confidenceLevel, setConfidenceLevel] = useState<number>(5);
   const [intention, setIntention] = useState("");
+  const [selectedBehaviours, setSelectedBehaviours] = useState<SuperBehaviour[]>(superBehaviours);
   const [preActivityItems, setPreActivityItems] = useState<PreActivityItem[]>(defaultPreActivityItems);
   const [preActivityCompleted, setPreActivityCompleted] = useState(false);
   const [postActivityCompleted, setPostActivityCompleted] = useState(false);
@@ -93,6 +112,7 @@ export default function ActivityForm({ activity, onComplete }: ActivityFormProps
       couldImprove: "",
       whatAffected: "",
     },
+    intentionAchieved: null,
   });
 
   const [currentChildId, setCurrentChildId] = useState<string | null>(null);
@@ -304,6 +324,37 @@ export default function ActivityForm({ activity, onComplete }: ActivityFormProps
     });
   };
 
+  const handleItemSkip = (itemId: string) => {
+    const updatedItems = preActivityItems.map(item => 
+      item.id === itemId ? { ...item, skipped: true } : item
+    );
+    setPreActivityItems(updatedItems);
+    
+    const item = preActivityItems.find(i => i.id === itemId);
+    toast({
+      title: `${item?.name} skipped - No Time`,
+      description: "No worries, you can do it next time!",
+    });
+  };
+
+  const handleBehaviourSelect = (behaviourId: string) => {
+    const updatedBehaviours = selectedBehaviours.map(behaviour => 
+      behaviour.id === behaviourId 
+        ? { ...behaviour, selected: !behaviour.selected }
+        : behaviour
+    );
+    setSelectedBehaviours(updatedBehaviours);
+  };
+
+  const handleBehaviourDescription = (behaviourId: string, description: string) => {
+    const updatedBehaviours = selectedBehaviours.map(behaviour => 
+      behaviour.id === behaviourId 
+        ? { ...behaviour, description }
+        : behaviour
+    );
+    setSelectedBehaviours(updatedBehaviours);
+  };
+
   const handleToolComplete = (toolType: string) => {
     const points = 25;
     toast({
@@ -321,19 +372,26 @@ export default function ActivityForm({ activity, onComplete }: ActivityFormProps
   };
 
   const getPreActivityProgress = () => {
-    const completed = preActivityItems.filter(item => item.completed).length + (confidenceLevel ? 1 : 0) + (intention.trim() ? 1 : 0);
+    const completedOrSkipped = preActivityItems.filter(item => item.completed || item.skipped).length;
+    const hasConfidence = confidenceLevel > 0;
+    const hasIntention = intention.trim().length > 0 || selectedBehaviours.some(b => b.selected);
+    const completed = completedOrSkipped + (hasConfidence ? 1 : 0) + (hasIntention ? 1 : 0);
     const total = preActivityItems.length + 2; // +2 for confidence and intention
     return (completed / total) * 100;
   };
 
   const isPreActivityComplete = () => {
-    return preActivityItems.every(item => item.completed) && confidenceLevel && intention.trim();
+    const allItemsHandled = preActivityItems.every(item => item.completed || item.skipped);
+    const hasConfidence = confidenceLevel > 0;
+    const hasIntention = intention.trim().length > 0 || selectedBehaviours.some(b => b.selected && b.description.trim().length > 0);
+    return allItemsHandled && hasConfidence && hasIntention;
   };
 
   const isPostActivityComplete = () => {
     return postActivityData.mood !== null && 
            postActivityData.journalPrompts.wentWell.trim() && 
-           postActivityData.journalPrompts.couldImprove.trim();
+           postActivityData.journalPrompts.couldImprove.trim() &&
+           postActivityData.intentionAchieved !== null;
   };
 
   if (postActivityCompleted) {
@@ -413,7 +471,7 @@ export default function ActivityForm({ activity, onComplete }: ActivityFormProps
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Brain className="w-5 h-5" />
-                Confidence Scale (1-10)
+                How confident are you feeling?
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -447,38 +505,54 @@ export default function ActivityForm({ activity, onComplete }: ActivityFormProps
                 <div
                   key={item.id}
                   className={cn(
-                    "flex items-center justify-between p-4 rounded-lg border-2 transition-all duration-200",
+                    "flex items-center justify-between p-4 rounded-xl border-2 transition-all duration-200",
                     item.completed 
                       ? "bg-success/10 border-success/30" 
+                      : item.skipped
+                      ? "bg-muted/50 border-muted"
                       : "bg-card border-border"
                   )}
                 >
                   <div className="flex items-center gap-3">
                     {item.completed ? (
                       <CheckCircle className="w-5 h-5 text-success" />
+                    ) : item.skipped ? (
+                      <X className="w-5 h-5 text-muted-foreground" />
                     ) : (
                       <Clock className="w-5 h-5 text-muted-foreground" />
                     )}
                     <div>
                       <p className={cn(
                         "font-medium",
-                        item.completed && "text-success"
+                        item.completed && "text-success",
+                        item.skipped && "text-muted-foreground line-through"
                       )}>
-                        {item.name} ✅
+                        {item.name}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        +{item.points} points
+                        {item.skipped ? "Skipped - No Time" : `+${item.points} points`}
                       </p>
                     </div>
                   </div>
 
-                  {!item.completed && (
-                    <Button
-                      onClick={() => handleItemComplete(item.id)}
-                      size="sm"
-                    >
-                      Complete
-                    </Button>
+                  {!item.completed && !item.skipped && (
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => handleItemComplete(item.id)}
+                        size="sm"
+                        className="bg-primary hover:bg-primary/90"
+                      >
+                        Complete
+                      </Button>
+                      <Button
+                        onClick={() => handleItemSkip(item.id)}
+                        size="sm"
+                        variant="outline"
+                        className="text-xs"
+                      >
+                        No Time
+                      </Button>
+                    </div>
                   )}
                 </div>
               ))}
@@ -490,47 +564,56 @@ export default function ActivityForm({ activity, onComplete }: ActivityFormProps
             <CardHeader>
               <CardTitle className="text-lg">Set your intention</CardTitle>
             </CardHeader>
-            <CardContent>
-              <Textarea
-                placeholder="What do you want to focus on today?"
-                value={intention}
-                onChange={(e) => setIntention(e.target.value)}
-                className="w-full min-h-[80px]"
-              />
-              <p className="text-xs text-muted-foreground mt-2">
-                +{intention.trim().split(/\s+/).filter(word => word.length > 0).length * 2} points ({intention.trim().split(/\s+/).filter(word => word.length > 0).length} words)
-              </p>
-            </CardContent>
-          </Card>
+            <CardContent className="space-y-4">
+              {/* Super Behaviour Badges */}
+              <div>
+                <p className="text-sm font-medium mb-3">Select your super behaviours:</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {selectedBehaviours.map((behaviour) => (
+                    <div key={behaviour.id} className="space-y-2">
+                      <Button
+                        variant={behaviour.selected ? "default" : "outline"}
+                        className={cn(
+                          "w-full h-auto p-3 text-left border-2 rounded-xl transition-all duration-200",
+                          behaviour.selected 
+                            ? "bg-primary hover:bg-primary/90 border-primary" 
+                            : "hover:border-primary/30"
+                        )}
+                        onClick={() => handleBehaviourSelect(behaviour.id)}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">{behaviour.emoji}</span>
+                          <span className="text-sm font-medium">{behaviour.name}</span>
+                        </div>
+                      </Button>
+                      
+                      {behaviour.selected && (
+                        <div className="ml-2">
+                          <Input
+                            placeholder="How are you going to do that?"
+                            value={behaviour.description}
+                            onChange={(e) => handleBehaviourDescription(behaviour.id, e.target.value)}
+                            className="text-sm"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-          {/* Tools Section */}
-          <Card className="shadow-soft">
-            <CardHeader>
-              <CardTitle className="text-lg">🧰 TOOLS</CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-3">
-              <Button 
-                variant="outline" 
-                className="flex items-center gap-2 h-auto p-4"
-                onClick={() => handleToolComplete("Yoga Stretch")}
-              >
-                <Video className="w-5 h-5" />
-                <div className="text-left">
-                  <p className="font-medium">Yoga Stretch</p>
-                  <p className="text-xs text-muted-foreground">25 pts</p>
-                </div>
-              </Button>
-              <Button 
-                variant="outline" 
-                className="flex items-center gap-2 h-auto p-4"
-                onClick={() => handleToolComplete("Visualisation Audio")}
-              >
-                <Music className="w-5 h-5" />
-                <div className="text-left">
-                  <p className="font-medium">Visualisation Audio</p>
-                  <p className="text-xs text-muted-foreground">25 pts</p>
-                </div>
-              </Button>
+              {/* Traditional Intention (Optional) */}
+              <div className="pt-4 border-t">
+                <Textarea
+                  placeholder="Additional thoughts or intentions..."
+                  value={intention}
+                  onChange={(e) => setIntention(e.target.value)}
+                  className="w-full min-h-[60px]"
+                />
+                <p className="text-xs text-muted-foreground mt-2">
+                  Optional: +{intention.trim().split(/\s+/).filter(word => word.length > 0).length * 2} points ({intention.trim().split(/\s+/).filter(word => word.length > 0).length} words)
+                </p>
+              </div>
             </CardContent>
           </Card>
 
@@ -547,6 +630,86 @@ export default function ActivityForm({ activity, onComplete }: ActivityFormProps
 
         {/* Post-Activity */}
         <TabsContent value="post-activity" className="space-y-6">
+          {/* Intention Achievement */}
+          <Card className="shadow-soft">
+            <CardHeader>
+              <CardTitle className="text-lg">Did you achieve your intention?</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {/* Display selected behaviours from pre-activity */}
+              {selectedBehaviours.some(b => b.selected) && (
+                <div className="mb-4 p-3 bg-muted/50 rounded-xl">
+                  <p className="text-sm font-medium mb-2">Your selected behaviours:</p>
+                  {selectedBehaviours.filter(b => b.selected).map((behaviour) => (
+                    <div key={behaviour.id} className="text-sm mb-1">
+                      <span className="font-medium">{behaviour.emoji} {behaviour.name}:</span>
+                      <span className="text-muted-foreground ml-2">{behaviour.description}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Achievement Response */}
+              {postActivityData.intentionAchieved === null ? (
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    className="h-auto p-4 text-left border-2 hover:border-success/30 hover:bg-success/5"
+                    onClick={() => setPostActivityData(prev => ({ ...prev, intentionAchieved: "yes" }))}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">✅</span>
+                      <span className="text-sm font-medium">Yes, I achieved it!</span>
+                    </div>
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className="h-auto p-4 text-left border-2 hover:border-primary/30 hover:bg-primary/5"
+                    onClick={() => setPostActivityData(prev => ({ ...prev, intentionAchieved: "partial" }))}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">🎯</span>
+                      <span className="text-sm font-medium">Partially, can be better</span>
+                    </div>
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className="h-auto p-4 text-left border-2 hover:border-destructive/30 hover:bg-destructive/5"
+                    onClick={() => setPostActivityData(prev => ({ ...prev, intentionAchieved: "no" }))}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">❌</span>
+                      <span className="text-sm font-medium">No</span>
+                    </div>
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className="h-auto p-4 text-left border-2 hover:border-warning/30 hover:bg-warning/5"
+                    onClick={() => setPostActivityData(prev => ({ ...prev, intentionAchieved: "forgot" }))}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">😅</span>
+                      <span className="text-sm font-medium">I forgot to do it</span>
+                    </div>
+                  </Button>
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <div className="text-3xl mb-2">
+                    {postActivityData.intentionAchieved === "yes" && "✅"}
+                    {postActivityData.intentionAchieved === "partial" && "🎯"}
+                    {postActivityData.intentionAchieved === "no" && "❌"}
+                    {postActivityData.intentionAchieved === "forgot" && "😅"}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Response recorded!</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Mood Check */}
           <Card className="shadow-soft">
             <CardHeader>
