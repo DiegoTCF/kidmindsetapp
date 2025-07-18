@@ -220,7 +220,7 @@ export default function Home() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">
-              Welcome back, {playerData.name || "Champion"}! 👋
+              Welcome back, {playerData.name || "Champion"}! 🎮
             </h1>
             <div className="flex items-center gap-4 mt-2">
               <div className="flex items-center gap-1 px-3 py-1 bg-level-bg rounded-full">
@@ -257,6 +257,14 @@ export default function Home() {
           <CardTitle className="text-lg flex items-center gap-2">
             How are you feeling today? 💙
           </CardTitle>
+          {playerData.weeklyMoodAvg && (
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              <span>Weekly average:</span>
+              <span className="font-semibold text-primary">
+                {playerData.weeklyMoodAvg.toFixed(1)}/5
+              </span>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           {!moodSubmitted ? (
@@ -275,6 +283,9 @@ export default function Home() {
                   <span className="text-xs font-medium text-muted-foreground">
                     {mood.label}
                   </span>
+                  <span className="text-xs font-bold text-primary">
+                    {mood.value}
+                  </span>
                 </button>
               ))}
             </div>
@@ -286,6 +297,11 @@ export default function Home() {
               <p className="text-sm text-muted-foreground">
                 Mood recorded for today! Come back tomorrow to check in again.
               </p>
+              {playerData.weeklyMoodAvg && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Weekly average: {playerData.weeklyMoodAvg.toFixed(1)}/5
+                </p>
+              )}
             </div>
           )}
         </CardContent>
