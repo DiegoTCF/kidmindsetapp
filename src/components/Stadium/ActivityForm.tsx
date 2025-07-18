@@ -186,9 +186,9 @@ export default function ActivityForm({ activity, onComplete }: ActivityFormProps
           pre_activity_data: {
             confidence: confidenceLevel,
             intention,
-            items: preActivityItems,
+            items: preActivityItems as any,
             completedAt: new Date().toISOString()
-          },
+          } as any,
           points_awarded: prePoints
         })
         .select()
