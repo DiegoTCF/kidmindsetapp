@@ -16,9 +16,9 @@ interface OnboardingData {
   parentName: string;
   phone: string;
   childName: string;
-  childAge: number;
-  childLevel: number;
-  weeklySchedule: string;
+  childDateOfBirth: string;
+  childLevel: string;
+  weeklySchedule: { [key: string]: string };
 }
 
 const Auth = () => {
@@ -32,9 +32,9 @@ const Auth = () => {
     parentName: '',
     phone: '',
     childName: '',
-    childAge: 8,
-    childLevel: 1,
-    weeklySchedule: '',
+    childDateOfBirth: '',
+    childLevel: 'grassroots',
+    weeklySchedule: {},
   });
   const { toast } = useToast();
 
@@ -104,8 +104,9 @@ const Auth = () => {
     const formData = new FormData(e.currentTarget);
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
+    const parentName = formData.get('parentName') as string;
 
-    if (!email || !password) {
+    if (!email || !password || !parentName) {
       toast({
         title: "Missing information",
         description: "Please fill in all fields.",
@@ -123,51 +124,60 @@ const Auth = () => {
       return;
     }
 
-    setOnboardingData(prev => ({ ...prev, email, password }));
+    setOnboardingData(prev => ({ ...prev, email, password, parentName }));
     setSignUpStep(2);
-    console.log('[AuthFlow] Moving to step 2 - Parent Info');
+    console.log('[AuthFlow] Moving to step 2 - Child Registration');
   };
 
-  const handleSignUpStep2 = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const parentName = formData.get('parentName') as string;
-    const phone = formData.get('phone') as string;
-
-    if (!parentName) {
-      toast({
-        title: "Missing information",
-        description: "Please enter your name.",
-        variant: "destructive",
-      });
-      return;
+  const calculateAge = (dateOfBirth: string): number => {
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
     }
-
-    setOnboardingData(prev => ({ ...prev, parentName, phone }));
-    setSignUpStep(3);
-    console.log('[AuthFlow] Moving to step 3 - Payment');
+    
+    return age;
   };
 
-  const handleSignUpStep3 = () => {
-    setSignUpStep(4);
-    console.log('[AuthFlow] Moving to step 4 - Child Profile');
-  };
-
-  const handleSignUpStep4 = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSignUpStep2 = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     console.log('[AuthFlow] Completing sign up process');
 
     const formData = new FormData(e.currentTarget);
     const childName = formData.get('childName') as string;
-    const childAge = parseInt(formData.get('childAge') as string);
-    const childLevel = parseInt(formData.get('childLevel') as string);
-    const weeklySchedule = formData.get('weeklySchedule') as string;
+    const childDateOfBirth = formData.get('childDateOfBirth') as string;
+    const childLevel = formData.get('childLevel') as string;
+    
+    // Get weekly schedule from checkboxes
+    const weeklySchedule: { [key: string]: string } = {};
+    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    days.forEach(day => {
+      const dayValue = formData.get(`schedule_${day}`) as string;
+      if (dayValue && dayValue !== 'off') {
+        weeklySchedule[day] = dayValue;
+      }
+    });
 
-    if (!childName || !childAge) {
+    if (!childName || !childDateOfBirth) {
       toast({
         title: "Missing information",
-        description: "Please fill in all child information.",
+        description: "Please fill in all required child information.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
+    const childAge = calculateAge(childDateOfBirth);
+    
+    if (childAge < 5 || childAge > 18) {
+      toast({
+        title: "Invalid age",
+        description: "Child must be between 5 and 18 years old.",
         variant: "destructive",
       });
       setLoading(false);
@@ -214,7 +224,7 @@ const Auth = () => {
           .insert({
             user_id: authData.user.id,
             name: onboardingData.parentName,
-            phone: onboardingData.phone,
+            phone: '',
             payment_status: 'pending',
           })
           .select('id')
@@ -231,6 +241,13 @@ const Auth = () => {
           return;
         }
 
+        // Calculate level number from string
+        const levelMap: { [key: string]: number } = {
+          'grassroots': 1,
+          'dev_centres': 2,
+          'academy': 3
+        };
+
         // Create child record
         const { error: childError } = await supabase
           .from('children')
@@ -238,8 +255,8 @@ const Auth = () => {
             parent_id: parentData.id,
             name: childName,
             age: childAge,
-            level: childLevel,
-            weekly_schedule: weeklySchedule,
+            level: levelMap[childLevel] || 1,
+            weekly_schedule: JSON.stringify(weeklySchedule),
             points: 0,
           });
 
@@ -328,7 +345,7 @@ const Auth = () => {
               )}
               <div className="flex-1 text-center">
                 <CardTitle>Create Account</CardTitle>
-                <CardDescription>Step {signUpStep} of 4</CardDescription>
+                <CardDescription>Step {signUpStep} of 2</CardDescription>
               </div>
               <div className="w-8" />
             </div>
@@ -336,6 +353,15 @@ const Auth = () => {
           <CardContent>
             {signUpStep === 1 && (
               <form onSubmit={handleSignUpStep1} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="parentName">Your Name</Label>
+                  <Input
+                    id="parentName"
+                    name="parentName"
+                    placeholder="Enter your full name"
+                    required
+                  />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
@@ -366,99 +392,69 @@ const Auth = () => {
             {signUpStep === 2 && (
               <form onSubmit={handleSignUpStep2} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="parentName">Your Name</Label>
-                  <Input
-                    id="parentName"
-                    name="parentName"
-                    placeholder="Enter your full name"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number (Optional)</Label>
-                  <Input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    placeholder="+1 (555) 123-4567"
-                  />
-                </div>
-                <Button type="submit" className="w-full">
-                  Next <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-              </form>
-            )}
-
-            {signUpStep === 3 && (
-              <div className="space-y-4">
-                <div className="text-center space-y-2">
-                  <h3 className="text-lg font-semibold">Payment Setup</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Stripe integration coming soon
-                  </p>
-                </div>
-                <div className="border rounded-lg p-4 bg-muted/50">
-                  <p className="text-sm">Monthly Subscription: $19.99</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Mock payment - no charges will be made
-                  </p>
-                </div>
-                <Button onClick={handleSignUpStep3} className="w-full">
-                  Continue <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            )}
-
-            {signUpStep === 4 && (
-              <form onSubmit={handleSignUpStep4} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="childName">Child's Name</Label>
+                  <Label htmlFor="childName">Child's Full Name</Label>
                   <Input
                     id="childName"
                     name="childName"
-                    placeholder="Enter child's name"
+                    placeholder="Enter child's full name"
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="childAge">Age</Label>
+                  <Label htmlFor="childDateOfBirth">Date of Birth</Label>
                   <Input
-                    id="childAge"
-                    name="childAge"
-                    type="number"
-                    min="5"
-                    max="18"
-                    defaultValue="8"
+                    id="childDateOfBirth"
+                    name="childDateOfBirth"
+                    type="date"
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="childLevel">Starting Level</Label>
-                  <Select name="childLevel" defaultValue="1">
+                  <Label htmlFor="childLevel">Level</Label>
+                  <Select name="childLevel" defaultValue="grassroots">
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {[1, 2, 3, 4, 5].map((level) => (
-                        <SelectItem key={level} value={level.toString()}>
-                          Level {level}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="grassroots">Grassroots</SelectItem>
+                      <SelectItem value="dev_centres">Dev Centres</SelectItem>
+                      <SelectItem value="academy">Academy</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="weeklySchedule">Weekly Schedule (Optional)</Label>
-                  <Textarea
-                    id="weeklySchedule"
-                    name="weeklySchedule"
-                    placeholder="Mon/Wed/Fri training, Sat games..."
-                    rows={3}
-                  />
+                
+                <div className="space-y-3">
+                  <Label>Weekly Schedule</Label>
+                  {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => (
+                    <div key={day} className="space-y-2">
+                      <Label className="text-sm font-medium capitalize">{day}</Label>
+                      <Select name={`schedule_${day}`} defaultValue="off">
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="off">Off</SelectItem>
+                          <SelectItem value="team_training">Team Training</SelectItem>
+                          <SelectItem value="1to1">1to1</SelectItem>
+                          <SelectItem value="small_group">Small Group or Futsal</SelectItem>
+                          <SelectItem value="match">Match/Tournament</SelectItem>
+                          <SelectItem value="other">Other Sport</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ))}
                 </div>
+
+                <div className="border rounded-lg p-3 bg-muted/50 text-center">
+                  <p className="text-sm font-medium">Monthly Subscription: $19.99</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Payment setup will be completed after registration
+                  </p>
+                </div>
+
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Complete Setup
+                  Complete Registration
                 </Button>
               </form>
             )}
