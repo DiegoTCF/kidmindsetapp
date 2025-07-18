@@ -70,9 +70,17 @@ export default function Home() {
   const loadPlayerData = () => {
     // Load from localStorage or API
     const saved = localStorage.getItem('kidmindset_player');
+    const profileData = localStorage.getItem('kidmindset_profile');
+    
     if (saved) {
       const data = JSON.parse(saved);
-      setPlayerData(data);
+      // Get name from profile if available, otherwise use player data or fallback
+      const profileName = profileData ? JSON.parse(profileData).name : null;
+      
+      setPlayerData({
+        ...data,
+        name: profileName || data.name || "Champion"
+      });
       console.log('[KidMindset] Player data loaded:', data);
     }
   };
