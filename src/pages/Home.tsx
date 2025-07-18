@@ -252,6 +252,17 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background p-4">
+      {/* Floating Logout Button - Below Grown Up Area */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleLogout}
+        className="fixed top-16 right-4 z-50 flex items-center gap-2 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 shadow-lg bg-background/80 backdrop-blur-sm"
+      >
+        <LogOut className="w-4 h-4" />
+        <span className="hidden sm:inline">Sign Out</span>
+      </Button>
+
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
@@ -274,17 +285,6 @@ export default function Home() {
               </div>
             </div>
           </div>
-          
-          {/* Logout Button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleLogout}
-            className="flex items-center gap-2 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30"
-          >
-            <LogOut className="w-4 h-4" />
-            <span className="hidden sm:inline">Sign Out</span>
-          </Button>
         </div>
 
         {/* Progress Bar */}
