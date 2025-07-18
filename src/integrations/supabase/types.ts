@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      activities: {
+        Row: {
+          activity_date: string
+          activity_name: string
+          activity_type: string
+          assists_made: number | null
+          child_id: string
+          created_at: string
+          final_score: string | null
+          goals_scored: number | null
+          id: string
+          points_awarded: number
+          post_activity_completed: boolean
+          post_activity_data: Json | null
+          pre_activity_completed: boolean
+          pre_activity_data: Json | null
+          updated_at: string
+        }
+        Insert: {
+          activity_date?: string
+          activity_name: string
+          activity_type: string
+          assists_made?: number | null
+          child_id: string
+          created_at?: string
+          final_score?: string | null
+          goals_scored?: number | null
+          id?: string
+          points_awarded?: number
+          post_activity_completed?: boolean
+          post_activity_data?: Json | null
+          pre_activity_completed?: boolean
+          pre_activity_data?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          activity_date?: string
+          activity_name?: string
+          activity_type?: string
+          assists_made?: number | null
+          child_id?: string
+          created_at?: string
+          final_score?: string | null
+          goals_scored?: number | null
+          id?: string
+          points_awarded?: number
+          post_activity_completed?: boolean
+          post_activity_data?: Json | null
+          pre_activity_completed?: boolean
+          pre_activity_data?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       children: {
         Row: {
           age: number
@@ -114,6 +168,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      progress_entries: {
+        Row: {
+          activity_id: string | null
+          child_id: string
+          created_at: string
+          entry_date: string
+          entry_type: string
+          entry_value: Json
+          id: string
+          points_earned: number
+        }
+        Insert: {
+          activity_id?: string | null
+          child_id: string
+          created_at?: string
+          entry_date?: string
+          entry_type: string
+          entry_value: Json
+          id?: string
+          points_earned?: number
+        }
+        Update: {
+          activity_id?: string | null
+          child_id?: string
+          created_at?: string
+          entry_date?: string
+          entry_type?: string
+          entry_value?: Json
+          id?: string
+          points_earned?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "progress_entries_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
