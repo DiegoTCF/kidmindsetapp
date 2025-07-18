@@ -15,6 +15,8 @@ interface Activity {
   assists_made?: number;
   pre_activity_completed: boolean;
   post_activity_completed: boolean;
+  pre_activity_data?: any;
+  post_activity_data?: any;
   points_awarded: number;
   created_at: string;
 }
@@ -179,6 +181,103 @@ export default function ActivityLog({ selectedFilter }: ActivityLogProps) {
                 <span className="text-sm">Post-Activity</span>
               </div>
             </div>
+            
+            {/* Pre-Activity Details */}
+            {selectedActivity.pre_activity_completed && selectedActivity.pre_activity_data && (
+              <div className="space-y-2">
+                <h4 className="font-medium text-primary">Pre-Activity Answers</h4>
+                <div className="p-4 bg-muted/30 rounded-lg space-y-3">
+                  {selectedActivity.pre_activity_data.confidence && (
+                    <div>
+                      <p className="text-sm font-medium">Confidence Level:</p>
+                      <p className="text-sm text-muted-foreground">{selectedActivity.pre_activity_data.confidence}/10</p>
+                    </div>
+                  )}
+                  {selectedActivity.pre_activity_data.intention && (
+                    <div>
+                      <p className="text-sm font-medium">Intention:</p>
+                      <p className="text-sm text-muted-foreground">{selectedActivity.pre_activity_data.intention}</p>
+                    </div>
+                  )}
+                  {selectedActivity.pre_activity_data.items && Array.isArray(selectedActivity.pre_activity_data.items) && (
+                    <div>
+                      <p className="text-sm font-medium">Pre-Activity Items:</p>
+                      <div className="space-y-1">
+                        {selectedActivity.pre_activity_data.items.map((item: any, index: number) => (
+                          <div key={index} className="flex items-center justify-between text-sm">
+                            <span className={item.completed ? "text-success" : "text-muted-foreground"}>
+                              {item.name}
+                            </span>
+                            <span className="text-primary">+{item.points}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {selectedActivity.pre_activity_data.completedAt && (
+                    <div>
+                      <p className="text-sm font-medium">Completed At:</p>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(selectedActivity.pre_activity_data.completedAt).toLocaleString()}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* Post-Activity Details */}
+            {selectedActivity.post_activity_completed && selectedActivity.post_activity_data && (
+              <div className="space-y-2">
+                <h4 className="font-medium text-primary">Post-Activity Reflection</h4>
+                <div className="p-4 bg-muted/30 rounded-lg space-y-3">
+                  {selectedActivity.post_activity_data.mood && (
+                    <div>
+                      <p className="text-sm font-medium">Mood:</p>
+                      <p className="text-sm text-muted-foreground">{selectedActivity.post_activity_data.mood}/5</p>
+                    </div>
+                  )}
+                  {selectedActivity.post_activity_data.confidence && (
+                    <div>
+                      <p className="text-sm font-medium">Confidence:</p>
+                      <p className="text-sm text-muted-foreground">{selectedActivity.post_activity_data.confidence}/10</p>
+                    </div>
+                  )}
+                  {selectedActivity.post_activity_data.satisfaction && (
+                    <div>
+                      <p className="text-sm font-medium">Satisfaction:</p>
+                      <p className="text-sm text-muted-foreground">{selectedActivity.post_activity_data.satisfaction}/10</p>
+                    </div>
+                  )}
+                  {selectedActivity.post_activity_data.improvements && (
+                    <div>
+                      <p className="text-sm font-medium">What could be improved:</p>
+                      <p className="text-sm text-muted-foreground">{selectedActivity.post_activity_data.improvements}</p>
+                    </div>
+                  )}
+                  {selectedActivity.post_activity_data.wentWell && (
+                    <div>
+                      <p className="text-sm font-medium">What went well:</p>
+                      <p className="text-sm text-muted-foreground">{selectedActivity.post_activity_data.wentWell}</p>
+                    </div>
+                  )}
+                  {selectedActivity.post_activity_data.nextTime && (
+                    <div>
+                      <p className="text-sm font-medium">Next time I will:</p>
+                      <p className="text-sm text-muted-foreground">{selectedActivity.post_activity_data.nextTime}</p>
+                    </div>
+                  )}
+                  {selectedActivity.post_activity_data.completedAt && (
+                    <div>
+                      <p className="text-sm font-medium">Completed At:</p>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(selectedActivity.post_activity_data.completedAt).toLocaleString()}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
