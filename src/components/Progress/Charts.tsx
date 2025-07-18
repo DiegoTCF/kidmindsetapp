@@ -28,6 +28,9 @@ export default function Charts({ selectedFilter }: ChartsProps) {
   const [avgMood, setAvgMood] = useState(0);
   const [avgConfidence, setAvgConfidence] = useState(0);
   const [completionRate, setCompletionRate] = useState(0);
+  const [totalGoals, setTotalGoals] = useState(0);
+  const [totalAssists, setTotalAssists] = useState(0);
+  const [totalMatches, setTotalMatches] = useState(0);
 
   useEffect(() => {
     loadChartData();
@@ -48,7 +51,7 @@ export default function Charts({ selectedFilter }: ChartsProps) {
       // Load activities for stats
       const { data: activities, error: activitiesError } = await supabase
         .from('activities')
-        .select('activity_type, post_activity_completed, post_activity_data, activity_date')
+        .select('activity_type, post_activity_completed, post_activity_data, activity_date, goals_scored, assists_made')
         .eq('child_id', childId)
         .order('activity_date', { ascending: false });
 
@@ -67,9 +70,25 @@ export default function Charts({ selectedFilter }: ChartsProps) {
         const typeStats: { [key: string]: number } = {};
         let completedCount = 0;
         const moodData: MoodTrend[] = [];
+        let goalsSum = 0;
+        let assistsSum = 0;
+        let matchesCount = 0;
 
         filteredActivities.forEach(activity => {
           typeStats[activity.activity_type] = (typeStats[activity.activity_type] || 0) + 1;
+          
+          // Count matches (assuming 'match' is the activity type for matches)
+          if (activity.activity_type.toLowerCase() === 'match') {
+            matchesCount++;
+          }
+          
+          // Sum goals and assists
+          if (activity.goals_scored) {
+            goalsSum += activity.goals_scored;
+          }
+          if (activity.assists_made) {
+            assistsSum += activity.assists_made;
+          }
           
           if (activity.post_activity_completed) {
             completedCount++;
@@ -99,6 +118,9 @@ export default function Charts({ selectedFilter }: ChartsProps) {
         setActivityStats(statsArray);
         setTotalActivities(total);
         setCompletionRate(Math.round((completedCount / total) * 100));
+        setTotalGoals(goalsSum);
+        setTotalAssists(assistsSum);
+        setTotalMatches(matchesCount);
 
         // Sort mood trends by date and take last 10
         const sortedMoodData = moodData
@@ -130,7 +152,7 @@ export default function Charts({ selectedFilter }: ChartsProps) {
   return (
     <div className="space-y-6">
       {/* Summary Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
         <Card className="shadow-soft">
           <CardContent className="p-4">
             <div className="text-center">
@@ -163,6 +185,36 @@ export default function Charts({ selectedFilter }: ChartsProps) {
             <div className="text-center">
               <p className="text-2xl font-bold text-accent">{avgConfidence}/10</p>
               <p className="text-sm text-muted-foreground">Avg Confidence</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Match Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="shadow-soft">
+          <CardContent className="p-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-primary">{totalMatches}</p>
+              <p className="text-sm text-muted-foreground">Total Matches</p>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="shadow-soft">
+          <CardContent className="p-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-success">{totalGoals}</p>
+              <p className="text-sm text-muted-foreground">Total Goals</p>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="shadow-soft">
+          <CardContent className="p-4">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-warning">{totalAssists}</p>
+              <p className="text-sm text-muted-foreground">Total Assists</p>
             </div>
           </CardContent>
         </Card>
