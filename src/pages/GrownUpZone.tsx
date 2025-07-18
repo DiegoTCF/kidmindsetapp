@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { Lock, ArrowLeft, Eye, CreditCard, Calendar, BarChart3 } from "lucide-react";
+import { Lock, ArrowLeft, Eye, CreditCard, Calendar, BarChart3, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ChildProgress {
   name: string;
@@ -22,11 +24,13 @@ interface ChildProgress {
 export default function GrownUpZone() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authMethod, setAuthMethod] = useState<"pin" | "email">("pin");
   const [pin, setPin] = useState("");
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
   const [childProgress, setChildProgress] = useState<ChildProgress>({
     name: "Champion",
     level: 1,
@@ -39,11 +43,8 @@ export default function GrownUpZone() {
     journalEntries: 0
   });
 
-  const DEMO_PIN = "1234"; // In real app, this would be user-set
-  const DEMO_EMAIL = "parent@example.com"; // In real app, this would be from user account
-
   useEffect(() => {
-    console.log('[KidMindset] Grown Up Zone accessed');
+    console.log('[GrownUpZone] Accessing Grown Up Zone');
     
     // Check if already authenticated in this session
     const authToken = sessionStorage.getItem('kidmindset_parent_auth');
@@ -53,34 +54,107 @@ export default function GrownUpZone() {
     }
   }, []);
 
-  const handlePinAuth = () => {
-    if (pin === DEMO_PIN) {
-      setIsAuthenticated(true);
-      sessionStorage.setItem('kidmindset_parent_auth', 'authenticated');
-      loadChildProgress();
-      
-      console.log('[KidMindset] Parent authenticated via PIN');
-      
+  const handlePinAuth = async () => {
+    if (!user?.id) {
       toast({
-        title: "Access granted",
-        description: "Welcome to the Grown Up Zone",
+        title: "Authentication required",
+        description: "Please sign in to access the Grown Up Zone",
+        variant: "destructive"
       });
-    } else {
+      navigate('/auth');
+      return;
+    }
+
+    if (pin.length !== 4) {
       toast({
         title: "Invalid PIN",
-        description: "Please try again",
+        description: "PIN must be 4 digits",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoading(true);
+    console.log('[GrownUpZone] Verifying PIN for user:', user.id);
+
+    try {
+      // Fetch the parent's PIN from Supabase
+      const { data: parentData, error } = await supabase
+        .from('parents')
+        .select('pin')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.log('[GrownUpZone] Error fetching parent data:', error.message);
+        toast({
+          title: "Error",
+          description: "Unable to verify PIN. Please try again.",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (!parentData) {
+        toast({
+          title: "Parent profile not found",
+          description: "Please complete your profile setup first.",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Compare the entered PIN with the stored PIN
+      if (pin === parentData.pin) {
+        setIsAuthenticated(true);
+        sessionStorage.setItem('kidmindset_parent_auth', 'authenticated');
+        loadChildProgress();
+        
+        console.log('[GrownUpZone] Parent authenticated via PIN');
+        
+        toast({
+          title: "Access granted",
+          description: "Welcome to the Grown Up Zone",
+        });
+      } else {
+        console.log('[GrownUpZone] Invalid PIN entered');
+        toast({
+          title: "Incorrect PIN",
+          description: "Please check your PIN and try again",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.log('[GrownUpZone] Unexpected error during PIN verification:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive"
       });
     }
+
+    setLoading(false);
   };
 
-  const handleEmailAuth = () => {
-    if (email === DEMO_EMAIL) {
+  const handleEmailAuth = async () => {
+    if (!user?.email) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to access the Grown Up Zone",
+        variant: "destructive"
+      });
+      navigate('/auth');
+      return;
+    }
+
+    if (email === user.email) {
       setIsAuthenticated(true);
       sessionStorage.setItem('kidmindset_parent_auth', 'authenticated');
       loadChildProgress();
       
-      console.log('[KidMindset] Parent authenticated via email');
+      console.log('[GrownUpZone] Parent authenticated via email');
       
       toast({
         title: "Access granted",
@@ -89,7 +163,7 @@ export default function GrownUpZone() {
     } else {
       toast({
         title: "Email not recognized",
-        description: "Please use the registered parent email",
+        description: "Please use your registered email address",
         variant: "destructive"
       });
     }
@@ -238,11 +312,9 @@ export default function GrownUpZone() {
                       onChange={(e) => setPin(e.target.value)}
                       placeholder="Enter 4-digit PIN"
                       maxLength={4}
-                      onKeyPress={(e) => e.key === 'Enter' && handlePinAuth()}
+                      autoFocus
+                      onKeyPress={(e) => e.key === 'Enter' && !loading && handlePinAuth()}
                     />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Demo PIN: 1234
-                    </p>
                   </div>
                 ) : (
                   <div>
@@ -252,20 +324,18 @@ export default function GrownUpZone() {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="parent@example.com"
-                      onKeyPress={(e) => e.key === 'Enter' && handleEmailAuth()}
+                      placeholder={user?.email || "parent@example.com"}
+                      onKeyPress={(e) => e.key === 'Enter' && !loading && handleEmailAuth()}
                     />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Demo email: parent@example.com
-                    </p>
                   </div>
                 )}
 
                 <Button
                   onClick={authMethod === "pin" ? handlePinAuth : handleEmailAuth}
                   className="w-full"
-                  disabled={authMethod === "pin" ? pin.length !== 4 : !email}
+                  disabled={loading || (authMethod === "pin" ? pin.length !== 4 : !email)}
                 >
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Access Grown Up Zone
                 </Button>
               </CardContent>
