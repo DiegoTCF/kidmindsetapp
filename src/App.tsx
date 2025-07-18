@@ -15,6 +15,7 @@ import { useAuth } from "./hooks/useAuth";
 
 const queryClient = new QueryClient();
 
+// Move ProtectedRoute outside of App component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   
@@ -33,61 +34,63 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          {/* Auth route */}
-          <Route path="/auth" element={<Auth />} />
-          
-          {/* Main app routes with navigation - protected */}
-          <Route path="/" element={
-            <ProtectedRoute>
-              <AppLayout>
-                <Home />
-              </AppLayout>
-            </ProtectedRoute>
-          } />
-          <Route path="/stadium" element={
-            <ProtectedRoute>
-              <AppLayout>
-                <Stadium />
-              </AppLayout>
-            </ProtectedRoute>
-          } />
-          <Route path="/progress" element={
-            <ProtectedRoute>
-              <AppLayout>
-                <Progress />
-              </AppLayout>
-            </ProtectedRoute>
-          } />
-          <Route path="/profile" element={
-            <ProtectedRoute>
-              <AppLayout>
-                <Profile />
-              </AppLayout>
-            </ProtectedRoute>
-          } />
-          
-          {/* Grown Up Zone - no navigation - protected */}
-          <Route path="/grown-up" element={
-            <ProtectedRoute>
-              <AppLayout hideNavigation>
-                <GrownUpZone />
-              </AppLayout>
-            </ProtectedRoute>
-          } />
-          
-          {/* Catch-all route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* Auth route */}
+            <Route path="/auth" element={<Auth />} />
+            
+            {/* Main app routes with navigation - protected */}
+            <Route path="/" element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <Home />
+                </AppLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/stadium" element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <Stadium />
+                </AppLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/progress" element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <Progress />
+                </AppLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <Profile />
+                </AppLayout>
+              </ProtectedRoute>
+            } />
+            
+            {/* Grown Up Zone - no navigation - protected */}
+            <Route path="/grown-up" element={
+              <ProtectedRoute>
+                <AppLayout hideNavigation>
+                  <GrownUpZone />
+                </AppLayout>
+              </ProtectedRoute>
+            } />
+            
+            {/* Catch-all route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
