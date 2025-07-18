@@ -1,13 +1,18 @@
 import { useState, useEffect } from "react";
-import { Lock, ArrowLeft, Eye, CreditCard, Calendar, BarChart3, Loader2 } from "lucide-react";
+import { Lock, ArrowLeft, Loader2, User, BarChart3, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { ProfileTab } from "@/components/tabs/ProfileTab";
+import { PlayerProgressTab } from "@/components/tabs/PlayerProgressTab";
+import { PaymentsTab } from "@/components/tabs/PaymentsTab";
+
 
 interface ChildProgress {
   name: string;
@@ -272,23 +277,21 @@ export default function GrownUpZone() {
             <div className="flex rounded-lg border p-1">
               <button
                 onClick={() => setAuthMethod("pin")}
-                className={cn(
-                  "flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all",
+                className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all ${
                   authMethod === "pin" 
                     ? "bg-primary text-primary-foreground" 
                     : "text-muted-foreground hover:text-foreground"
-                )}
+                }`}
               >
                 PIN Code
               </button>
               <button
                 onClick={() => setAuthMethod("email")}
-                className={cn(
-                  "flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all",
+                className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all ${
                   authMethod === "email" 
                     ? "bg-primary text-primary-foreground" 
                     : "text-muted-foreground hover:text-foreground"
-                )}
+                }`}
               >
                 Email
               </button>
@@ -347,9 +350,9 @@ export default function GrownUpZone() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -373,140 +376,41 @@ export default function GrownUpZone() {
         </Button>
       </div>
 
-      {/* Child Progress Overview */}
-      <Card className="mb-6 shadow-soft">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Eye className="w-5 h-5" />
-            {childProgress.name}'s Progress
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-3 rounded-lg bg-primary/10">
-              <p className="text-2xl font-bold text-primary">{childProgress.level}</p>
-              <p className="text-sm text-muted-foreground">Current Level</p>
-            </div>
-            
-            <div className="text-center p-3 rounded-lg bg-success/10">
-              <p className="text-2xl font-bold text-success">{childProgress.points}</p>
-              <p className="text-sm text-muted-foreground">Total Points</p>
-            </div>
-            
-            <div className="text-center p-3 rounded-lg bg-warning/10">
-              <p className="text-2xl font-bold text-warning">{childProgress.weeklyMoodAvg}/5</p>
-              <p className="text-sm text-muted-foreground">Avg Mood</p>
-            </div>
-            
-            <div className="text-center p-3 rounded-lg bg-accent/10">
-              <p className="text-2xl font-bold text-accent">{childProgress.completionRate}%</p>
-              <p className="text-sm text-muted-foreground">Task Rate</p>
-            </div>
+      {/* Tab Navigation */}
+      <div className="flex-1">
+        <Tabs defaultValue="profile" className="h-full">
+          <div className="p-4 pb-0">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="profile" className="flex items-center gap-2">
+                <User className="w-4 h-4" />
+                Profile
+              </TabsTrigger>
+              <TabsTrigger value="progress" className="flex items-center gap-2">
+                <BarChart3 className="w-4 h-4" />
+                Progress
+              </TabsTrigger>
+              <TabsTrigger value="payments" className="flex items-center gap-2">
+                <CreditCard className="w-4 h-4" />
+                Payments
+              </TabsTrigger>
+            </TabsList>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Recent Activity */}
-      <Card className="mb-6 shadow-soft">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5" />
-            Recent Activity
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-medium mb-2">Recent Moods (Last 5 days)</h4>
-              <div className="flex gap-2">
-                {childProgress.recentMoods.map((entry, index) => (
-                  <div key={index} className="text-center p-2 rounded bg-muted/50">
-                    <span className="text-lg block">
-                      {["😢", "😕", "😐", "😊", "😁"][entry.mood - 1]}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(entry.date).getDate()}/{new Date(entry.date).getMonth() + 1}
-                    </span>
-                  </div>
-                ))}
-                {childProgress.recentMoods.length === 0 && (
-                  <p className="text-muted-foreground text-sm">No mood data yet</p>
-                )}
-              </div>
-            </div>
+          <div className="p-4">
+            <TabsContent value="profile" className="mt-0">
+              <ProfileTab />
+            </TabsContent>
 
-            <div>
-              <h4 className="font-medium mb-2">Activity Summary</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Active days (last 7):</span>
-                  <span className="font-medium">{childProgress.activeDays}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Journal entries:</span>
-                  <span className="font-medium">{childProgress.journalEntries}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Task completion rate:</span>
-                  <span className="font-medium">{childProgress.completionRate}%</span>
-                </div>
-              </div>
-            </div>
+            <TabsContent value="progress" className="mt-0">
+              <PlayerProgressTab />
+            </TabsContent>
+
+            <TabsContent value="payments" className="mt-0">
+              <PaymentsTab />
+            </TabsContent>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Account Management */}
-      <div className="grid md:grid-cols-2 gap-4">
-        <Card className="shadow-soft">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="w-5 h-5" />
-              Payment Info
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Plan:</span>
-                <span className="font-medium">Premium Monthly</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Next billing:</span>
-                <span className="font-medium">Dec 15, 2024</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Amount:</span>
-                <span className="font-medium">$9.99/month</span>
-              </div>
-            </div>
-            <Button variant="outline" size="sm" className="w-full mt-4">
-              Manage Billing
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-soft">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="w-5 h-5" />
-              Bookings
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2 text-sm">
-              <p className="text-muted-foreground">No upcoming sessions</p>
-            </div>
-            <Button variant="outline" size="sm" className="w-full mt-4">
-              Schedule Session
-            </Button>
-          </CardContent>
-        </Card>
+        </Tabs>
       </div>
     </div>
   );
-}
-
-function cn(...classes: string[]) {
-  return classes.filter(Boolean).join(' ');
 }
