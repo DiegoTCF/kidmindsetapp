@@ -15,7 +15,7 @@ import { useAuth } from "./hooks/useAuth";
 
 const queryClient = new QueryClient();
 
-// Move ProtectedRoute outside of App component
+// Define ProtectedRoute as a separate component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   
@@ -34,7 +34,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const App = () => {
+// Main App component
+const AppContent = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -91,6 +92,10 @@ const App = () => {
       </TooltipProvider>
     </QueryClientProvider>
   );
+};
+
+const App = () => {
+  return <AppContent />;
 };
 
 export default App;
