@@ -49,7 +49,7 @@ const Auth = () => {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -62,11 +62,17 @@ const Auth = () => {
         variant: "destructive",
       });
     } else {
-      console.log('[AuthFlow] Sign in successful');
-      toast({
-        title: "Welcome back!",
-        description: "You've been signed in successfully.",
-      });
+      console.log('[AuthRedirect] Sign in successful, user:', data.user);
+      if (data.user?.email_confirmed_at) {
+        console.log('[AuthRedirect] Email confirmed, redirecting to home');
+        window.location.href = '/';
+      } else {
+        toast({
+          title: "Email not confirmed",
+          description: "Please check your email and click the confirmation link before signing in.",
+          variant: "destructive",
+        });
+      }
     }
     setLoading(false);
   };
