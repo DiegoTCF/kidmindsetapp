@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { User, Settings, Star, Trophy, Target, Calendar } from "lucide-react";
+import { User, Settings, Star, Trophy, Target, Calendar, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,6 +71,7 @@ const defaultAchievements: Achievement[] = [
 
 export default function Profile() {
   const { toast } = useToast();
+  const { signOut } = useAuth();
   
   const [profile, setProfile] = useState<UserProfile>({
     name: "Champion",
@@ -218,6 +220,11 @@ export default function Profile() {
     });
   };
 
+  const handleLogout = async () => {
+    console.log('[AuthFlow] Logout button clicked');
+    await signOut();
+  };
+
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="mb-6">
@@ -322,6 +329,17 @@ export default function Profile() {
                   className="flex-1"
                 >
                   Cancel
+                </Button>
+              </div>
+              
+              <div className="pt-4 border-t">
+                <Button 
+                  variant="destructive" 
+                  onClick={handleLogout}
+                  className="w-full"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
                 </Button>
               </div>
             </div>
