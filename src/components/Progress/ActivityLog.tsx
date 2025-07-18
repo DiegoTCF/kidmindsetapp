@@ -255,90 +255,60 @@ export default function ActivityLog({ selectedFilter }: ActivityLogProps) {
 
                   {/* Journal Entries */}
                   <div className="space-y-4">
-                    {selectedActivity.post_activity_data.wentWell && (
-                      <div className="p-3 bg-background rounded-lg">
+                    {selectedActivity.post_activity_data.journalPrompts?.wentWell && (
+                      <div className="p-4 bg-background rounded-lg border-l-4 border-success">
                         <p className="text-sm font-medium text-success mb-2">✅ What went well:</p>
-                        <p className="text-sm text-muted-foreground italic">"{selectedActivity.post_activity_data.wentWell}"</p>
+                        <p className="text-sm text-foreground whitespace-pre-wrap">{selectedActivity.post_activity_data.journalPrompts.wentWell}</p>
                       </div>
                     )}
                     
-                    {selectedActivity.post_activity_data.improvements && (
-                      <div className="p-3 bg-background rounded-lg">
-                        <p className="text-sm font-medium text-warning mb-2">🔄 What could be improved:</p>
-                        <p className="text-sm text-muted-foreground italic">"{selectedActivity.post_activity_data.improvements}"</p>
+                    {selectedActivity.post_activity_data.journalPrompts?.couldImprove && (
+                      <div className="p-4 bg-background rounded-lg border-l-4 border-warning">
+                        <p className="text-sm font-medium text-warning mb-2">🔄 What could improve:</p>
+                        <p className="text-sm text-foreground whitespace-pre-wrap">{selectedActivity.post_activity_data.journalPrompts.couldImprove}</p>
                       </div>
                     )}
                     
-                    {selectedActivity.post_activity_data.nextTime && (
-                      <div className="p-3 bg-background rounded-lg">
-                        <p className="text-sm font-medium text-primary mb-2">🎯 Next time I will:</p>
-                        <p className="text-sm text-muted-foreground italic">"{selectedActivity.post_activity_data.nextTime}"</p>
-                      </div>
-                    )}
-
-                    {selectedActivity.post_activity_data.feelings && (
-                      <div className="p-3 bg-background rounded-lg">
-                        <p className="text-sm font-medium text-accent mb-2">💭 How I felt:</p>
-                        <p className="text-sm text-muted-foreground italic">"{selectedActivity.post_activity_data.feelings}"</p>
-                      </div>
-                    )}
-
-                    {selectedActivity.post_activity_data.challenges && (
-                      <div className="p-3 bg-background rounded-lg">
-                        <p className="text-sm font-medium text-destructive mb-2">⚡ Challenges faced:</p>
-                        <p className="text-sm text-muted-foreground italic">"{selectedActivity.post_activity_data.challenges}"</p>
-                      </div>
-                    )}
-
-                    {selectedActivity.post_activity_data.learned && (
-                      <div className="p-3 bg-background rounded-lg">
-                        <p className="text-sm font-medium text-info mb-2">🎓 What I learned:</p>
-                        <p className="text-sm text-muted-foreground italic">"{selectedActivity.post_activity_data.learned}"</p>
-                      </div>
-                    )}
-
-                    {selectedActivity.post_activity_data.proud && (
-                      <div className="p-3 bg-background rounded-lg">
-                        <p className="text-sm font-medium text-success mb-2">⭐ What I'm proud of:</p>
-                        <p className="text-sm text-muted-foreground italic">"{selectedActivity.post_activity_data.proud}"</p>
-                      </div>
-                    )}
-
-                    {selectedActivity.post_activity_data.teamwork && (
-                      <div className="p-3 bg-background rounded-lg">
-                        <p className="text-sm font-medium text-accent mb-2">🤝 Teamwork & Communication:</p>
-                        <p className="text-sm text-muted-foreground italic">"{selectedActivity.post_activity_data.teamwork}"</p>
-                      </div>
-                    )}
-
-                    {selectedActivity.post_activity_data.focus && (
-                      <div className="p-3 bg-background rounded-lg">
-                        <p className="text-sm font-medium text-primary mb-2">🎯 Focus & Concentration:</p>
-                        <p className="text-sm text-muted-foreground italic">"{selectedActivity.post_activity_data.focus}"</p>
-                      </div>
-                    )}
-
-                    {selectedActivity.post_activity_data.energy && (
-                      <div className="p-3 bg-background rounded-lg">
-                        <p className="text-sm font-medium text-warning mb-2">⚡ Energy Level:</p>
-                        <p className="text-sm text-muted-foreground italic">"{selectedActivity.post_activity_data.energy}"</p>
-                      </div>
-                    )}
-
-                    {selectedActivity.post_activity_data.goals && (
-                      <div className="p-3 bg-background rounded-lg">
-                        <p className="text-sm font-medium text-primary mb-2">🏆 Goals achieved:</p>
-                        <p className="text-sm text-muted-foreground italic">"{selectedActivity.post_activity_data.goals}"</p>
-                      </div>
-                    )}
-
-                    {selectedActivity.post_activity_data.reflection && (
-                      <div className="p-3 bg-background rounded-lg">
-                        <p className="text-sm font-medium text-muted-foreground mb-2">💭 Additional thoughts:</p>
-                        <p className="text-sm text-muted-foreground italic">"{selectedActivity.post_activity_data.reflection}"</p>
+                    {selectedActivity.post_activity_data.journalPrompts?.whatAffected && (
+                      <div className="p-4 bg-background rounded-lg border-l-4 border-accent">
+                        <p className="text-sm font-medium text-accent mb-2">🌟 What affected you today:</p>
+                        <p className="text-sm text-foreground whitespace-pre-wrap">{selectedActivity.post_activity_data.journalPrompts.whatAffected}</p>
                       </div>
                     )}
                   </div>
+
+                  {/* Super Behaviour Ratings */}
+                  {selectedActivity.post_activity_data.superBehaviours && (
+                    <div className="space-y-3">
+                      <h5 className="font-medium text-primary">Super Behaviour Ratings</h5>
+                      <div className="grid grid-cols-2 gap-3">
+                        {selectedActivity.post_activity_data.superBehaviours.braveOnBall && (
+                          <div className="text-center p-3 bg-background rounded-lg">
+                            <p className="text-sm font-medium">Brave on Ball</p>
+                            <p className="text-xl font-bold text-primary">{selectedActivity.post_activity_data.superBehaviours.braveOnBall}/10</p>
+                          </div>
+                        )}
+                        {selectedActivity.post_activity_data.superBehaviours.braveOffBall && (
+                          <div className="text-center p-3 bg-background rounded-lg">
+                            <p className="text-sm font-medium">Brave off Ball</p>
+                            <p className="text-xl font-bold text-primary">{selectedActivity.post_activity_data.superBehaviours.braveOffBall}/10</p>
+                          </div>
+                        )}
+                        {selectedActivity.post_activity_data.superBehaviours.electric && (
+                          <div className="text-center p-3 bg-background rounded-lg">
+                            <p className="text-sm font-medium">Electric</p>
+                            <p className="text-xl font-bold text-primary">{selectedActivity.post_activity_data.superBehaviours.electric}/10</p>
+                          </div>
+                        )}
+                        {selectedActivity.post_activity_data.superBehaviours.aggressive && (
+                          <div className="text-center p-3 bg-background rounded-lg">
+                            <p className="text-sm font-medium">Aggressive</p>
+                            <p className="text-xl font-bold text-primary">{selectedActivity.post_activity_data.superBehaviours.aggressive}/10</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {selectedActivity.post_activity_data.completedAt && (
                     <div className="pt-3 border-t border-muted">

@@ -35,10 +35,10 @@ interface PostActivityReflection {
   performance: number;
   workRate: number;
   superBehaviours: {
-    braveOnBall: boolean;
-    braveOffBall: boolean;
-    aggressive: boolean;
-    electric: boolean;
+    braveOnBall: number;
+    braveOffBall: number;
+    aggressive: number;
+    electric: number;
   };
   journalPrompts: {
     wentWell: string;
@@ -83,10 +83,10 @@ export default function ActivityForm({ activity, onComplete }: ActivityFormProps
     performance: 5,
     workRate: 5,
     superBehaviours: {
-      braveOnBall: false,
-      braveOffBall: false,
-      aggressive: false,
-      electric: false,
+      braveOnBall: 5,
+      braveOffBall: 5,
+      aggressive: 5,
+      electric: 5,
     },
     journalPrompts: {
       wentWell: "",
@@ -145,9 +145,9 @@ export default function ActivityForm({ activity, onComplete }: ActivityFormProps
     // Reflection sliders (5 points each)
     points += 5 * 5; // confidence, focus, mistakes, performance, workRate
     
-    // Super behaviours (5 points each)
-    Object.values(postActivityData.superBehaviours).forEach(behaviour => {
-      if (behaviour) points += 5;
+    // Super behaviours (1 point per rating level)
+    Object.values(postActivityData.superBehaviours).forEach(rating => {
+      points += rating;
     });
     
     // Journal (2 points per word)
@@ -623,29 +623,36 @@ export default function ActivityForm({ activity, onComplete }: ActivityFormProps
           {/* Super-Behaviour Ratings */}
           <Card className="shadow-soft">
             <CardHeader>
-              <CardTitle className="text-lg">Super-Behaviour</CardTitle>
+              <CardTitle className="text-lg">Super-Behaviour (1-10)</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               {[
-                { key: "braveOnBall", label: "Brave on/off ball" },
+                { key: "braveOnBall", label: "Brave on the ball" },
+                { key: "braveOffBall", label: "Brave off the ball" },
                 { key: "electric", label: "Electric" },
                 { key: "aggressive", label: "Aggressive" },
               ].map(({ key, label }) => (
-                <div key={key} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={key}
-                    checked={postActivityData.superBehaviours[key as keyof typeof postActivityData.superBehaviours]}
-                    onCheckedChange={(checked) => setPostActivityData(prev => ({
+                <div key={key} className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{label}</span>
+                    <span className="ml-auto text-primary font-bold">
+                      {postActivityData.superBehaviours[key as keyof typeof postActivityData.superBehaviours]}/10
+                    </span>
+                  </div>
+                  <Slider
+                    value={[postActivityData.superBehaviours[key as keyof typeof postActivityData.superBehaviours]]}
+                    onValueChange={(value) => setPostActivityData(prev => ({
                       ...prev,
                       superBehaviours: {
                         ...prev.superBehaviours,
-                        [key]: checked
+                        [key]: value[0]
                       }
                     }))}
+                    max={10}
+                    min={1}
+                    step={1}
+                    className="w-full"
                   />
-                  <label htmlFor={key} className="text-sm font-medium">
-                    {label}
-                  </label>
                 </div>
               ))}
             </CardContent>
