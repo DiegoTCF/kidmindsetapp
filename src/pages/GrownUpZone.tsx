@@ -387,7 +387,7 @@ export default function GrownUpZone() {
               </TabsTrigger>
               <TabsTrigger value="progress" className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" />
-                Progress
+                Your Child
               </TabsTrigger>
               <TabsTrigger value="payments" className="flex items-center gap-2">
                 <CreditCard className="w-4 h-4" />
