@@ -54,7 +54,21 @@ export default function Progress() {
         </TabsContent>
 
         <TabsContent value="stats" className="space-y-6">
-          <Charts />
+          {/* Filter Buttons */}
+          <div className="flex flex-wrap gap-2">
+            {activityFilters.map((filter) => (
+              <Button
+                key={filter}
+                variant={selectedFilter === filter ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedFilter(filter)}
+              >
+                {filter}
+              </Button>
+            ))}
+          </div>
+          
+          <Charts selectedFilter={selectedFilter} />
         </TabsContent>
       </Tabs>
     </div>

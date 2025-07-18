@@ -17,7 +17,11 @@ interface MoodTrend {
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))', 'hsl(var(--success))', 'hsl(var(--warning))'];
 
-export default function Charts() {
+interface ChartsProps {
+  selectedFilter: string;
+}
+
+export default function Charts({ selectedFilter }: ChartsProps) {
   const [activityStats, setActivityStats] = useState<ActivityStats[]>([]);
   const [moodTrends, setMoodTrends] = useState<MoodTrend[]>([]);
   const [totalActivities, setTotalActivities] = useState(0);
@@ -27,7 +31,7 @@ export default function Charts() {
 
   useEffect(() => {
     loadChartData();
-  }, []);
+  }, [selectedFilter]);
 
   const loadChartData = async () => {
     try {
@@ -51,12 +55,20 @@ export default function Charts() {
       if (activitiesError) throw activitiesError;
 
       if (activities && activities.length > 0) {
+        // Filter activities based on selected filter
+        let filteredActivities = activities;
+        if (selectedFilter !== "All") {
+          filteredActivities = activities.filter(activity => 
+            activity.activity_type.toLowerCase() === selectedFilter.toLowerCase()
+          );
+        }
+
         // Calculate activity type distribution
         const typeStats: { [key: string]: number } = {};
         let completedCount = 0;
         const moodData: MoodTrend[] = [];
 
-        activities.forEach(activity => {
+        filteredActivities.forEach(activity => {
           typeStats[activity.activity_type] = (typeStats[activity.activity_type] || 0) + 1;
           
           if (activity.post_activity_completed) {
@@ -77,7 +89,7 @@ export default function Charts() {
         });
 
         // Convert to chart format
-        const total = activities.length;
+        const total = filteredActivities.length;
         const statsArray = Object.entries(typeStats).map(([type, count]) => ({
           type,
           count,
