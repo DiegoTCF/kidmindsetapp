@@ -19,6 +19,7 @@ interface OnboardingData {
   childDateOfBirth: string;
   childLevel: string;
   weeklySchedule: { [key: string]: string };
+  pin: string;
 }
 
 const Auth = () => {
@@ -35,6 +36,7 @@ const Auth = () => {
     childDateOfBirth: '',
     childLevel: 'grassroots',
     weeklySchedule: {},
+    pin: '',
   });
   const { toast } = useToast();
 
@@ -142,17 +144,14 @@ const Auth = () => {
     return age;
   };
 
-  const handleSignUpStep2 = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSignUpStep2 = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
-    console.log('[AuthFlow] Completing sign up process');
-
     const formData = new FormData(e.currentTarget);
     const childName = formData.get('childName') as string;
     const childDateOfBirth = formData.get('childDateOfBirth') as string;
     const childLevel = formData.get('childLevel') as string;
     
-    // Get weekly schedule from checkboxes
+    // Get weekly schedule from select dropdowns
     const weeklySchedule: { [key: string]: string } = {};
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
     days.forEach(day => {
@@ -168,7 +167,6 @@ const Auth = () => {
         description: "Please fill in all required child information.",
         variant: "destructive",
       });
-      setLoading(false);
       return;
     }
 
@@ -180,22 +178,73 @@ const Auth = () => {
         description: "Child must be between 5 and 18 years old.",
         variant: "destructive",
       });
+      return;
+    }
+
+    // Store child data and move to PIN setup
+    setOnboardingData(prev => ({ 
+      ...prev, 
+      childName, 
+      childDateOfBirth, 
+      childLevel, 
+      weeklySchedule 
+    }));
+    setSignUpStep(3);
+    console.log('[AuthFix] Moving to step 3 - PIN Setup');
+  };
+
+  const handleSignUpStep3 = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    console.log('[AuthFix] Completing sign up with PIN setup');
+
+    const formData = new FormData(e.currentTarget);
+    const pin = formData.get('pin') as string;
+    const confirmPin = formData.get('confirmPin') as string;
+
+    if (!pin || !confirmPin) {
+      toast({
+        title: "Missing PIN",
+        description: "Please enter and confirm your PIN.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (pin !== confirmPin) {
+      toast({
+        title: "PINs don't match",
+        description: "Please make sure both PINs are identical.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+      toast({
+        title: "Invalid PIN",
+        description: "PIN must be exactly 4 digits.",
+        variant: "destructive",
+      });
       setLoading(false);
       return;
     }
 
     try {
-      // Sign up the user
+      // Sign up the user with email confirmation required
+      console.log('[AuthFix] Starting Supabase auth signup');
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: onboardingData.email,
         password: onboardingData.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: `${window.location.origin}/auth`,
         },
       });
 
       if (authError) {
-        console.log('[AuthFlow] Auth error:', authError.message);
+        console.log('[AuthFix] Auth error:', authError.message);
         toast({
           title: "Error creating account",
           description: authError.message,
@@ -205,78 +254,43 @@ const Auth = () => {
         return;
       }
 
-      if (authData.user) {
-        // Create profile
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            user_id: authData.user.id,
-            email: onboardingData.email,
-          });
-
-        if (profileError) {
-          console.log('[AuthFlow] Profile creation error:', profileError.message);
-        }
-
-        // Create parent record
-        const { data: parentData, error: parentError } = await supabase
-          .from('parents')
-          .insert({
-            user_id: authData.user.id,
-            name: onboardingData.parentName,
-            phone: '',
-            payment_status: 'pending',
-          })
-          .select('id')
-          .single();
-
-        if (parentError) {
-          console.log('[AuthFlow] Parent creation error:', parentError.message);
-          toast({
-            title: "Error",
-            description: "Failed to create parent profile.",
-            variant: "destructive",
-          });
-          setLoading(false);
-          return;
-        }
-
-        // Calculate level number from string
-        const levelMap: { [key: string]: number } = {
-          'grassroots': 1,
-          'dev_centres': 2,
-          'academy': 3
-        };
-
-        // Create child record
-        const { error: childError } = await supabase
-          .from('children')
-          .insert({
-            parent_id: parentData.id,
-            name: childName,
-            age: childAge,
-            level: levelMap[childLevel] || 1,
-            weekly_schedule: JSON.stringify(weeklySchedule),
-            points: 0,
-          });
-
-        if (childError) {
-          console.log('[AuthFlow] Child creation error:', childError.message);
-          toast({
-            title: "Error",
-            description: "Failed to create child profile.",
-            variant: "destructive",
-          });
-        } else {
-          console.log('[AuthFlow] Sign up completed successfully');
-          toast({
-            title: "Account created!",
-            description: "Welcome to KidMindset! Please check your email to verify your account.",
-          });
-        }
-      }
+      console.log('[AuthFix] Auth signup successful, confirmation email sent');
+      
+      // Store signup data for later processing after email confirmation
+      const signupData = {
+        parentName: onboardingData.parentName,
+        childName: onboardingData.childName,
+        childAge: calculateAge(onboardingData.childDateOfBirth),
+        childLevel: onboardingData.childLevel,
+        weeklySchedule: onboardingData.weeklySchedule,
+        pin: pin
+      };
+      
+      // Store in localStorage to process after email confirmation
+      localStorage.setItem('pendingSignupData', JSON.stringify(signupData));
+      
+      toast({
+        title: "Account created!",
+        description: "Please check your email to verify your account, then sign in.",
+      });
+      
+      // Reset form and go back to sign in
+      setIsSignUp(false);
+      setSignUpStep(1);
+      setOnboardingData({
+        email: '',
+        password: '',
+        parentName: '',
+        phone: '',
+        childName: '',
+        childDateOfBirth: '',
+        childLevel: 'grassroots',
+        weeklySchedule: {},
+        pin: '',
+      });
+      
     } catch (error) {
-      console.log('[AuthFlow] Unexpected error:', error);
+      console.log('[AuthFix] Unexpected error:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
@@ -345,7 +359,7 @@ const Auth = () => {
               )}
               <div className="flex-1 text-center">
                 <CardTitle>Create Account</CardTitle>
-                <CardDescription>Step {signUpStep} of 2</CardDescription>
+                <CardDescription>Step {signUpStep} of 3</CardDescription>
               </div>
               <div className="w-8" />
             </div>
@@ -445,11 +459,45 @@ const Auth = () => {
                   ))}
                 </div>
 
-                <div className="border rounded-lg p-3 bg-muted/50 text-center">
-                  <p className="text-sm font-medium">Monthly Subscription: $19.99</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Payment setup will be completed after registration
+                <Button type="submit" className="w-full">
+                  Next <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+              </form>
+            )}
+
+            {signUpStep === 3 && (
+              <form onSubmit={handleSignUpStep3} className="space-y-4">
+                <div className="text-center mb-4">
+                  <h3 className="text-lg font-semibold">Create PIN for Grown Up Zone</h3>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    This PIN protects access to bookings, payments and your child's progress.
                   </p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="pin">4-Digit PIN</Label>
+                  <Input
+                    id="pin"
+                    name="pin"
+                    type="password"
+                    placeholder="Enter 4-digit PIN"
+                    maxLength={4}
+                    pattern="[0-9]{4}"
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPin">Confirm PIN</Label>
+                  <Input
+                    id="confirmPin"
+                    name="confirmPin"
+                    type="password"
+                    placeholder="Confirm your PIN"
+                    maxLength={4}
+                    pattern="[0-9]{4}"
+                    required
+                  />
                 </div>
 
                 <Button type="submit" className="w-full" disabled={loading}>

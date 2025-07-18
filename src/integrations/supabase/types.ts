@@ -65,6 +65,7 @@ export type Database = {
           name: string
           payment_status: string | null
           phone: string | null
+          pin: string | null
           updated_at: string
           user_id: string
         }
@@ -74,6 +75,7 @@ export type Database = {
           name: string
           payment_status?: string | null
           phone?: string | null
+          pin?: string | null
           updated_at?: string
           user_id: string
         }
@@ -83,6 +85,7 @@ export type Database = {
           name?: string
           payment_status?: string | null
           phone?: string | null
+          pin?: string | null
           updated_at?: string
           user_id?: string
         }
