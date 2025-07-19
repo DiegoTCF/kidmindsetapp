@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ProfileTab } from "@/components/tabs/ProfileTab";
 import { PlayerProgressTab } from "@/components/tabs/PlayerProgressTab";
 import { PaymentsTab } from "@/components/tabs/PaymentsTab";
+import { TopNavigation } from "@/components/nav/TopNavigation";
 
 
 interface ChildProgress {
@@ -351,6 +352,9 @@ export default function GrownUpZone() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Top Navigation */}
+      <TopNavigation isGrownUpZone={true} />
+      
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-3">
@@ -367,13 +371,6 @@ export default function GrownUpZone() {
             <p className="text-sm text-muted-foreground">Parent dashboard</p>
           </div>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleLogout}
-        >
-          Sign Out
-        </Button>
       </div>
 
       {/* Tab Navigation */}

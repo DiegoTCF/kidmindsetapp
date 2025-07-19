@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Plus, Star, Flame, Trophy, LogOut } from "lucide-react";
+import { Plus, Star, Flame, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { TopNavigation } from "@/components/nav/TopNavigation";
 
 interface MoodOption {
   emoji: string;
@@ -44,7 +45,7 @@ const defaultTasks: DailyTask[] = [
 
 export default function Home() {
   const { toast } = useToast();
-  const { signOut } = useAuth();
+  const { user } = useAuth();
   
   // Player state
   const [playerData, setPlayerData] = useState<PlayerData>({
@@ -236,10 +237,6 @@ export default function Home() {
     });
   };
 
-  const handleLogout = async () => {
-    console.log('[AuthFlow] Logout button clicked');
-    await signOut();
-  };
 
   const getProgressToNextLevel = () => {
     const pointsForCurrentLevel = (playerData.level - 1) * 100;
@@ -252,16 +249,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background p-4">
-      {/* Floating Logout Button - Below Grown Up Area */}
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={handleLogout}
-        className="fixed top-16 right-4 z-50 flex items-center gap-2 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 shadow-lg bg-background/80 backdrop-blur-sm"
-      >
-        <LogOut className="w-4 h-4" />
-        <span className="hidden sm:inline">Sign Out</span>
-      </Button>
+      {/* Top Navigation */}
+      <TopNavigation />
 
       {/* Header */}
       <div className="mb-6">
