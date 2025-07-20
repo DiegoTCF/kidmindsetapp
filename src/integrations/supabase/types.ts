@@ -246,6 +246,56 @@ export type Database = {
           },
         ]
       }
+      super_behaviour_ratings: {
+        Row: {
+          activity_id: string | null
+          average_score: number | null
+          behaviour_type: string
+          child_id: string
+          created_at: string
+          id: string
+          question_1_rating: number | null
+          question_2_rating: number | null
+          question_3_rating: number | null
+          question_4_rating: number | null
+          updated_at: string
+        }
+        Insert: {
+          activity_id?: string | null
+          average_score?: number | null
+          behaviour_type: string
+          child_id: string
+          created_at?: string
+          id?: string
+          question_1_rating?: number | null
+          question_2_rating?: number | null
+          question_3_rating?: number | null
+          question_4_rating?: number | null
+          updated_at?: string
+        }
+        Update: {
+          activity_id?: string | null
+          average_score?: number | null
+          behaviour_type?: string
+          child_id?: string
+          created_at?: string
+          id?: string
+          question_1_rating?: number | null
+          question_2_rating?: number | null
+          question_3_rating?: number | null
+          question_4_rating?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "super_behaviour_ratings_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
