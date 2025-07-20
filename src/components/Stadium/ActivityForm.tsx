@@ -426,6 +426,17 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
     const hasConfidence = confidenceLevel > 0;
     const hasIntention = intention.trim().length > 0 || selectedBehaviours.some(b => b.selected && b.description.trim().length > 0);
     const hasWorryHandled = confidenceLevel > 7 || (confidenceLevel >= 1 && confidenceLevel <= 7 && worryData);
+    
+    console.log('Pre-activity completion check:', {
+      allItemsHandled,
+      hasConfidence,
+      hasIntention,
+      hasWorryHandled,
+      confidenceLevel,
+      worryData: !!worryData,
+      complete: allItemsHandled && hasConfidence && hasIntention && hasWorryHandled
+    });
+    
     return allItemsHandled && hasConfidence && hasIntention && hasWorryHandled;
   };
 
@@ -520,12 +531,26 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
               <div className="space-y-4">
                 <div className="px-2">
                   <Slider
-                    value={confidenceLevel === 0 ? [0] : [confidenceLevel]}
+                    value={[confidenceLevel]}
                     onValueChange={(value) => {
+                      console.log('Slider onChange triggered:', { 
+                        oldValue: confidenceLevel, 
+                        newValue: value[0],
+                        showMindsetFlow,
+                        worryData 
+                      });
                       setConfidenceLevel(value[0]);
-                      // Show mindset support flow if confidence is between 1-7
+                      
+                      // Show mindset support flow if confidence is between 1-7 and no worry data yet
                       if (value[0] >= 1 && value[0] <= 7 && !worryData) {
+                        console.log('Should show mindset flow for confidence:', value[0]);
                         setShowMindsetFlow(true);
+                      }
+                      
+                      // Reset worry data if confidence goes above 7
+                      if (value[0] > 7 && worryData) {
+                        console.log('Clearing worry data for confidence > 7');
+                        setWorryData(null);
                       }
                     }}
                     max={10}
@@ -538,17 +563,21 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                   <span className="text-2xl font-bold text-primary">
                     {confidenceLevel === 0 ? "Not selected" : `${confidenceLevel}/10`}
                   </span>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Current confidence level: {confidenceLevel}
+                  </p>
                 </div>
                 
                 {/* Show worry selection if confidence is between 1-7 and no mindset flow active */}
                 {(() => {
-                  console.log('Debug worry selection:', {
+                  const shouldShowWorryButtons = confidenceLevel >= 1 && confidenceLevel <= 7 && !showMindsetFlow && !worryData;
+                  console.log('Worry buttons visibility check:', {
                     confidenceLevel,
                     showMindsetFlow,
-                    worryData,
-                    shouldShow: confidenceLevel >= 1 && confidenceLevel <= 7 && !showMindsetFlow && !worryData
+                    worryData: !!worryData,
+                    shouldShowWorryButtons
                   });
-                  return confidenceLevel >= 1 && confidenceLevel <= 7 && !showMindsetFlow && !worryData;
+                  return shouldShowWorryButtons;
                 })() && (
                   <div className="mt-6 space-y-4">
                     <h3 className="text-lg font-semibold text-center">What is worrying you?</h3>
@@ -565,6 +594,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                           variant="outline"
                           className="w-full h-auto p-4 text-left border-2 hover:border-primary/50 transition-all duration-200"
                           onClick={() => {
+                            console.log('Worry button clicked:', worry.text);
                             setWorryData({ reason: worry.text, answers: {} });
                             setShowMindsetFlow(true);
                           }}
@@ -582,7 +612,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                 {/* Show worry data if completed */}
                 {worryData && confidenceLevel <= 7 && (
                   <div className="mt-4 p-3 bg-primary/5 border border-primary/20 rounded-xl">
-                    <p className="text-sm font-medium text-primary mb-1">💙 Mindset Support</p>
+                    <p className="text-sm font-medium text-primary mb-1">💙 Mindset Support Completed</p>
                     <p className="text-xs text-muted-foreground">
                       Worry: {worryData.reason}
                     </p>
