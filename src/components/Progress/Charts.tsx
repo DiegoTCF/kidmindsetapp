@@ -21,7 +21,20 @@ interface WorryStats {
   percentage: number;
 }
 
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))', 'hsl(var(--success))', 'hsl(var(--warning))'];
+const COLORS = [
+  'hsl(var(--primary))', 
+  'hsl(var(--secondary))', 
+  'hsl(var(--accent))', 
+  'hsl(var(--success))', 
+  'hsl(var(--warning))', 
+  'hsl(var(--destructive))',
+  'hsl(221, 83%, 53%)',  // Blue
+  'hsl(142, 76%, 36%)',  // Green
+  'hsl(262, 83%, 58%)',  // Purple
+  'hsl(346, 87%, 43%)',  // Pink
+  'hsl(35, 91%, 62%)',   // Orange
+  'hsl(197, 71%, 73%)'   // Light Blue
+];
 
 interface ChartsProps {
   selectedFilter: string;
