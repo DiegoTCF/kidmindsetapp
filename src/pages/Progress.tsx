@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ActivityLog from "@/components/Progress/ActivityLog";
 import Charts from "@/components/Progress/Charts";
+import BehaviourCharts from "@/components/Progress/BehaviourCharts";
 
 const activityFilters = [
   "All",
@@ -30,8 +31,9 @@ export default function Progress() {
       </div>
 
       <Tabs defaultValue="activities" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="activities">Activity Log</TabsTrigger>
+          <TabsTrigger value="behaviours">Super Behaviours</TabsTrigger>
           <TabsTrigger value="stats">Stats & Charts</TabsTrigger>
         </TabsList>
 
@@ -51,6 +53,10 @@ export default function Progress() {
           </div>
 
           <ActivityLog selectedFilter={selectedFilter} />
+        </TabsContent>
+
+        <TabsContent value="behaviours" className="space-y-6">
+          <BehaviourCharts selectedFilter={selectedFilter} />
         </TabsContent>
 
         <TabsContent value="stats" className="space-y-6">
