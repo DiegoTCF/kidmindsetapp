@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import MindsetSupportFlow from "./MindsetSupportFlow";
 
 interface Activity {
   name: string;
@@ -118,6 +119,13 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
   });
 
   const [currentChildId, setCurrentChildId] = useState<string | null>(null);
+  
+  // Mindset support flow state
+  const [showMindsetFlow, setShowMindsetFlow] = useState(false);
+  const [worryData, setWorryData] = useState<{
+    reason: string;
+    answers: Record<string, string>;
+  } | null>(null);
 
   useEffect(() => {
     loadChildData();
@@ -211,7 +219,9 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
             items: preActivityItems as any,
             completedAt: new Date().toISOString()
           } as any,
-          points_awarded: prePoints
+          points_awarded: prePoints,
+          worry_reason: worryData?.reason || null,
+          worry_answers: worryData?.answers || null
         })
         .select()
         .single();
@@ -388,6 +398,20 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
     });
   };
 
+  const handleMindsetFlowComplete = (worryReason: string, answers: Record<string, string>) => {
+    setWorryData({ reason: worryReason, answers });
+    setShowMindsetFlow(false);
+    
+    toast({
+      title: "💙 Mindset Support Complete",
+      description: "Great work addressing your worries! You're ready to continue.",
+    });
+  };
+
+  const handleMindsetFlowClose = () => {
+    setShowMindsetFlow(false);
+  };
+
   const getPreActivityProgress = () => {
     const completedOrSkipped = preActivityItems.filter(item => item.completed || item.skipped).length;
     const hasConfidence = confidenceLevel > 0;
@@ -496,7 +520,13 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                 <div className="px-2">
                   <Slider
                     value={[confidenceLevel]}
-                    onValueChange={(value) => setConfidenceLevel(value[0])}
+                    onValueChange={(value) => {
+                      setConfidenceLevel(value[0]);
+                      // Show mindset support flow if confidence is between 1-7
+                      if (value[0] >= 1 && value[0] <= 7 && !worryData) {
+                        setShowMindsetFlow(true);
+                      }
+                    }}
                     max={10}
                     min={1}
                     step={1}
@@ -508,6 +538,16 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                     {confidenceLevel}/10
                   </span>
                 </div>
+                
+                {/* Show worry data if completed */}
+                {worryData && confidenceLevel <= 7 && (
+                  <div className="mt-4 p-3 bg-primary/5 border border-primary/20 rounded-xl">
+                    <p className="text-sm font-medium text-primary mb-1">💙 Mindset Support</p>
+                    <p className="text-xs text-muted-foreground">
+                      Worry: {worryData.reason}
+                    </p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -911,6 +951,14 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
           </Button>
         </TabsContent>
       </Tabs>
+
+      {/* Mindset Support Flow Modal */}
+      {showMindsetFlow && (
+        <MindsetSupportFlow
+          onComplete={handleMindsetFlowComplete}
+          onClose={handleMindsetFlowClose}
+        />
+      )}
     </div>
   );
 }

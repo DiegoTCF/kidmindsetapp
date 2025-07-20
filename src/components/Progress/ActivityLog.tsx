@@ -21,6 +21,8 @@ interface Activity {
   post_activity_data?: any;
   points_awarded: number;
   created_at: string;
+  worry_reason?: string;
+  worry_answers?: any;
 }
 
 interface ActivityLogProps {
@@ -354,6 +356,34 @@ export default function ActivityLog({ selectedFilter }: ActivityLogProps) {
                       <p className="text-sm text-muted-foreground">
                         {new Date(selectedActivity.pre_activity_data.completedAt).toLocaleString()}
                       </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Mindset Support Section */}
+            {selectedActivity.worry_reason && (
+              <div className="space-y-2">
+                <h4 className="font-medium text-primary flex items-center gap-2">
+                  💙 Mindset Support
+                </h4>
+                <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg space-y-3">
+                  <div>
+                    <p className="text-sm font-medium text-primary">Worry:</p>
+                    <p className="text-sm text-foreground">{selectedActivity.worry_reason}</p>
+                  </div>
+                  
+                  {selectedActivity.worry_answers && typeof selectedActivity.worry_answers === 'object' && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-primary">Support Session Responses:</p>
+                      <div className="space-y-2">
+                        {Object.entries(selectedActivity.worry_answers).map(([questionId, answer], index) => (
+                          <div key={questionId} className="p-2 bg-background/80 rounded text-sm">
+                            <p className="text-foreground/90">{String(answer)}</p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>

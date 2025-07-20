@@ -15,6 +15,12 @@ interface MoodTrend {
   confidence: number;
 }
 
+interface WorryStats {
+  reason: string;
+  count: number;
+  percentage: number;
+}
+
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))', 'hsl(var(--success))', 'hsl(var(--warning))'];
 
 interface ChartsProps {
@@ -24,7 +30,9 @@ interface ChartsProps {
 export default function Charts({ selectedFilter }: ChartsProps) {
   const [activityStats, setActivityStats] = useState<ActivityStats[]>([]);
   const [moodTrends, setMoodTrends] = useState<MoodTrend[]>([]);
+  const [worryStats, setWorryStats] = useState<WorryStats[]>([]);
   const [totalActivities, setTotalActivities] = useState(0);
+  const [totalWorries, setTotalWorries] = useState(0);
   const [avgMood, setAvgMood] = useState(0);
   const [avgConfidence, setAvgConfidence] = useState(0);
   const [completionRate, setCompletionRate] = useState(0);
@@ -51,7 +59,7 @@ export default function Charts({ selectedFilter }: ChartsProps) {
       // Load activities for stats
       const { data: activities, error: activitiesError } = await supabase
         .from('activities')
-        .select('activity_type, post_activity_completed, post_activity_data, activity_date, goals_scored, assists_made')
+        .select('activity_type, post_activity_completed, post_activity_data, activity_date, goals_scored, assists_made, worry_reason')
         .eq('child_id', childId)
         .order('activity_date', { ascending: false });
 
@@ -68,14 +76,22 @@ export default function Charts({ selectedFilter }: ChartsProps) {
 
         // Calculate activity type distribution
         const typeStats: { [key: string]: number } = {};
+        const worryReasons: { [key: string]: number } = {};
         let completedCount = 0;
         const moodData: MoodTrend[] = [];
         let goalsSum = 0;
         let assistsSum = 0;
         let matchesCount = 0;
+        let worriesCount = 0;
 
         filteredActivities.forEach(activity => {
           typeStats[activity.activity_type] = (typeStats[activity.activity_type] || 0) + 1;
+          
+          // Count worry reasons
+          if (activity.worry_reason) {
+            worryReasons[activity.worry_reason] = (worryReasons[activity.worry_reason] || 0) + 1;
+            worriesCount++;
+          }
           
           // Count matches (assuming 'match' is the activity type for matches)
           if (activity.activity_type.toLowerCase() === 'match') {
@@ -117,10 +133,19 @@ export default function Charts({ selectedFilter }: ChartsProps) {
 
         setActivityStats(statsArray);
         setTotalActivities(total);
+        setTotalWorries(worriesCount);
         setCompletionRate(Math.round((completedCount / total) * 100));
         setTotalGoals(goalsSum);
         setTotalAssists(assistsSum);
         setTotalMatches(matchesCount);
+
+        // Convert worry stats to chart format
+        const worryStatsArray = Object.entries(worryReasons).map(([reason, count]) => ({
+          reason,
+          count,
+          percentage: Math.round((count / total) * 100)
+        }));
+        setWorryStats(worryStatsArray);
 
         // Sort mood trends by date and take last 10
         const sortedMoodData = moodData
@@ -315,6 +340,58 @@ export default function Charts({ selectedFilter }: ChartsProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Mindset Insights */}
+      {worryStats.length > 0 && (
+        <Card className="shadow-soft">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              💙 Mindset Insights
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="text-center mb-4">
+                <p className="text-sm text-muted-foreground">
+                  Out of {totalActivities} activities, you used mindset support {totalWorries} times
+                </p>
+              </div>
+              
+              <div className="space-y-3">
+                {worryStats.map((worry, index) => (
+                  <div key={worry.reason} className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">{worry.reason}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {worry.count} {worry.count === 1 ? 'time' : 'times'} ({worry.percentage}%)
+                      </span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div 
+                        className="h-2 rounded-full transition-all duration-500"
+                        style={{ 
+                          width: `${worry.percentage}%`,
+                          backgroundColor: COLORS[index % COLORS.length]
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                <p className="text-sm text-primary font-medium mb-2">💡 Growth Insight</p>
+                <p className="text-sm text-foreground/90">
+                  {worryStats.length === 1 
+                    ? `You mainly worry about "${worryStats[0].reason.toLowerCase()}". That's totally normal! Keep using the mindset support tools to build confidence.`
+                    : `You've shown great self-awareness by working through ${worryStats.length} different worries. This emotional intelligence will help you grow stronger mentally!`
+                  }
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

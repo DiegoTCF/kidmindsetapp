@@ -31,6 +31,8 @@ export type Database = {
           pre_activity_completed: boolean
           pre_activity_data: Json | null
           updated_at: string
+          worry_answers: Json | null
+          worry_reason: string | null
         }
         Insert: {
           activity_date?: string
@@ -48,6 +50,8 @@ export type Database = {
           pre_activity_completed?: boolean
           pre_activity_data?: Json | null
           updated_at?: string
+          worry_answers?: Json | null
+          worry_reason?: string | null
         }
         Update: {
           activity_date?: string
@@ -65,6 +69,8 @@ export type Database = {
           pre_activity_completed?: boolean
           pre_activity_data?: Json | null
           updated_at?: string
+          worry_answers?: Json | null
+          worry_reason?: string | null
         }
         Relationships: []
       }
