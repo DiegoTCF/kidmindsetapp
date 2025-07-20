@@ -48,7 +48,7 @@ const supportFlows: Record<string, FlowStep[]> = {
     },
     {
       type: 'affirmation',
-      content: "🧠 Breathe. Relax.\nRepeat: \"You don't need to be perfect or better — you just need to be you, and focus on your actions.\""
+      content: "Breathe. Relax.\nRepeat: \"You don't need to be perfect or better — you just need to be you, and focus on your actions.\""
     }
   ],
   "I'm worried about what people might think": [
@@ -144,7 +144,7 @@ const supportFlows: Record<string, FlowStep[]> = {
     },
     {
       type: 'affirmation',
-      content: "🧠 Breathe. Lock in.\nRepeat: \"Playing strong is how I stay safe — and play my best.\""
+      content: "Breathe. Lock in.\nRepeat: \"Playing strong is how I stay safe — and play my best.\""
     }
   ],
   "I'm feeling pressure to perform": [
@@ -176,7 +176,7 @@ const supportFlows: Record<string, FlowStep[]> = {
     },
     {
       type: 'affirmation',
-      content: "🧠 Breathe. Focus on yourself and the behaviours you can control.\nRepeat: \"No matter who with, or who against, I focus on my behaviours.\""
+      content: "Breathe. Focus on yourself and the behaviours you can control.\nRepeat: \"No matter who with, or who against, I focus on my behaviours.\""
     }
   ]
 };
@@ -326,7 +326,9 @@ export default function MindsetSupportFlow({ worryReason, onComplete, onClose }:
 
           {currentStep.type === 'affirmation' && (
             <div className="text-center space-y-6">
-              <div className="text-6xl mb-4">🌟</div>
+              <div className="mb-4 flex justify-center">
+                <Brain className="w-16 h-16 text-primary" />
+              </div>
               
               <Card className="bg-gradient-to-br from-primary/10 to-accent/10 border-primary/30">
                 <CardContent className="p-6">

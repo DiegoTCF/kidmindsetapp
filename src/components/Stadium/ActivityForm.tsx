@@ -103,10 +103,10 @@ const defaultPreActivityItems: PreActivityItem[] = [
 ];
 
 const superBehaviours: SuperBehaviour[] = [
-  { id: "brave-on-ball", name: "Brave on the ball", emoji: "🔥", selected: false, description: "" },
-  { id: "brave-off-ball", name: "Brave off the ball", emoji: "🧱", selected: false, description: "" },
-  { id: "electric", name: "Electric", emoji: "⚡", selected: false, description: "" },
-  { id: "aggressive", name: "Aggressive", emoji: "💢", selected: false, description: "" },
+  { id: "brave-on-ball", name: "Brave on the ball", emoji: "flame", selected: false, description: "" },
+  { id: "brave-off-ball", name: "Brave off the ball", emoji: "brain", selected: false, description: "" },
+  { id: "electric", name: "Electric", emoji: "trophy", selected: false, description: "" },
+  { id: "aggressive", name: "Aggressive", emoji: "target", selected: false, description: "" },
 ];
 
 export default function ActivityForm({ activity, onComplete, existingActivityId, isResumingActivity = false }: ActivityFormProps) {
@@ -683,18 +683,18 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                 })() && (
                   <div className="mt-6 space-y-4">
                     <h3 className="text-lg font-semibold text-center">What is worrying you?</h3>
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-1 gap-2">
                       {[
-                        { id: 'physical-big', text: 'The players look good or physically big', emoji: '💪' },
-                        { id: 'people-think', text: "I'm worried about what people might think", emoji: '👥' },
-                        { id: 'making-mistakes', text: "I'm scared of making mistakes", emoji: '😬' },
-                        { id: 'getting-hurt', text: "I'm scared of getting hurt", emoji: '🛡️' },
+                        { id: 'physical-big', text: 'The players look good or physically big', emoji: 'flame' },
+                        { id: 'people-think', text: "I'm worried about what people might think", emoji: 'brain' },
+                        { id: 'making-mistakes', text: "I'm scared of making mistakes", emoji: 'target' },
+                        { id: 'getting-hurt', text: "I'm scared of getting hurt", emoji: 'trophy' },
                         { id: 'pressure-perform', text: "I'm feeling pressure to perform", emoji: 'target' }
                       ].map((worry) => (
                         <Button
                           key={worry.id}
                           variant="outline"
-                          className="w-full h-auto p-4 text-left border-2 hover:border-primary/50 transition-all duration-200"
+                          className="w-full h-auto p-3 text-left border-2 hover:border-primary/50 transition-all duration-200"
                           onClick={() => {
                             console.log('Worry button clicked:', worry.text);
                             setWorryData({ reason: worry.text, answers: {} });
@@ -702,8 +702,12 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                           }}
                         >
                           <div className="flex items-center gap-3">
-                            <span className="text-xl">{worry.emoji}</span>
-                            <span className="text-sm font-medium">{worry.text}</span>
+                            <CustomIcon 
+                              type={worry.emoji === 'target' ? 'target' : worry.emoji === '💪' ? 'flame' : worry.emoji === '👥' ? 'brain' : worry.emoji === '😬' ? 'target' : 'brain'} 
+                              size="sm" 
+                              className="text-primary"
+                            />
+                            <span className="text-sm font-medium leading-tight">{worry.text}</span>
                           </div>
                         </Button>
                       ))}
@@ -714,7 +718,10 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                 {/* Show worry data if completed */}
                 {worryData && confidenceLevel <= 7 && (
                   <div className="mt-4 p-3 bg-primary/5 border border-primary/20 rounded-xl">
-                    <p className="text-sm font-medium text-primary mb-1">💙 Mindset Support Completed</p>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Brain className="w-4 h-4 text-primary" />
+                      <p className="text-sm font-medium text-primary">Mindset Support Completed</p>
+                    </div>
                     <p className="text-xs text-muted-foreground">
                       Worry: {worryData.reason}
                     </p>
@@ -729,12 +736,12 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
             <CardHeader>
               <CardTitle className="text-lg">Checklist</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-2 px-4">
               {preActivityItems.map((item) => (
                 <div
                   key={item.id}
                   className={cn(
-                    "flex items-center justify-between p-4 rounded-xl border-2 transition-all duration-200",
+                    "flex items-center justify-between p-3 rounded-xl border-2 transition-all duration-200",
                     item.completed 
                       ? "bg-success/10 border-success/30" 
                       : item.skipped
@@ -765,11 +772,11 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                   </div>
 
                   {!item.completed && !item.skipped && (
-                    <div className="flex gap-2">
+                    <div className="flex gap-1 flex-shrink-0">
                       <Button
                         onClick={() => handleItemComplete(item.id)}
                         size="sm"
-                        className="bg-primary hover:bg-primary/90"
+                        className="bg-primary hover:bg-primary/90 text-xs px-2"
                       >
                         Complete
                       </Button>
@@ -777,7 +784,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                         onClick={() => handleItemSkip(item.id)}
                         size="sm"
                         variant="outline"
-                        className="text-xs"
+                        className="text-xs px-2 whitespace-nowrap"
                       >
                         No Time
                       </Button>
@@ -788,7 +795,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
             </CardContent>
           </Card>
 
-          {/* Set Intention */}
+              {/* Set Intention */}
           <Card className="shadow-soft">
             <CardHeader>
               <CardTitle className="text-lg">Set your intention</CardTitle>
@@ -797,24 +804,24 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
               {/* Super Behaviour Badges */}
               <div>
                 <p className="text-sm font-medium mb-3">Select your super behaviours:</p>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {selectedBehaviours.map((behaviour) => (
                     <div key={behaviour.id} className="space-y-2">
-                      <Button
-                        variant={behaviour.selected ? "default" : "outline"}
-                        className={cn(
-                          "w-full h-auto p-3 text-left border-2 rounded-xl transition-all duration-200",
-                          behaviour.selected 
-                            ? "bg-primary hover:bg-primary/90 border-primary" 
-                            : "hover:border-primary/30"
-                        )}
-                        onClick={() => handleBehaviourSelect(behaviour.id)}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="text-xl">{behaviour.emoji}</span>
-                          <span className="text-sm font-medium">{behaviour.name}</span>
-                        </div>
-                      </Button>
+                        <Button
+                          variant={behaviour.selected ? "default" : "outline"}
+                          className={cn(
+                            "w-full h-auto p-3 text-left border-2 rounded-xl transition-all duration-200",
+                            behaviour.selected 
+                              ? "bg-primary hover:bg-primary/90 border-primary" 
+                              : "hover:border-primary/30"
+                          )}
+                          onClick={() => handleBehaviourSelect(behaviour.id)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <CustomIcon type={behaviour.emoji as any} size="sm" className="text-primary" />
+                            <span className="text-sm font-medium">{behaviour.name}</span>
+                          </div>
+                        </Button>
                       
                       {behaviour.selected && (
                         <div className="ml-2">
@@ -870,9 +877,10 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                 <div className="mb-4 p-3 bg-muted/50 rounded-xl">
                   <p className="text-sm font-medium mb-2">Your selected behaviours:</p>
                   {selectedBehaviours.filter(b => b.selected).map((behaviour) => (
-                    <div key={behaviour.id} className="text-sm mb-1">
-                      <span className="font-medium">{behaviour.emoji} {behaviour.name}:</span>
-                      <span className="text-muted-foreground ml-2">{behaviour.description}</span>
+                    <div key={behaviour.id} className="text-sm mb-1 flex items-center gap-2">
+                      <CustomIcon type={behaviour.emoji as any} size="sm" className="text-primary" />
+                      <span className="font-medium">{behaviour.name}:</span>
+                      <span className="text-muted-foreground">{behaviour.description}</span>
                     </div>
                   ))}
                 </div>
