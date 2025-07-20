@@ -21,20 +21,27 @@ interface WorryStats {
   percentage: number;
 }
 
-const COLORS = [
-  'hsl(var(--primary))', 
-  'hsl(var(--secondary))', 
-  'hsl(var(--accent))', 
-  'hsl(var(--success))', 
-  'hsl(var(--warning))', 
-  'hsl(var(--destructive))',
-  'hsl(221, 83%, 53%)',  // Blue
-  'hsl(142, 76%, 36%)',  // Green
-  'hsl(262, 83%, 58%)',  // Purple
-  'hsl(346, 87%, 43%)',  // Pink
-  'hsl(35, 91%, 62%)',   // Orange
-  'hsl(197, 71%, 73%)'   // Light Blue
+// Color mapping for specific activity types
+const ACTIVITY_COLORS: { [key: string]: string } = {
+  'Match': '#FF4D4D',           // Red
+  'Team Training': '#FFA500',   // Orange
+  'Training': '#FFA500',        // Orange (alias)
+  '1to1': '#FFDD44',           // Yellow
+  '1-to-1': '#FFDD44',         // Yellow (alias)
+  'Small Group': '#00CC99',     // Green
+  'Futsal': '#3399FF',         // Blue
+  'Other Sport': '#9966FF',     // Purple
+  'Other': '#9966FF',          // Purple (alias)
+};
+
+// Fallback colors for any unlisted activity types
+const FALLBACK_COLORS = [
+  '#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#6366F1', '#EC4899'
 ];
+
+const getActivityColor = (activityType: string, index: number): string => {
+  return ACTIVITY_COLORS[activityType] || FALLBACK_COLORS[index % FALLBACK_COLORS.length];
+};
 
 interface ChartsProps {
   selectedFilter: string;
@@ -280,7 +287,7 @@ export default function Charts({ selectedFilter }: ChartsProps) {
                       dataKey="count"
                     >
                       {activityStats.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell key={`cell-${index}`} fill={getActivityColor(entry.type, index)} />
                       ))}
                     </Pie>
                     <Tooltip formatter={(value, name) => [`${value} activities`, name]} />
@@ -291,7 +298,7 @@ export default function Charts({ selectedFilter }: ChartsProps) {
                     <div key={stat.type} className="flex items-center gap-1 text-sm">
                       <div 
                         className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                        style={{ backgroundColor: getActivityColor(stat.type, index) }}
                       />
                       <span>{stat.type} ({stat.percentage}%)</span>
                     </div>
@@ -337,7 +344,7 @@ export default function Charts({ selectedFilter }: ChartsProps) {
                         className="h-2 rounded-full transition-all duration-500"
                         style={{ 
                           width: `${worry.percentage}%`,
-                          backgroundColor: COLORS[index % COLORS.length]
+                          backgroundColor: FALLBACK_COLORS[index % FALLBACK_COLORS.length]
                         }}
                       />
                     </div>
