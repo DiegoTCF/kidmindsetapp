@@ -68,13 +68,6 @@ const AppContent = () => {
                 </AppLayout>
               </ProtectedRoute>
             } />
-            <Route path="/profile" element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <Profile />
-                </AppLayout>
-              </ProtectedRoute>
-            } />
             
             {/* Grown Up Zone - no navigation - protected */}
             <Route path="/grown-up" element={

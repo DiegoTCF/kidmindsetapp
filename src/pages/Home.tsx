@@ -38,9 +38,10 @@ const moodOptions: MoodOption[] = [
 ];
 
 const defaultTasks: DailyTask[] = [
-  { id: "pushups", name: "Press ups", completed: false, streak: 0 },
-  { id: "situps", name: "Sit ups", completed: false, streak: 0 },
-  { id: "makebed", name: "Make Bed", completed: false, streak: 0 },
+  { id: "pushups", name: "20x Press Ups", completed: false, streak: 0 },
+  { id: "situps", name: "20x Sit Ups or 1 Minute Plank", completed: false, streak: 0 },
+  { id: "makebed", name: "Make your bed", completed: false, streak: 0 },
+  { id: "stretches", name: "Stretches", completed: false, streak: 0 },
 ];
 
 export default function Home() {
@@ -314,7 +315,16 @@ export default function Home() {
                            hover:border-primary/30 hover:bg-primary/5 transition-all duration-200
                            active:scale-95 touch-manipulation"
                 >
-                  <span className="text-3xl font-bold text-primary filter drop-shadow-sm" role="img" aria-label={mood.label}>
+                  <span 
+                    className="text-3xl font-bold transition-all duration-200" 
+                    style={{
+                      color: '#ff0066',
+                      filter: 'brightness(1) contrast(1.1)',
+                      textShadow: 'none'
+                    }}
+                    role="img" 
+                    aria-label={mood.label}
+                  >
                     {mood.emoji}
                   </span>
                   <span className="text-xs font-medium text-muted-foreground">
@@ -328,7 +338,14 @@ export default function Home() {
             </div>
           ) : (
             <div className="text-center py-4">
-              <span className="text-3xl mb-2 block">
+              <span 
+                className="text-3xl mb-2 block font-bold"
+                style={{
+                  color: '#ff0066',
+                  filter: 'brightness(1) contrast(1.1)',
+                  textShadow: 'none'
+                }}
+              >
                 {moodOptions.find(m => m.value === todayMood)?.emoji}
               </span>
               <p className="text-sm text-muted-foreground">
@@ -349,7 +366,18 @@ export default function Home() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg flex items-center gap-2">
-              <Flame className="w-5 h-5 text-orange-500" />
+              <span 
+                className="text-xl font-bold"
+                style={{
+                  color: '#ff0066',
+                  filter: 'brightness(1) contrast(1.1)',
+                  textShadow: 'none'
+                }}
+                role="img"
+                aria-label="target"
+              >
+                🎯
+              </span>
               Daily Tasks
             </CardTitle>
             <Button
@@ -411,8 +439,17 @@ export default function Home() {
                     {task.name}
                   </p>
                   {task.streak > 0 && (
-                    <p className="text-xs text-orange-500 flex items-center gap-1">
-                      <Flame className="w-3 h-3" />
+                    <p className="text-xs flex items-center gap-1" style={{ color: '#ff0066' }}>
+                      <span 
+                        className="text-sm font-bold"
+                        style={{
+                          color: '#ff0066',
+                          filter: 'brightness(1) contrast(1.1)',
+                          textShadow: 'none'
+                        }}
+                      >
+                        🔥
+                      </span>
                       {task.streak} day streak
                     </p>
                   )}
@@ -433,7 +470,16 @@ export default function Home() {
 
           {dailyTasks.every(task => task.completed) && dailyTasks.length > 0 && (
             <div className="text-center py-4">
-              <div className="text-4xl mb-2">🎉</div>
+              <div 
+                className="text-4xl mb-2 font-bold"
+                style={{
+                  color: '#ff0066',
+                  filter: 'brightness(1) contrast(1.1)',
+                  textShadow: 'none'
+                }}
+              >
+                🎉
+              </div>
               <p className="font-semibold text-success">All tasks completed!</p>
               <p className="text-sm text-muted-foreground">
                 Amazing work today, champion!

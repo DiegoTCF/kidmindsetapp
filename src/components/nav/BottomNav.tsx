@@ -15,7 +15,6 @@ const navItems: NavItem[] = [
   { id: "home", label: "Home", icon: Home, emoji: "🏠", path: "/" },
   { id: "stadium", label: "Stadium", icon: Trophy, emoji: "🏟️", path: "/stadium" },
   { id: "progress", label: "Progress", icon: TrendingUp, emoji: "📈", path: "/progress" },
-  { id: "profile", label: "My Account", icon: User, emoji: "👤", path: "/profile" },
 ];
 
 export function BottomNav() {
@@ -71,7 +70,16 @@ export function BottomNav() {
                   "flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200",
                   isActive && "bg-primary/20 scale-110"
                 )}>
-                  <span className="text-lg" role="img" aria-label={item.label}>
+                  <span 
+                    className="text-lg font-bold transition-all duration-200" 
+                    style={{
+                      color: '#ff0066',
+                      filter: 'brightness(1) contrast(1.1)',
+                      textShadow: 'none'
+                    }}
+                    role="img" 
+                    aria-label={item.label}
+                  >
                     {item.emoji}
                   </span>
                 </div>
