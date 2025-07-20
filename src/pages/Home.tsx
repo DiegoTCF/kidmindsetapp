@@ -39,17 +39,13 @@ const moodOptions: MoodOption[] = [
   { iconType: "amazing", label: "Amazing", value: 5 },
 ];
 
+// Default tasks as fallback
 const defaultTasks: DailyTask[] = [
   { id: "pushups", name: "20x Press Ups", completed: false, streak: 0 },
   { id: "situps", name: "20x Sit Ups or 1 min plank", completed: false, streak: 0 },
   { id: "makebed", name: "Make your bed", completed: false, streak: 0 },
   { id: "stretches", name: "Stretch your muscles", completed: false, streak: 0 },
 ];
-
-// Log task labels for verification
-defaultTasks.forEach(task => {
-  console.log('[TaskLabel]', task.name);
-});
 
 export default function Home() {
   const { toast } = useToast();
@@ -77,6 +73,7 @@ export default function Home() {
   useEffect(() => {
     console.log('[KidMindset] Loading player data...');
     loadPlayerData();
+    loadDailyTasks();
     loadTodayData();
     loadWeeklyMoodAverage();
   }, []);
@@ -125,6 +122,47 @@ export default function Home() {
           name: data.name || "Player"
         });
       }
+    }
+  };
+
+  const loadDailyTasks = async () => {
+    try {
+      console.log('[KidMindset] Loading daily tasks from Supabase...');
+      
+      // Fetch tasks from daily_tasks table
+      const { data: tasksData, error: tasksError } = await supabase
+        .from('daily_tasks')
+        .select('id, label, "order"')
+        .eq('active', true)
+        .is('user_id', null) // Global tasks (not user-specific)
+        .order('"order"', { ascending: true });
+      
+      if (tasksError) {
+        console.error('[KidMindset] Error loading tasks from Supabase:', tasksError);
+        console.log('[KidMindset] Using default tasks as fallback');
+        return;
+      }
+      
+      if (tasksData && tasksData.length > 0) {
+        console.log('[KidMindset] Tasks loaded from Supabase:', tasksData);
+        
+        // Convert Supabase tasks to DailyTask format
+        const supabaseTasks: DailyTask[] = tasksData.map(task => ({
+          id: task.id,
+          name: task.label,
+          completed: false,
+          streak: 0
+        }));
+        
+        // Update default tasks with data from Supabase
+        setDailyTasks(supabaseTasks);
+        console.log('[KidMindset] Daily tasks updated from Supabase');
+      } else {
+        console.log('[KidMindset] No tasks found in Supabase, using defaults');
+      }
+    } catch (error) {
+      console.error('[KidMindset] Error fetching daily tasks:', error);
+      console.log('[KidMindset] Using default tasks as fallback');
     }
   };
 

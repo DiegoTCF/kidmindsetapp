@@ -118,6 +118,36 @@ export type Database = {
           },
         ]
       }
+      daily_tasks: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          label: string
+          order: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          label: string
+          order: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          label?: string
+          order?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       parents: {
         Row: {
           created_at: string
