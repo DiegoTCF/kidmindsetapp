@@ -39,11 +39,16 @@ const moodOptions: MoodOption[] = [
 ];
 
 const defaultTasks: DailyTask[] = [
-  { id: "pushups", name: "20 Press ups", completed: false, streak: 0 },
-  { id: "situps", name: "20 Sit ups", completed: false, streak: 0 },
+  { id: "pushups", name: "20x Press Ups", completed: false, streak: 0 },
+  { id: "situps", name: "20x Sit Ups or 1 min plank", completed: false, streak: 0 },
   { id: "makebed", name: "Make your bed", completed: false, streak: 0 },
   { id: "stretches", name: "Stretch your muscles", completed: false, streak: 0 },
 ];
+
+// Log task labels for verification
+defaultTasks.forEach(task => {
+  console.log('[TaskLabel]', task.name);
+});
 
 export default function Home() {
   const { toast } = useToast();
@@ -177,6 +182,7 @@ export default function Home() {
             weeklyMoodAvg: average
           }));
           
+          console.log('[MoodAverage]', average);
           console.log('[KidMindset] Weekly mood average calculated:', average);
         } else {
           console.log('[KidMindset] No mood entries found for weekly average');
@@ -188,6 +194,7 @@ export default function Home() {
   };
 
   const handleMoodSubmit = async (moodValue: number) => {
+    console.log('[MoodChange]', moodValue);
     const today = new Date().toDateString();
     
     setTodayMood(moodValue);
@@ -246,6 +253,7 @@ export default function Home() {
   };
 
   const handleMoodChange = async (moodValue: number) => {
+    console.log('[MoodChange]', moodValue);
     const today = new Date().toDateString();
     
     setTodayMood(moodValue);
