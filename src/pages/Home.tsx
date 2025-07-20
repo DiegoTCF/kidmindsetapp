@@ -146,66 +146,68 @@ export default function Home() {
 
   const loadWeeklyMoodAverage = async () => {
     try {
-      const { data: children, error: childError } = await supabase
-        .from('children')
-        .select('id')
-        .limit(1);
+      console.log('[KidMindset] Getting child ID for mood average...');
       
-      if (childError) {
-        console.error('[KidMindset] Error fetching child for mood average:', childError);
+      // Use the new RLS-safe function to get child ID
+      const { data: childIdResult, error: childIdError } = await supabase
+        .rpc('get_current_user_child_id');
+      
+      if (childIdError) {
+        console.error('[KidMindset] Error getting child ID for mood average:', childIdError);
         return;
       }
       
-      if (children && children.length > 0) {
-        const childId = children[0].id;
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      if (!childIdResult) {
+        console.log('[KidMindset] No child found for weekly mood average');
+        return;
+      }
+      
+      const childId = childIdResult;
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      
+      console.log('[KidMindset] Loading mood entries for child:', childId, 'since:', sevenDaysAgo.toISOString().split('T')[0]);
+      
+      const { data: moodEntries, error: moodError } = await supabase
+        .from('progress_entries')
+        .select('entry_value, entry_date')
+        .eq('child_id', childId)
+        .eq('entry_type', 'mood')
+        .gte('entry_date', sevenDaysAgo.toISOString().split('T')[0])
+        .order('entry_date', { ascending: false });
+      
+      if (moodError) {
+        console.error('[KidMindset] Error fetching mood entries:', moodError);
+        return;
+      }
+      
+      console.log('[KidMindset] Raw mood entries:', moodEntries);
+      
+      if (moodEntries && moodEntries.length > 0) {
+        // Get unique dates (latest mood per day)
+        const uniqueDailyMoods = moodEntries.reduce((acc, entry) => {
+          const date = entry.entry_date;
+          if (!acc[date]) {
+            acc[date] = entry.entry_value as number;
+          }
+          return acc;
+        }, {} as Record<string, number>);
         
-        console.log('[KidMindset] Loading mood entries for child:', childId, 'since:', sevenDaysAgo.toISOString().split('T')[0]);
+        const moodValues = Object.values(uniqueDailyMoods);
+        const average = moodValues.reduce((sum, val) => sum + val, 0) / moodValues.length;
         
-        const { data: moodEntries, error: moodError } = await supabase
-          .from('progress_entries')
-          .select('entry_value, entry_date')
-          .eq('child_id', childId)
-          .eq('entry_type', 'mood')
-          .gte('entry_date', sevenDaysAgo.toISOString().split('T')[0])
-          .order('entry_date', { ascending: false });
+        console.log('[KidMindset] Unique daily moods:', uniqueDailyMoods);
+        console.log('[KidMindset] Mood values for average:', moodValues);
         
-        if (moodError) {
-          console.error('[KidMindset] Error fetching mood entries:', moodError);
-          return;
-        }
+        setPlayerData(prev => ({
+          ...prev,
+          weeklyMoodAvg: average
+        }));
         
-        console.log('[KidMindset] Raw mood entries:', moodEntries);
-        
-        if (moodEntries && moodEntries.length > 0) {
-          // Get unique dates (latest mood per day)
-          const uniqueDailyMoods = moodEntries.reduce((acc, entry) => {
-            const date = entry.entry_date;
-            if (!acc[date]) {
-              acc[date] = entry.entry_value as number;
-            }
-            return acc;
-          }, {} as Record<string, number>);
-          
-          const moodValues = Object.values(uniqueDailyMoods);
-          const average = moodValues.reduce((sum, val) => sum + val, 0) / moodValues.length;
-          
-          console.log('[KidMindset] Unique daily moods:', uniqueDailyMoods);
-          console.log('[KidMindset] Mood values for average:', moodValues);
-          
-          setPlayerData(prev => ({
-            ...prev,
-            weeklyMoodAvg: average
-          }));
-          
-          console.log('[MoodAverage]', average);
-          console.log('[KidMindset] Weekly mood average calculated:', average);
-        } else {
-          console.log('[KidMindset] No mood entries found for weekly average');
-        }
+        console.log('[MoodAverage]', average);
+        console.log('[KidMindset] Weekly mood average calculated:', average);
       } else {
-        console.log('[KidMindset] No children found for weekly mood average');
+        console.log('[KidMindset] No mood entries found for weekly average');
       }
     } catch (error) {
       console.error('[KidMindset] Error loading weekly mood average:', error);
@@ -224,47 +226,53 @@ export default function Home() {
     
     // Save mood to Supabase
     try {
-      const { data: children, error: childError } = await supabase
-        .from('children')
-        .select('id')
-        .limit(1);
+      console.log('[KidMindset] Getting child ID via RLS-safe function...');
       
-      if (childError) {
-        console.error('[KidMindset] Error fetching child:', childError);
-        throw childError;
+      // Use the new RLS-safe function to get child ID
+      const { data: childIdResult, error: childIdError } = await supabase
+        .rpc('get_current_user_child_id');
+      
+      if (childIdError) {
+        console.error('[KidMindset] Error getting child ID:', childIdError);
+        throw childIdError;
       }
       
-      if (children && children.length > 0) {
-        const childId = children[0].id;
-        const todayDate = new Date().toISOString().split('T')[0];
-        
-        console.log('[KidMindset] Saving mood for child:', childId, 'value:', moodValue, 'date:', todayDate);
-        
-        const { data: insertData, error: insertError } = await supabase
-          .from('progress_entries')
-          .insert({
-            child_id: childId,
-            entry_type: 'mood',
-            entry_value: moodValue,
-            entry_date: todayDate,
-            points_earned: 5
-          })
-          .select();
-        
-        if (insertError) {
-          console.error('[KidMindset] Error saving mood to database:', insertError);
-          throw insertError;
-        }
-        
-        console.log('[KidMindset] Mood saved successfully:', insertData);
-        
-        // Reload weekly average
-        setTimeout(() => {
-          loadWeeklyMoodAverage();
-        }, 1000);
-      } else {
-        console.error('[KidMindset] No children found for user');
+      if (!childIdResult) {
+        console.error('[KidMindset] No child found for current user');
+        toast({
+          title: "Setup required",
+          description: "Please complete your profile setup first.",
+        });
+        return;
       }
+      
+      const childId = childIdResult;
+      const todayDate = new Date().toISOString().split('T')[0];
+      
+      console.log('[KidMindset] Saving mood for child:', childId, 'value:', moodValue, 'date:', todayDate);
+      
+      const { data: insertData, error: insertError } = await supabase
+        .from('progress_entries')
+        .insert({
+          child_id: childId,
+          entry_type: 'mood',
+          entry_value: moodValue,
+          entry_date: todayDate,
+          points_earned: 5
+        })
+        .select();
+      
+      if (insertError) {
+        console.error('[KidMindset] Error saving mood to database:', insertError);
+        throw insertError;
+      }
+      
+      console.log('[KidMindset] Mood saved successfully:', insertData);
+      
+      // Reload weekly average
+      setTimeout(() => {
+        loadWeeklyMoodAverage();
+      }, 1000);
     } catch (error) {
       console.error('[KidMindset] Error saving mood to database:', error);
       toast({
@@ -309,79 +317,85 @@ export default function Home() {
     
     // Update mood in Supabase
     try {
-      const { data: children, error: childError } = await supabase
-        .from('children')
+      console.log('[KidMindset] Getting child ID for mood update...');
+      
+      // Use the new RLS-safe function to get child ID
+      const { data: childIdResult, error: childIdError } = await supabase
+        .rpc('get_current_user_child_id');
+      
+      if (childIdError) {
+        console.error('[KidMindset] Error getting child ID for mood update:', childIdError);
+        throw childIdError;
+      }
+      
+      if (!childIdResult) {
+        console.error('[KidMindset] No child found for mood update');
+        toast({
+          title: "Setup required",
+          description: "Please complete your profile setup first.",
+        });
+        return;
+      }
+      
+      const childId = childIdResult;
+      const todayDate = new Date().toISOString().split('T')[0];
+      
+      console.log('[KidMindset] Updating mood for child:', childId, 'value:', moodValue, 'date:', todayDate);
+      
+      // Check if mood entry exists for today
+      const { data: existingEntry, error: fetchError } = await supabase
+        .from('progress_entries')
         .select('id')
-        .limit(1);
+        .eq('child_id', childId)
+        .eq('entry_type', 'mood')
+        .eq('entry_date', todayDate)
+        .maybeSingle();
       
-      if (childError) {
-        console.error('[KidMindset] Error fetching child for mood update:', childError);
-        throw childError;
+      if (fetchError) {
+        console.error('[KidMindset] Error checking existing mood entry:', fetchError);
+        throw fetchError;
       }
       
-      if (children && children.length > 0) {
-        const childId = children[0].id;
-        const todayDate = new Date().toISOString().split('T')[0];
-        
-        console.log('[KidMindset] Updating mood for child:', childId, 'value:', moodValue, 'date:', todayDate);
-        
-        // Check if mood entry exists for today
-        const { data: existingEntry, error: fetchError } = await supabase
+      if (existingEntry) {
+        // Update existing entry
+        const { data: updateData, error: updateError } = await supabase
           .from('progress_entries')
-          .select('id')
-          .eq('child_id', childId)
-          .eq('entry_type', 'mood')
-          .eq('entry_date', todayDate)
-          .maybeSingle();
+          .update({ entry_value: moodValue })
+          .eq('id', existingEntry.id)
+          .select();
         
-        if (fetchError) {
-          console.error('[KidMindset] Error checking existing mood entry:', fetchError);
-          throw fetchError;
+        if (updateError) {
+          console.error('[KidMindset] Error updating mood entry:', updateError);
+          throw updateError;
         }
         
-        if (existingEntry) {
-          // Update existing entry
-          const { data: updateData, error: updateError } = await supabase
-            .from('progress_entries')
-            .update({ entry_value: moodValue })
-            .eq('id', existingEntry.id)
-            .select();
-          
-          if (updateError) {
-            console.error('[KidMindset] Error updating mood entry:', updateError);
-            throw updateError;
-          }
-          
-          console.log('[KidMindset] Updated existing mood entry:', updateData);
-        } else {
-          // Create new entry
-          const { data: insertData, error: insertError } = await supabase
-            .from('progress_entries')
-            .insert({
-              child_id: childId,
-              entry_type: 'mood',
-              entry_value: moodValue,
-              entry_date: todayDate,
-              points_earned: 0 // No additional points for mood changes
-            })
-            .select();
-          
-          if (insertError) {
-            console.error('[KidMindset] Error creating new mood entry:', insertError);
-            throw insertError;
-          }
-          
-          console.log('[KidMindset] Created new mood entry:', insertData);
-        }
-        
-        // Force reload weekly average after a delay
-        setTimeout(() => {
-          console.log('[KidMindset] Reloading weekly mood average...');
-          loadWeeklyMoodAverage();
-        }, 1000);
+        console.log('[KidMindset] Updated existing mood entry:', updateData);
       } else {
-        console.error('[KidMindset] No children found for mood update');
+        // Create new entry
+        const { data: insertData, error: insertError } = await supabase
+          .from('progress_entries')
+          .insert({
+            child_id: childId,
+            entry_type: 'mood',
+            entry_value: moodValue,
+            entry_date: todayDate,
+            points_earned: 0 // No additional points for mood changes
+          })
+          .select();
+        
+        if (insertError) {
+          console.error('[KidMindset] Error creating new mood entry:', insertError);
+          throw insertError;
+        }
+        
+        console.log('[KidMindset] Created new mood entry:', insertData);
       }
+      
+      // Force reload weekly average after a delay
+      setTimeout(() => {
+        console.log('[KidMindset] Reloading weekly mood average...');
+        loadWeeklyMoodAverage();
+      }, 1000);
     } catch (error) {
       console.error('[KidMindset] Error updating mood in database:', error);
       toast({
