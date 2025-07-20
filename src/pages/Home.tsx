@@ -314,7 +314,7 @@ export default function Home() {
                            hover:border-primary/30 hover:bg-primary/5 transition-all duration-200
                            active:scale-95 touch-manipulation"
                 >
-                  <span className="text-2xl" role="img" aria-label={mood.label}>
+                  <span className="text-3xl font-bold text-primary filter drop-shadow-sm" role="img" aria-label={mood.label}>
                     {mood.emoji}
                   </span>
                   <span className="text-xs font-medium text-muted-foreground">
