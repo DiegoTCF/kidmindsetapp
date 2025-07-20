@@ -104,13 +104,20 @@ export default function ActivityLog({ selectedFilter }: ActivityLogProps) {
     event.stopPropagation(); // Prevent opening activity details
     
     try {
-      // Delete the activity
+      // Optimistically remove from UI first
+      setActivities(prev => prev.filter(activity => activity.id !== activityId));
+      
+      // Delete the activity from database
       const { error: deleteError } = await supabase
         .from('activities')
         .delete()
         .eq('id', activityId);
 
-      if (deleteError) throw deleteError;
+      if (deleteError) {
+        // If delete failed, restore the activity in UI
+        loadActivities();
+        throw deleteError;
+      }
 
       // Update child's points (subtract the deleted activity points)
       const { data: children } = await supabase
@@ -126,14 +133,19 @@ export default function ActivityLog({ selectedFilter }: ActivityLogProps) {
           .update({ points: newPoints })
           .eq('id', children[0].id);
           
-        if (pointsError) throw pointsError;
+        if (pointsError) {
+          console.error('Error updating points:', pointsError);
+          // Don't throw here as the activity was already deleted successfully
+        }
       }
 
-      // Reload activities
-      loadActivities();
+      // Close activity detail view if it was the deleted activity
+      if (selectedActivity?.id === activityId) {
+        setSelectedActivity(null);
+      }
       
       toast({
-        title: "Activity Deleted",
+        title: "Activity deleted successfully",
         description: `"${activityName}" has been removed from your log.`,
       });
     } catch (error) {
