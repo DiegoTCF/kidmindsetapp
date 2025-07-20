@@ -39,8 +39,8 @@ const moodOptions: MoodOption[] = [
 ];
 
 const defaultTasks: DailyTask[] = [
-  { id: "pushups", name: "20x Press Ups", completed: false, streak: 0 },
-  { id: "situps", name: "20x Sit Ups or 1 min plank", completed: false, streak: 0 },
+  { id: "pushups", name: "20 Press ups", completed: false, streak: 0 },
+  { id: "situps", name: "20 Sit ups", completed: false, streak: 0 },
   { id: "makebed", name: "Make your bed", completed: false, streak: 0 },
   { id: "stretches", name: "Stretch your muscles", completed: false, streak: 0 },
 ];
@@ -272,7 +272,7 @@ export default function Home() {
           .eq('child_id', childId)
           .eq('entry_type', 'mood')
           .eq('entry_date', todayDate)
-          .single();
+          .maybeSingle();
         
         if (existingEntry) {
           // Update existing entry
@@ -280,6 +280,8 @@ export default function Home() {
             .from('progress_entries')
             .update({ entry_value: moodValue })
             .eq('id', existingEntry.id);
+          
+          console.log('[KidMindset] Updated existing mood entry:', moodValue);
         } else {
           // Create new entry
           await supabase
@@ -288,12 +290,17 @@ export default function Home() {
               child_id: childId,
               entry_type: 'mood',
               entry_value: moodValue,
+              entry_date: todayDate,
               points_earned: 0 // No additional points for mood changes
             });
+          
+          console.log('[KidMindset] Created new mood entry:', moodValue);
         }
         
-        // Reload weekly average
-        loadWeeklyMoodAverage();
+        // Force reload weekly average after a short delay
+        setTimeout(() => {
+          loadWeeklyMoodAverage();
+        }, 500);
       }
     } catch (error) {
       console.error('[KidMindset] Error updating mood in database:', error);
