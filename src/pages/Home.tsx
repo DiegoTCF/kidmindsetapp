@@ -39,8 +39,8 @@ const moodOptions: MoodOption[] = [
 ];
 
 const defaultTasks: DailyTask[] = [
-  { id: "pushups", name: "20x Press ups", completed: false, streak: 0 },
-  { id: "situps", name: "20x Sit ups or 1 min plank", completed: false, streak: 0 },
+  { id: "pushups", name: "20x Press Ups", completed: false, streak: 0 },
+  { id: "situps", name: "20x Sit Ups or 1 min plank", completed: false, streak: 0 },
   { id: "makebed", name: "Make your bed", completed: false, streak: 0 },
   { id: "stretches", name: "Stretch your muscles", completed: false, streak: 0 },
 ];
@@ -153,14 +153,23 @@ export default function Home() {
         
         const { data: moodEntries } = await supabase
           .from('progress_entries')
-          .select('entry_value')
+          .select('entry_value, entry_date')
           .eq('child_id', childId)
           .eq('entry_type', 'mood')
           .gte('entry_date', sevenDaysAgo.toISOString().split('T')[0])
           .order('entry_date', { ascending: false });
         
         if (moodEntries && moodEntries.length > 0) {
-          const moodValues = moodEntries.map(entry => entry.entry_value as number);
+          // Get unique dates (latest mood per day)
+          const uniqueDailyMoods = moodEntries.reduce((acc, entry) => {
+            const date = entry.entry_date;
+            if (!acc[date]) {
+              acc[date] = entry.entry_value as number;
+            }
+            return acc;
+          }, {} as Record<string, number>);
+          
+          const moodValues = Object.values(uniqueDailyMoods);
           const average = moodValues.reduce((sum, val) => sum + val, 0) / moodValues.length;
           
           setPlayerData(prev => ({
@@ -169,6 +178,8 @@ export default function Home() {
           }));
           
           console.log('[KidMindset] Weekly mood average calculated:', average);
+        } else {
+          console.log('[KidMindset] No mood entries found for weekly average');
         }
       }
     } catch (error) {
@@ -599,33 +610,30 @@ export default function Home() {
               </div>
 
               <div className="flex items-center gap-2">
-                <Button
-                  onClick={() => handleTaskToggle(task.id)}
-                  size="sm"
-                  variant={task.completed ? "default" : "outline"}
-                  className={cn(
-                    "w-8 h-8 p-0 transition-all duration-200",
-                    task.completed 
-                      ? "bg-success hover:bg-success/80 text-white" 
-                      : "hover:border-primary/50"
-                  )}
-                >
-                  {task.completed ? (
+                {!task.completed ? (
+                  <>
+                    <Button
+                      onClick={() => handleTaskToggle(task.id)}
+                      size="sm"
+                      variant="default"
+                      className="w-8 h-8 p-0 bg-success hover:bg-success/80 text-white"
+                    >
+                      <Check className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      onClick={() => {}} // Do nothing for "not done"
+                      size="sm"
+                      variant="outline"
+                      className="w-8 h-8 p-0 hover:border-destructive/50 hover:text-destructive"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-1 text-sm text-success">
                     <Check className="w-4 h-4" />
-                  ) : (
-                    <Check className="w-4 h-4 text-muted-foreground" />
-                  )}
-                </Button>
-                
-                {task.completed && (
-                  <Button
-                    onClick={() => handleTaskToggle(task.id)}
-                    size="sm"
-                    variant="outline"
-                    className="w-8 h-8 p-0 hover:border-destructive/50 hover:text-destructive"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
+                    <span>Done</span>
+                  </div>
                 )}
               </div>
             </div>
