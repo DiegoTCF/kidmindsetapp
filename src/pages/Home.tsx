@@ -146,23 +146,37 @@ export default function Home() {
 
   const loadWeeklyMoodAverage = async () => {
     try {
-      const { data: children } = await supabase
+      const { data: children, error: childError } = await supabase
         .from('children')
         .select('id')
         .limit(1);
+      
+      if (childError) {
+        console.error('[KidMindset] Error fetching child for mood average:', childError);
+        return;
+      }
       
       if (children && children.length > 0) {
         const childId = children[0].id;
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
         
-        const { data: moodEntries } = await supabase
+        console.log('[KidMindset] Loading mood entries for child:', childId, 'since:', sevenDaysAgo.toISOString().split('T')[0]);
+        
+        const { data: moodEntries, error: moodError } = await supabase
           .from('progress_entries')
           .select('entry_value, entry_date')
           .eq('child_id', childId)
           .eq('entry_type', 'mood')
           .gte('entry_date', sevenDaysAgo.toISOString().split('T')[0])
           .order('entry_date', { ascending: false });
+        
+        if (moodError) {
+          console.error('[KidMindset] Error fetching mood entries:', moodError);
+          return;
+        }
+        
+        console.log('[KidMindset] Raw mood entries:', moodEntries);
         
         if (moodEntries && moodEntries.length > 0) {
           // Get unique dates (latest mood per day)
@@ -177,6 +191,9 @@ export default function Home() {
           const moodValues = Object.values(uniqueDailyMoods);
           const average = moodValues.reduce((sum, val) => sum + val, 0) / moodValues.length;
           
+          console.log('[KidMindset] Unique daily moods:', uniqueDailyMoods);
+          console.log('[KidMindset] Mood values for average:', moodValues);
+          
           setPlayerData(prev => ({
             ...prev,
             weeklyMoodAvg: average
@@ -187,6 +204,8 @@ export default function Home() {
         } else {
           console.log('[KidMindset] No mood entries found for weekly average');
         }
+      } else {
+        console.log('[KidMindset] No children found for weekly mood average');
       }
     } catch (error) {
       console.error('[KidMindset] Error loading weekly mood average:', error);
@@ -205,28 +224,54 @@ export default function Home() {
     
     // Save mood to Supabase
     try {
-      const { data: children } = await supabase
+      const { data: children, error: childError } = await supabase
         .from('children')
         .select('id')
         .limit(1);
       
+      if (childError) {
+        console.error('[KidMindset] Error fetching child:', childError);
+        throw childError;
+      }
+      
       if (children && children.length > 0) {
         const childId = children[0].id;
+        const todayDate = new Date().toISOString().split('T')[0];
         
-        await supabase
+        console.log('[KidMindset] Saving mood for child:', childId, 'value:', moodValue, 'date:', todayDate);
+        
+        const { data: insertData, error: insertError } = await supabase
           .from('progress_entries')
           .insert({
             child_id: childId,
             entry_type: 'mood',
             entry_value: moodValue,
+            entry_date: todayDate,
             points_earned: 5
-          });
+          })
+          .select();
+        
+        if (insertError) {
+          console.error('[KidMindset] Error saving mood to database:', insertError);
+          throw insertError;
+        }
+        
+        console.log('[KidMindset] Mood saved successfully:', insertData);
         
         // Reload weekly average
-        loadWeeklyMoodAverage();
+        setTimeout(() => {
+          loadWeeklyMoodAverage();
+        }, 1000);
+      } else {
+        console.error('[KidMindset] No children found for user');
       }
     } catch (error) {
       console.error('[KidMindset] Error saving mood to database:', error);
+      toast({
+        title: "Error saving mood",
+        description: "There was a problem saving your mood. Please try again.",
+      });
+      return;
     }
     
     // Award points
@@ -264,17 +309,24 @@ export default function Home() {
     
     // Update mood in Supabase
     try {
-      const { data: children } = await supabase
+      const { data: children, error: childError } = await supabase
         .from('children')
         .select('id')
         .limit(1);
+      
+      if (childError) {
+        console.error('[KidMindset] Error fetching child for mood update:', childError);
+        throw childError;
+      }
       
       if (children && children.length > 0) {
         const childId = children[0].id;
         const todayDate = new Date().toISOString().split('T')[0];
         
+        console.log('[KidMindset] Updating mood for child:', childId, 'value:', moodValue, 'date:', todayDate);
+        
         // Check if mood entry exists for today
-        const { data: existingEntry } = await supabase
+        const { data: existingEntry, error: fetchError } = await supabase
           .from('progress_entries')
           .select('id')
           .eq('child_id', childId)
@@ -282,17 +334,28 @@ export default function Home() {
           .eq('entry_date', todayDate)
           .maybeSingle();
         
+        if (fetchError) {
+          console.error('[KidMindset] Error checking existing mood entry:', fetchError);
+          throw fetchError;
+        }
+        
         if (existingEntry) {
           // Update existing entry
-          await supabase
+          const { data: updateData, error: updateError } = await supabase
             .from('progress_entries')
             .update({ entry_value: moodValue })
-            .eq('id', existingEntry.id);
+            .eq('id', existingEntry.id)
+            .select();
           
-          console.log('[KidMindset] Updated existing mood entry:', moodValue);
+          if (updateError) {
+            console.error('[KidMindset] Error updating mood entry:', updateError);
+            throw updateError;
+          }
+          
+          console.log('[KidMindset] Updated existing mood entry:', updateData);
         } else {
           // Create new entry
-          await supabase
+          const { data: insertData, error: insertError } = await supabase
             .from('progress_entries')
             .insert({
               child_id: childId,
@@ -300,18 +363,32 @@ export default function Home() {
               entry_value: moodValue,
               entry_date: todayDate,
               points_earned: 0 // No additional points for mood changes
-            });
+            })
+            .select();
           
-          console.log('[KidMindset] Created new mood entry:', moodValue);
+          if (insertError) {
+            console.error('[KidMindset] Error creating new mood entry:', insertError);
+            throw insertError;
+          }
+          
+          console.log('[KidMindset] Created new mood entry:', insertData);
         }
         
-        // Force reload weekly average after a short delay
+        // Force reload weekly average after a delay
         setTimeout(() => {
+          console.log('[KidMindset] Reloading weekly mood average...');
           loadWeeklyMoodAverage();
-        }, 500);
+        }, 1000);
+      } else {
+        console.error('[KidMindset] No children found for mood update');
       }
     } catch (error) {
       console.error('[KidMindset] Error updating mood in database:', error);
+      toast({
+        title: "Error updating mood",
+        description: "There was a problem updating your mood. Please try again.",
+      });
+      return;
     }
     
     console.log('[KidMindset] Mood changed to:', moodValue);
