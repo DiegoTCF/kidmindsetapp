@@ -103,21 +103,37 @@ export default function ActivityLog({ selectedFilter }: ActivityLogProps) {
   const handleDeleteActivity = async (activityId: string, activityName: string, points: number, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent opening activity details
     
+    // Get the activity data before deletion for notification
+    const activityToDelete = activities.find(activity => activity.id === activityId);
+    const wasIncomplete = activityToDelete ? !activityToDelete.post_activity_completed : false;
+    
+    console.log('Deleting activity:', activityId, activityName); // Debug log
+    
     try {
       // Optimistically remove from UI first
       setActivities(prev => prev.filter(activity => activity.id !== activityId));
       
       // Delete the activity from database
-      const { error: deleteError } = await supabase
+      const { error: deleteError, count } = await supabase
         .from('activities')
-        .delete()
+        .delete({ count: 'exact' })
         .eq('id', activityId);
 
+      console.log('Delete result:', { deleteError, count }); // Debug log
+
       if (deleteError) {
+        console.error('Delete failed:', deleteError);
         // If delete failed, restore the activity in UI
         loadActivities();
         throw deleteError;
       }
+
+      if (count === 0) {
+        console.warn('No rows were deleted - activity might not exist');
+        throw new Error('Activity not found in database');
+      }
+
+      console.log('Successfully deleted activity from database'); // Debug log
 
       // Update child's points (subtract the deleted activity points)
       const { data: children } = await supabase
@@ -136,6 +152,8 @@ export default function ActivityLog({ selectedFilter }: ActivityLogProps) {
         if (pointsError) {
           console.error('Error updating points:', pointsError);
           // Don't throw here as the activity was already deleted successfully
+        } else {
+          console.log('Successfully updated child points:', newPoints); // Debug log
         }
       }
 
@@ -143,6 +161,16 @@ export default function ActivityLog({ selectedFilter }: ActivityLogProps) {
       if (selectedActivity?.id === activityId) {
         setSelectedActivity(null);
       }
+
+      // Force a fresh reload from database to ensure consistency
+      setTimeout(() => {
+        loadActivities();
+      }, 100);
+
+      // Notify Stadium component to reload incomplete activities
+      window.dispatchEvent(new CustomEvent('activityDeleted', { 
+        detail: { activityId, wasIncomplete }
+      }));
       
       toast({
         title: "Activity deleted successfully",

@@ -38,6 +38,32 @@ export default function Stadium() {
     loadIncompleteActivities();
   }, []);
 
+  // Also reload when component becomes visible again (user returns from other pages)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        loadIncompleteActivities();
+      }
+    };
+
+    // Listen for activity deletions from Progress page
+    const handleActivityDeleted = (event: CustomEvent) => {
+      console.log('Stadium received activityDeleted event:', event.detail);
+      if (event.detail.wasIncomplete) {
+        // Only reload if the deleted activity was incomplete
+        loadIncompleteActivities();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('activityDeleted', handleActivityDeleted as EventListener);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('activityDeleted', handleActivityDeleted as EventListener);
+    };
+  }, []);
+
   const loadIncompleteActivities = async () => {
     try {
       const { data: children } = await supabase
