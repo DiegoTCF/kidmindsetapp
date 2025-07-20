@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { CustomIcon } from "@/components/ui/custom-emoji";
 import { supabase } from "@/integrations/supabase/client";
 
 interface BehaviourData {
@@ -18,7 +19,7 @@ interface BehaviourChartsProps {
 
 const BEHAVIOUR_CONFIG = {
   brave_on_ball: {
-    icon: "🔥",
+    icon: "flame",
     title: "Brave on the Ball",
     subtitle: "Trying forward actions, dribbling, risky passes",
     questions: [
@@ -35,7 +36,7 @@ const BEHAVIOUR_CONFIG = {
     ]
   },
   brave_off_ball: {
-    icon: "🧱",
+    icon: "brain",
     title: "Brave off the Ball",
     subtitle: "Getting into the game, showing for the ball, staying involved",
     questions: [
@@ -52,7 +53,7 @@ const BEHAVIOUR_CONFIG = {
     ]
   },
   electric: {
-    icon: "⚡️",
+    icon: "trophy",
     title: "Electric",
     subtitle: "Energy, speed, quick reactions, intensity",
     questions: [
@@ -69,7 +70,7 @@ const BEHAVIOUR_CONFIG = {
     ]
   },
   aggressive: {
-    icon: "💢",
+    icon: "target",
     title: "Aggressive",
     subtitle: "Competing, pressing, tackling, 1v1 duels",
     questions: [
@@ -279,7 +280,9 @@ export default function BehaviourCharts({ selectedFilter }: BehaviourChartsProps
             <Card key={behaviourType} className="shadow-soft">
               <CardContent className="p-6">
                 <div className="text-center">
-                  <div className="text-4xl mb-2">{config.icon}</div>
+                  <div className="mb-2 flex justify-center">
+                    <CustomIcon type={config.icon as any} size="xl" />
+                  </div>
                   <h3 className="text-lg font-semibold text-foreground mb-1">{config.title}</h3>
                   <p className="text-sm text-muted-foreground mb-6">{config.subtitle}</p>
                   <div className="text-muted-foreground py-8">
@@ -303,7 +306,9 @@ export default function BehaviourCharts({ selectedFilter }: BehaviourChartsProps
           <Card key={behaviourType} className="shadow-soft">
             <CardContent className="p-6">
               <div className="text-center mb-6">
-                <div className="text-4xl mb-2">{config.icon}</div>
+                <div className="mb-2 flex justify-center">
+                  <CustomIcon type={config.icon as any} size="xl" />
+                </div>
                 <h3 className="text-lg font-semibold text-foreground mb-1">{config.title}</h3>
                 <p className="text-sm text-muted-foreground">{config.subtitle}</p>
               </div>

@@ -36,14 +36,14 @@ const defaultAchievements: Achievement[] = [
     id: "task_master",
     title: "Task Master",
     description: "Completed all daily tasks",
-    icon: "✅",
+    icon: "good",
     unlocked: false
   },
   {
     id: "week_warrior",
     title: "Week Warrior",
     description: "7-day task streak",
-    icon: "🔥",
+    icon: "flame",
     unlocked: false
   },
   {

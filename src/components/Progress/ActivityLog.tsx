@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { CheckCircle, Clock, Trophy, Target, Trash2 } from "lucide-react";
+import { CustomIcon } from "@/components/ui/custom-emoji";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -421,7 +422,10 @@ export default function ActivityLog({ selectedFilter }: ActivityLogProps) {
                   <div className="space-y-4">
                     {selectedActivity.post_activity_data.journalPrompts?.wentWell && (
                       <div className="p-4 bg-background rounded-lg border-l-4 border-success">
-                        <p className="text-sm font-medium text-success mb-2">✅ What went well:</p>
+                         <div className="flex items-center gap-2 text-sm font-medium text-success mb-2">
+                           <CustomIcon type="good" size="sm" />
+                           <span>What went well:</span>
+                         </div>
                         <p className="text-sm text-foreground whitespace-pre-wrap">{selectedActivity.post_activity_data.journalPrompts.wentWell}</p>
                       </div>
                     )}

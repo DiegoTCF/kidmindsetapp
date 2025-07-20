@@ -80,7 +80,7 @@ const supportFlows: Record<string, FlowStep[]> = {
     },
     {
       type: 'affirmation',
-      content: "🧠 Breathe. Smile.\nRepeat this affirmation: \"No matter what other people think, say or do — I only focus on my behaviours.\""
+      content: "Breathe. Smile.\nRepeat this affirmation: \"No matter what other people think, say or do — I only focus on my behaviours.\""
     }
   ],
   "I'm scared of making mistakes": [
@@ -112,7 +112,7 @@ const supportFlows: Record<string, FlowStep[]> = {
     },
     {
       type: 'affirmation',
-      content: "🧠 Breathe. Be brave.\nRepeat: \"Mistakes don't define me — my response does.\""
+      content: "Breathe. Be brave.\nRepeat: \"Mistakes don't define me — my response does.\""
     }
   ],
   "I'm scared of getting hurt": [

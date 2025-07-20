@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { CustomIcon } from "@/components/ui/custom-emoji";
 import { supabase } from "@/integrations/supabase/client";
 import MindsetSupportFlow from "./MindsetSupportFlow";
 
@@ -688,7 +689,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                         { id: 'people-think', text: "I'm worried about what people might think", emoji: '👥' },
                         { id: 'making-mistakes', text: "I'm scared of making mistakes", emoji: '😬' },
                         { id: 'getting-hurt', text: "I'm scared of getting hurt", emoji: '🛡️' },
-                        { id: 'pressure-perform', text: "I'm feeling pressure to perform", emoji: '🎯' }
+                        { id: 'pressure-perform', text: "I'm feeling pressure to perform", emoji: 'target' }
                       ].map((worry) => (
                         <Button
                           key={worry.id}
@@ -852,7 +853,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
             className="w-full"
             size="lg"
           >
-            {preActivityCompleted ? "Pre-Activity Complete! ✅" : "Start Activity →"}
+            {preActivityCompleted ? "Pre-Activity Complete!" : "Start Activity →"}
           </Button>
         </TabsContent>
 
@@ -886,7 +887,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                     onClick={() => setPostActivityData(prev => ({ ...prev, intentionAchieved: "yes" }))}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="text-2xl">✅</span>
+                      <CustomIcon type="good" size="lg" />
                       <span className="text-sm font-medium">Yes, I achieved it!</span>
                     </div>
                   </Button>
@@ -897,7 +898,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                     onClick={() => setPostActivityData(prev => ({ ...prev, intentionAchieved: "partial" }))}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="text-2xl">🎯</span>
+                      <CustomIcon type="target" size="lg" />
                       <span className="text-sm font-medium">Partially, can be better</span>
                     </div>
                   </Button>
@@ -908,7 +909,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                     onClick={() => setPostActivityData(prev => ({ ...prev, intentionAchieved: "no" }))}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="text-2xl">❌</span>
+                      <CustomIcon type="not-great" size="lg" />
                       <span className="text-sm font-medium">No</span>
                     </div>
                   </Button>
@@ -919,7 +920,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                     onClick={() => setPostActivityData(prev => ({ ...prev, intentionAchieved: "forgot" }))}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="text-2xl">😅</span>
+                      <CustomIcon type="okay" size="lg" />
                       <span className="text-sm font-medium">I forgot to do it</span>
                     </div>
                   </Button>
@@ -927,10 +928,10 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
               ) : (
                 <div className="text-center py-4">
                   <div className="text-3xl mb-2">
-                    {postActivityData.intentionAchieved === "yes" && "✅"}
-                    {postActivityData.intentionAchieved === "partial" && "🎯"}
-                    {postActivityData.intentionAchieved === "no" && "❌"}
-                    {postActivityData.intentionAchieved === "forgot" && "😅"}
+                     {postActivityData.intentionAchieved === "yes" && <CustomIcon type="good" size="md" />}
+                     {postActivityData.intentionAchieved === "partial" && <CustomIcon type="target" size="md" />}
+                     {postActivityData.intentionAchieved === "no" && <CustomIcon type="not-great" size="md" />}
+                     {postActivityData.intentionAchieved === "forgot" && <CustomIcon type="okay" size="md" />}
                   </div>
                   <p className="text-sm text-muted-foreground">Response recorded!</p>
                 </div>
@@ -977,13 +978,13 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
           {/* Reflection Sliders */}
           <Card className="shadow-soft">
             <CardHeader>
-              <CardTitle className="text-lg">Reflection</CardTitle>
+              <CardTitle className="text-lg">During the activity, rate your:</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {[
                 { key: "workRate", label: "Work rate", icon: Activity },
                 { key: "confidence", label: "Confidence", icon: Brain },
-                { key: "mistakes", label: "Mistakes", icon: Target },
+                { key: "mistakes", label: "Mistakes & recovery", icon: Target },
                 { key: "focus", label: "Focus", icon: Target },
                 { key: "performance", label: "Performance", icon: Activity },
               ].map(({ key, label, icon: Icon }) => (
@@ -1034,7 +1035,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                 return (
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 mb-4">
-                      <span className="text-xl">🔥</span>
+                      <CustomIcon type="flame" size="lg" />
                       <h3 className="text-lg font-bold">Brave on the Ball</h3>
                       {isComplete && (
                         <span className="ml-auto text-primary font-bold">
@@ -1097,7 +1098,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                               setSuperBehaviorSteps(prev => ({ ...prev, braveOnBall: prev.braveOnBall + 1 }));
                               if (currentStep === 3) {
                                 toast({
-                                  title: "🔥 Brave on the Ball Complete!",
+                                  title: "Brave on the Ball Complete!",
                                   description: `Average score: ${((postActivityData.superBehaviours.braveOnBall.question1 + postActivityData.superBehaviours.braveOnBall.question2 + postActivityData.superBehaviours.braveOnBall.question3 + postActivityData.superBehaviours.braveOnBall.question4) / 4).toFixed(1)}/10`,
                                 });
                               }
@@ -1110,7 +1111,10 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                       </div>
                     ) : (
                       <div className="p-4 bg-success/10 border border-success/30 rounded-xl">
-                        <p className="text-sm font-medium text-success mb-2">✅ Completed!</p>
+                         <div className="flex items-center gap-2 text-sm font-medium text-success mb-2">
+                           <CustomIcon type="good" size="sm" />
+                           <span>Completed!</span>
+                         </div>
                         <p className="text-xs text-muted-foreground">Final score: {average}/10</p>
                         <Button 
                           variant="outline" 
@@ -1143,7 +1147,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                 return (
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 mb-4">
-                      <span className="text-xl">🧱</span>
+                      <CustomIcon type="brain" size="lg" />
                       <h3 className="text-lg font-bold">Brave off the Ball</h3>
                       {isComplete && (
                         <span className="ml-auto text-primary font-bold">
@@ -1210,7 +1214,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                               setSuperBehaviorSteps(prev => ({ ...prev, braveOffBall: prev.braveOffBall + 1 }));
                               if (currentStep === 3) {
                                 toast({
-                                  title: "🧱 Brave off the Ball Complete!",
+                                  title: "Brave off the Ball Complete!",
                                   description: `Average score: ${((postActivityData.superBehaviours.braveOffBall.question1 + postActivityData.superBehaviours.braveOffBall.question2 + postActivityData.superBehaviours.braveOffBall.question3 + postActivityData.superBehaviours.braveOffBall.question4) / 4).toFixed(1)}/10`,
                                 });
                               }
@@ -1223,7 +1227,10 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                       </div>
                     ) : (
                       <div className="p-4 bg-success/10 border border-success/30 rounded-xl">
-                        <p className="text-sm font-medium text-success mb-2">✅ Completed!</p>
+                         <div className="flex items-center gap-2 text-sm font-medium text-success mb-2">
+                           <CustomIcon type="good" size="sm" />
+                           <span>Completed!</span>
+                         </div>
                         <p className="text-xs text-muted-foreground">Final score: {average}/10</p>
                         <Button 
                           variant="outline" 
@@ -1256,7 +1263,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                 return (
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 mb-4">
-                      <span className="text-xl">⚡️</span>
+                      <CustomIcon type="trophy" size="lg" />
                       <h3 className="text-lg font-bold">Electric</h3>
                       {isComplete && (
                         <span className="ml-auto text-primary font-bold">
@@ -1323,7 +1330,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                               setSuperBehaviorSteps(prev => ({ ...prev, electric: prev.electric + 1 }));
                               if (currentStep === 3) {
                                 toast({
-                                  title: "⚡️ Electric Complete!",
+                                  title: "Electric Complete!",
                                   description: `Average score: ${((postActivityData.superBehaviours.electric.question1 + postActivityData.superBehaviours.electric.question2 + postActivityData.superBehaviours.electric.question3 + postActivityData.superBehaviours.electric.question4) / 4).toFixed(1)}/10`,
                                 });
                               }
@@ -1336,7 +1343,10 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                       </div>
                     ) : (
                       <div className="p-4 bg-success/10 border border-success/30 rounded-xl">
-                        <p className="text-sm font-medium text-success mb-2">✅ Completed!</p>
+                         <div className="flex items-center gap-2 text-sm font-medium text-success mb-2">
+                           <CustomIcon type="good" size="sm" />
+                           <span>Completed!</span>
+                         </div>
                         <p className="text-xs text-muted-foreground">Final score: {average}/10</p>
                         <Button 
                           variant="outline" 
@@ -1369,7 +1379,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                 return (
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 mb-4">
-                      <span className="text-xl">💢</span>
+                      <CustomIcon type="target" size="lg" />
                       <h3 className="text-lg font-bold">Aggressive</h3>
                       {isComplete && (
                         <span className="ml-auto text-primary font-bold">
@@ -1436,7 +1446,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                               setSuperBehaviorSteps(prev => ({ ...prev, aggressive: prev.aggressive + 1 }));
                               if (currentStep === 3) {
                                 toast({
-                                  title: "💢 Aggressive Complete!",
+                                  title: "Aggressive Complete!",
                                   description: `Average score: ${((postActivityData.superBehaviours.aggressive.question1 + postActivityData.superBehaviours.aggressive.question2 + postActivityData.superBehaviours.aggressive.question3 + postActivityData.superBehaviours.aggressive.question4) / 4).toFixed(1)}/10`,
                                 });
                               }
@@ -1449,7 +1459,10 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                       </div>
                     ) : (
                       <div className="p-4 bg-success/10 border border-success/30 rounded-xl">
-                        <p className="text-sm font-medium text-success mb-2">✅ Completed!</p>
+                         <div className="flex items-center gap-2 text-sm font-medium text-success mb-2">
+                           <CustomIcon type="good" size="sm" />
+                           <span>Completed!</span>
+                         </div>
                         <p className="text-xs text-muted-foreground">Final score: {average}/10</p>
                         <Button 
                           variant="outline" 
