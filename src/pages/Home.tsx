@@ -19,6 +19,7 @@ interface DailyTask {
   id: string;
   name: string;
   completed: boolean;
+  notDone?: boolean; // Track explicit "not done" state
   streak: number;
   isCustom?: boolean;
 }
@@ -419,51 +420,34 @@ export default function Home() {
     return "Remember, it's okay to have tough days. You're still amazing!";
   };
 
-  const handleTaskToggle = (taskId: string) => {
+  const handleTaskComplete = async (taskId: string) => {
     const today = new Date().toDateString();
     
     const updatedTasks = dailyTasks.map(task => {
       if (task.id === taskId) {
-        const wasCompleted = task.completed;
-        const newCompleted = !wasCompleted;
+        const newPoints = playerData.points + 10;
+        const updatedPlayer = { ...playerData, points: newPoints };
         
-        if (newCompleted && !wasCompleted) {
-          // Task being completed
-          const newPoints = playerData.points + 10;
-          const updatedPlayer = { ...playerData, points: newPoints };
-          
-          if (newPoints >= playerData.level * 100) {
-            updatedPlayer.level += 1;
-            toast({
-              title: "🎉 Level Up!",
-              description: `Congratulations! You're now level ${updatedPlayer.level}!`,
-            });
-          }
-          
-          setPlayerData(updatedPlayer);
-          localStorage.setItem('kidmindset_player', JSON.stringify(updatedPlayer));
-          
+        if (newPoints >= playerData.level * 100) {
+          updatedPlayer.level += 1;
           toast({
-            title: "Task completed! +10 points",
-            description: "Great job staying consistent!",
+            title: "🎉 Level Up!",
+            description: `Congratulations! You're now level ${updatedPlayer.level}!`,
           });
-          
-          return { ...task, completed: true, streak: task.streak + 1 };
-        } else if (!newCompleted && wasCompleted) {
-          // Task being uncompleted
-          const newPoints = Math.max(0, playerData.points - 10);
-          const updatedPlayer = { ...playerData, points: newPoints };
-          
-          setPlayerData(updatedPlayer);
-          localStorage.setItem('kidmindset_player', JSON.stringify(updatedPlayer));
-          
-          toast({
-            title: "Task uncompleted",
-            description: "10 points removed. You can do it!",
-          });
-          
-          return { ...task, completed: false, streak: Math.max(0, task.streak - 1) };
         }
+        
+        setPlayerData(updatedPlayer);
+        localStorage.setItem('kidmindset_player', JSON.stringify(updatedPlayer));
+        
+        toast({
+          title: "Task completed! +10 points",
+          description: "Great job staying consistent!",
+        });
+        
+        // Save task completion to Supabase
+        saveTaskToSupabase(taskId, true);
+        
+        return { ...task, completed: true, notDone: false, streak: task.streak + 1 };
       }
       return task;
     });
@@ -471,7 +455,111 @@ export default function Home() {
     setDailyTasks(updatedTasks);
     localStorage.setItem(`kidmindset_tasks_${today}`, JSON.stringify(updatedTasks));
     
-    console.log('[KidMindset] Task toggled:', taskId);
+    console.log('[KidMindset] Task completed:', taskId);
+  };
+
+  const handleTaskNotDone = async (taskId: string) => {
+    const today = new Date().toDateString();
+    
+    const updatedTasks = dailyTasks.map(task => {
+      if (task.id === taskId) {
+        // Save task as not done to Supabase
+        saveTaskToSupabase(taskId, false);
+        
+        return { ...task, completed: false, notDone: true };
+      }
+      return task;
+    });
+    
+    setDailyTasks(updatedTasks);
+    localStorage.setItem(`kidmindset_tasks_${today}`, JSON.stringify(updatedTasks));
+    
+    console.log('[KidMindset] Task marked as not done:', taskId);
+    
+    toast({
+      title: "Task marked as not done",
+      description: "You can change this later today if needed.",
+    });
+  };
+
+  const handleTaskReset = (taskId: string) => {
+    const today = new Date().toDateString();
+    
+    const updatedTasks = dailyTasks.map(task => {
+      if (task.id === taskId) {
+        if (task.completed) {
+          // Remove points if task was completed
+          const newPoints = Math.max(0, playerData.points - 10);
+          const updatedPlayer = { ...playerData, points: newPoints };
+          
+          setPlayerData(updatedPlayer);
+          localStorage.setItem('kidmindset_player', JSON.stringify(updatedPlayer));
+          
+          toast({
+            title: "Task reset",
+            description: "10 points removed. Make your choice again!",
+          });
+        }
+        
+        return { ...task, completed: false, notDone: false, streak: task.completed ? Math.max(0, task.streak - 1) : task.streak };
+      }
+      return task;
+    });
+    
+    setDailyTasks(updatedTasks);
+    localStorage.setItem(`kidmindset_tasks_${today}`, JSON.stringify(updatedTasks));
+    
+    console.log('[KidMindset] Task reset:', taskId);
+  };
+
+  const saveTaskToSupabase = async (taskId: string, completed: boolean) => {
+    try {
+      const { data: childIdResult, error: childIdError } = await supabase
+        .rpc('get_current_user_child_id');
+      
+      if (childIdError || !childIdResult) {
+        console.error('[KidMindset] Error getting child ID for task save:', childIdError);
+        return;
+      }
+      
+      const todayDate = new Date().toISOString().split('T')[0];
+      
+      // Check if task entry exists for today
+      const { data: existingEntry } = await supabase
+        .from('progress_entries')
+        .select('id')
+        .eq('child_id', childIdResult)
+        .eq('entry_type', 'task')
+        .eq('entry_date', todayDate)
+        .eq('entry_value', taskId)
+        .maybeSingle();
+      
+      if (existingEntry) {
+        // Update existing entry
+        await supabase
+          .from('progress_entries')
+          .update({ 
+            entry_value: { task_id: taskId, completed },
+            points_earned: completed ? 10 : 0
+          })
+          .eq('id', existingEntry.id);
+      } else {
+        // Create new entry
+        await supabase
+          .from('progress_entries')
+          .insert({
+            child_id: childIdResult,
+            entry_type: 'task',
+            entry_value: { task_id: taskId, completed },
+            entry_date: todayDate,
+            points_earned: completed ? 10 : 0
+          });
+      }
+      
+      console.log('[KidMindset] Task saved to Supabase:', taskId, completed);
+    } catch (error) {
+      console.error('[KidMindset] Error saving task to Supabase:', error);
+    }
   };
 
   const handleAddCustomTask = () => {
@@ -716,31 +804,63 @@ export default function Home() {
               </div>
 
               <div className="flex items-center gap-2">
-                {!task.completed ? (
+                {!task.completed && !task.notDone ? (
+                  // Show both options when no selection made
                   <>
                     <Button
-                      onClick={() => handleTaskToggle(task.id)}
+                      onClick={() => handleTaskComplete(task.id)}
                       size="sm"
                       variant="default"
                       className="w-8 h-8 p-0 bg-success hover:bg-success/80 text-white"
+                      title="Mark as done"
                     >
                       <Check className="w-4 h-4" />
                     </Button>
                     <Button
-                      onClick={() => {}} // Do nothing for "not done"
+                      onClick={() => handleTaskNotDone(task.id)}
                       size="sm"
                       variant="outline"
                       className="w-8 h-8 p-0 hover:border-destructive/50 hover:text-destructive"
+                      title="Mark as not done"
                     >
                       <X className="w-4 h-4" />
                     </Button>
                   </>
-                ) : (
-                  <div className="flex items-center gap-1 text-sm text-success">
-                    <Check className="w-4 h-4" />
-                    <span>Done</span>
+                ) : task.completed ? (
+                  // Show done state with ability to change
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 text-sm text-success">
+                      <Check className="w-4 h-4" />
+                      <span>Done</span>
+                    </div>
+                    <Button
+                      onClick={() => handleTaskReset(task.id)}
+                      size="sm"
+                      variant="ghost"
+                      className="w-6 h-6 p-0 text-xs text-muted-foreground hover:text-foreground"
+                      title="Change selection"
+                    >
+                      ↻
+                    </Button>
                   </div>
-                )}
+                ) : task.notDone ? (
+                  // Show not done state with ability to change
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 text-sm text-destructive">
+                      <X className="w-4 h-4" />
+                      <span>Not done</span>
+                    </div>
+                    <Button
+                      onClick={() => handleTaskReset(task.id)}
+                      size="sm"
+                      variant="ghost"
+                      className="w-6 h-6 p-0 text-xs text-muted-foreground hover:text-foreground"
+                      title="Change selection"
+                    >
+                      ↻
+                    </Button>
+                  </div>
+                ) : null}
               </div>
             </div>
           ))}
