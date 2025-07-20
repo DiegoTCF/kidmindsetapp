@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Clock, Trophy, Target } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { CheckCircle, Clock, Trophy, Target, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Activity {
   id: string;
@@ -29,6 +31,7 @@ export default function ActivityLog({ selectedFilter }: ActivityLogProps) {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     loadActivities();
@@ -94,6 +97,52 @@ export default function ActivityLog({ selectedFilter }: ActivityLogProps) {
         return <Target className="w-4 h-4" />;
       default:
         return <CheckCircle className="w-4 h-4" />;
+    }
+  };
+
+  const handleDeleteActivity = async (activityId: string, activityName: string, points: number, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent opening activity details
+    
+    try {
+      // Delete the activity
+      const { error: deleteError } = await supabase
+        .from('activities')
+        .delete()
+        .eq('id', activityId);
+
+      if (deleteError) throw deleteError;
+
+      // Update child's points (subtract the deleted activity points)
+      const { data: children } = await supabase
+        .from('children')
+        .select('id, points')
+        .limit(1);
+        
+      if (children && children.length > 0) {
+        const newPoints = Math.max(0, children[0].points - points); // Ensure points don't go negative
+        
+        const { error: pointsError } = await supabase
+          .from('children')
+          .update({ points: newPoints })
+          .eq('id', children[0].id);
+          
+        if (pointsError) throw pointsError;
+      }
+
+      // Reload activities
+      loadActivities();
+      
+      toast({
+        title: "Activity Deleted",
+        description: `"${activityName}" has been removed from your log.`,
+      });
+    } catch (error) {
+      console.error('Error deleting activity:', error);
+      toast({
+        title: "Delete Failed",
+        description: "Could not delete the activity. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -351,11 +400,42 @@ export default function ActivityLog({ selectedFilter }: ActivityLogProps) {
                 </div>
                 <div className="flex items-center gap-2">
                   {getStatusBadge(activity)}
-                  <div className="text-right">
+                  <div className="text-right mr-2">
                     <p className="text-sm font-semibold text-primary">
                       +{activity.points_awarded}
                     </p>
                   </div>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Activity</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete "{activity.activity_name}"? 
+                          This will remove the activity and subtract {activity.points_awarded} points from your total. 
+                          This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={(e) => handleDeleteActivity(activity.id, activity.activity_name, activity.points_awarded, e)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Delete Activity
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
             ))}

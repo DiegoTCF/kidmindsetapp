@@ -61,6 +61,8 @@ interface PostActivityReflection {
 interface ActivityFormProps {
   activity: Activity;
   onComplete: () => void;
+  existingActivityId?: string;
+  isResumingActivity?: boolean;
 }
 
 const moodOptions = [
@@ -85,14 +87,14 @@ const superBehaviours: SuperBehaviour[] = [
   { id: "aggressive", name: "Aggressive", emoji: "💥", selected: false, description: "" },
 ];
 
-export default function ActivityForm({ activity, onComplete }: ActivityFormProps) {
+export default function ActivityForm({ activity, onComplete, existingActivityId, isResumingActivity = false }: ActivityFormProps) {
   const { toast } = useToast();
   
   const [confidenceLevel, setConfidenceLevel] = useState<number>(5);
   const [intention, setIntention] = useState("");
   const [selectedBehaviours, setSelectedBehaviours] = useState<SuperBehaviour[]>(superBehaviours);
   const [preActivityItems, setPreActivityItems] = useState<PreActivityItem[]>(defaultPreActivityItems);
-  const [preActivityCompleted, setPreActivityCompleted] = useState(false);
+  const [preActivityCompleted, setPreActivityCompleted] = useState(isResumingActivity);
   const [postActivityCompleted, setPostActivityCompleted] = useState(false);
   const [postActivityData, setPostActivityData] = useState<PostActivityReflection>({
     mood: null,
@@ -252,16 +254,31 @@ export default function ActivityForm({ activity, onComplete }: ActivityFormProps
     const totalPoints = postPoints + fullActivityBonus;
     
     try {
-      // Find existing activity record
-      const { data: existingActivity } = await supabase
-        .from('activities')
-        .select('id, points_awarded')
-        .eq('child_id', currentChildId)
-        .eq('activity_name', activity.name)
-        .eq('activity_date', activity.date.toISOString().split('T')[0])
-        .single();
+      let activityId = existingActivityId;
+      
+      // If no existing activity ID, find it by name and date
+      if (!activityId) {
+        const { data: existingActivity } = await supabase
+          .from('activities')
+          .select('id, points_awarded')
+          .eq('child_id', currentChildId)
+          .eq('activity_name', activity.name)
+          .eq('activity_date', activity.date.toISOString().split('T')[0])
+          .single();
+        
+        if (existingActivity) {
+          activityId = existingActivity.id;
+        }
+      }
 
-      if (existingActivity) {
+      if (activityId) {
+        // Get current points awarded to calculate new total
+        const { data: currentActivity } = await supabase
+          .from('activities')
+          .select('points_awarded')
+          .eq('id', activityId)
+          .single();
+
         // Update existing activity
         const { error: updateError } = await supabase
           .from('activities')
@@ -271,9 +288,9 @@ export default function ActivityForm({ activity, onComplete }: ActivityFormProps
               ...postActivityData,
               completedAt: new Date().toISOString()
             },
-            points_awarded: existingActivity.points_awarded + totalPoints
+            points_awarded: (currentActivity?.points_awarded || 0) + totalPoints
           })
-          .eq('id', existingActivity.id);
+          .eq('id', activityId);
 
         if (updateError) throw updateError;
 
@@ -432,7 +449,7 @@ export default function ActivityForm({ activity, onComplete }: ActivityFormProps
         </p>
       </div>
 
-      <Tabs defaultValue="pre-activity" className="space-y-6">
+      <Tabs defaultValue={isResumingActivity ? "post-activity" : "pre-activity"} className="space-y-6">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="pre-activity" className="flex items-center gap-2">
             <Target className="w-4 h-4" />
