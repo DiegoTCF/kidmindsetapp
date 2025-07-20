@@ -246,7 +246,7 @@ export default function Charts({ selectedFilter }: ChartsProps) {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         {/* Activity Types Pie Chart */}
         <Card className="shadow-soft">
           <CardHeader>
@@ -291,13 +291,6 @@ export default function Charts({ selectedFilter }: ChartsProps) {
               </div>
             )}
           </CardContent>
-        </Card>
-
-        {/* Mood & Confidence Trend */}
-        <Card className="shadow-soft">
-          <CardHeader>
-            <CardTitle className="text-lg">Mood & Confidence Trend</CardTitle>
-          </CardHeader>
         </Card>
       </div>
 
