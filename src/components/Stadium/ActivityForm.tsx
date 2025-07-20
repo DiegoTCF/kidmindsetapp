@@ -541,16 +541,11 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                       });
                       setConfidenceLevel(value[0]);
                       
-                      // Show mindset support flow if confidence is between 1-7 and no worry data yet
-                      if (value[0] >= 1 && value[0] <= 7 && !worryData) {
-                        console.log('Should show mindset flow for confidence:', value[0]);
-                        setShowMindsetFlow(true);
-                      }
-                      
-                      // Reset worry data if confidence goes above 7
-                      if (value[0] > 7 && worryData) {
-                        console.log('Clearing worry data for confidence > 7');
+                      // Reset worry data and mindset flow if confidence goes above 7
+                      if (value[0] > 7) {
+                        console.log('Clearing worry data and mindset flow for confidence > 7');
                         setWorryData(null);
+                        setShowMindsetFlow(false);
                       }
                     }}
                     max={10}
@@ -568,9 +563,9 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                   </p>
                 </div>
                 
-                {/* Show worry selection if confidence is between 1-7 and no mindset flow active */}
+                {/* Show worry selection if confidence is between 1-7 and no worry data */}
                 {(() => {
-                  const shouldShowWorryButtons = confidenceLevel >= 1 && confidenceLevel <= 7 && !showMindsetFlow && !worryData;
+                  const shouldShowWorryButtons = confidenceLevel >= 1 && confidenceLevel <= 7 && !worryData;
                   console.log('Worry buttons visibility check:', {
                     confidenceLevel,
                     showMindsetFlow,
