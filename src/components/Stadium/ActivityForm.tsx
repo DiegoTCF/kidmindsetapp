@@ -105,7 +105,7 @@ const defaultPreActivityItems: PreActivityItem[] = [
 const superBehaviours: SuperBehaviour[] = [
   { id: "brave-on-ball", name: "Brave on the ball", emoji: "flame", selected: false, description: "" },
   { id: "brave-off-ball", name: "Brave off the ball", emoji: "brain", selected: false, description: "" },
-  { id: "electric", name: "Electric", emoji: "trophy", selected: false, description: "" },
+  { id: "electric", name: "Electric", emoji: "flame", selected: false, description: "" },
   { id: "aggressive", name: "Aggressive", emoji: "target", selected: false, description: "" },
 ];
 
