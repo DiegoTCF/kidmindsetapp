@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Star, Trophy, Edit2 } from "lucide-react";
+import { Plus, Star, Trophy, Edit2, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -39,10 +39,10 @@ const moodOptions: MoodOption[] = [
 ];
 
 const defaultTasks: DailyTask[] = [
-  { id: "pushups", name: "20x Press Ups", completed: false, streak: 0 },
-  { id: "situps", name: "20x Sit Ups or 1 Minute Plank", completed: false, streak: 0 },
+  { id: "pushups", name: "20x Press ups", completed: false, streak: 0 },
+  { id: "situps", name: "20x Sit ups or 1 min plank", completed: false, streak: 0 },
   { id: "makebed", name: "Make your bed", completed: false, streak: 0 },
-  { id: "stretches", name: "Stretches", completed: false, streak: 0 },
+  { id: "stretches", name: "Stretch your muscles", completed: false, streak: 0 },
 ];
 
 export default function Home() {
@@ -72,6 +72,7 @@ export default function Home() {
     console.log('[KidMindset] Loading player data...');
     loadPlayerData();
     loadTodayData();
+    loadWeeklyMoodAverage();
   }, []);
 
   const loadPlayerData = async () => {
@@ -138,14 +139,77 @@ export default function Home() {
     }
   };
 
-  const handleMoodSubmit = (moodValue: number) => {
+  const loadWeeklyMoodAverage = async () => {
+    try {
+      const { data: children } = await supabase
+        .from('children')
+        .select('id')
+        .limit(1);
+      
+      if (children && children.length > 0) {
+        const childId = children[0].id;
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        
+        const { data: moodEntries } = await supabase
+          .from('progress_entries')
+          .select('entry_value')
+          .eq('child_id', childId)
+          .eq('entry_type', 'mood')
+          .gte('entry_date', sevenDaysAgo.toISOString().split('T')[0])
+          .order('entry_date', { ascending: false });
+        
+        if (moodEntries && moodEntries.length > 0) {
+          const moodValues = moodEntries.map(entry => entry.entry_value as number);
+          const average = moodValues.reduce((sum, val) => sum + val, 0) / moodValues.length;
+          
+          setPlayerData(prev => ({
+            ...prev,
+            weeklyMoodAvg: average
+          }));
+          
+          console.log('[KidMindset] Weekly mood average calculated:', average);
+        }
+      }
+    } catch (error) {
+      console.error('[KidMindset] Error loading weekly mood average:', error);
+    }
+  };
+
+  const handleMoodSubmit = async (moodValue: number) => {
     const today = new Date().toDateString();
     
     setTodayMood(moodValue);
     setMoodSubmitted(true);
     
-    // Save mood
+    // Save mood locally
     localStorage.setItem(`kidmindset_mood_${today}`, moodValue.toString());
+    
+    // Save mood to Supabase
+    try {
+      const { data: children } = await supabase
+        .from('children')
+        .select('id')
+        .limit(1);
+      
+      if (children && children.length > 0) {
+        const childId = children[0].id;
+        
+        await supabase
+          .from('progress_entries')
+          .insert({
+            child_id: childId,
+            entry_type: 'mood',
+            entry_value: moodValue,
+            points_earned: 5
+          });
+        
+        // Reload weekly average
+        loadWeeklyMoodAverage();
+      }
+    } catch (error) {
+      console.error('[KidMindset] Error saving mood to database:', error);
+    }
     
     // Award points
     const newPoints = playerData.points + 5;
@@ -153,10 +217,10 @@ export default function Home() {
     
     if (newPoints >= playerData.level * 100) {
       updatedPlayer.level += 1;
-    toast({
-      title: "🎉 Level Up!",
-      description: `Congratulations! You're now level ${updatedPlayer.level}!`,
-    });
+      toast({
+        title: "🎉 Level Up!",
+        description: `Congratulations! You're now level ${updatedPlayer.level}!`,
+      });
     }
     
     setPlayerData(updatedPlayer);
@@ -170,14 +234,59 @@ export default function Home() {
     });
   };
 
-  const handleMoodChange = (moodValue: number) => {
+  const handleMoodChange = async (moodValue: number) => {
     const today = new Date().toDateString();
     
     setTodayMood(moodValue);
     setShowMoodReview(false);
     
-    // Update saved mood
+    // Update saved mood locally
     localStorage.setItem(`kidmindset_mood_${today}`, moodValue.toString());
+    
+    // Update mood in Supabase
+    try {
+      const { data: children } = await supabase
+        .from('children')
+        .select('id')
+        .limit(1);
+      
+      if (children && children.length > 0) {
+        const childId = children[0].id;
+        const todayDate = new Date().toISOString().split('T')[0];
+        
+        // Check if mood entry exists for today
+        const { data: existingEntry } = await supabase
+          .from('progress_entries')
+          .select('id')
+          .eq('child_id', childId)
+          .eq('entry_type', 'mood')
+          .eq('entry_date', todayDate)
+          .single();
+        
+        if (existingEntry) {
+          // Update existing entry
+          await supabase
+            .from('progress_entries')
+            .update({ entry_value: moodValue })
+            .eq('id', existingEntry.id);
+        } else {
+          // Create new entry
+          await supabase
+            .from('progress_entries')
+            .insert({
+              child_id: childId,
+              entry_type: 'mood',
+              entry_value: moodValue,
+              points_earned: 0 // No additional points for mood changes
+            });
+        }
+        
+        // Reload weekly average
+        loadWeeklyMoodAverage();
+      }
+    } catch (error) {
+      console.error('[KidMindset] Error updating mood in database:', error);
+    }
     
     console.log('[KidMindset] Mood changed to:', moodValue);
     
@@ -193,12 +302,51 @@ export default function Home() {
     return "Remember, it's okay to have tough days. You're still amazing!";
   };
 
-  const handleTaskComplete = (taskId: string) => {
+  const handleTaskToggle = (taskId: string) => {
     const today = new Date().toDateString();
     
     const updatedTasks = dailyTasks.map(task => {
-      if (task.id === taskId && !task.completed) {
-        return { ...task, completed: true, streak: task.streak + 1 };
+      if (task.id === taskId) {
+        const wasCompleted = task.completed;
+        const newCompleted = !wasCompleted;
+        
+        if (newCompleted && !wasCompleted) {
+          // Task being completed
+          const newPoints = playerData.points + 10;
+          const updatedPlayer = { ...playerData, points: newPoints };
+          
+          if (newPoints >= playerData.level * 100) {
+            updatedPlayer.level += 1;
+            toast({
+              title: "🎉 Level Up!",
+              description: `Congratulations! You're now level ${updatedPlayer.level}!`,
+            });
+          }
+          
+          setPlayerData(updatedPlayer);
+          localStorage.setItem('kidmindset_player', JSON.stringify(updatedPlayer));
+          
+          toast({
+            title: "Task completed! +10 points",
+            description: "Great job staying consistent!",
+          });
+          
+          return { ...task, completed: true, streak: task.streak + 1 };
+        } else if (!newCompleted && wasCompleted) {
+          // Task being uncompleted
+          const newPoints = Math.max(0, playerData.points - 10);
+          const updatedPlayer = { ...playerData, points: newPoints };
+          
+          setPlayerData(updatedPlayer);
+          localStorage.setItem('kidmindset_player', JSON.stringify(updatedPlayer));
+          
+          toast({
+            title: "Task uncompleted",
+            description: "10 points removed. You can do it!",
+          });
+          
+          return { ...task, completed: false, streak: Math.max(0, task.streak - 1) };
+        }
       }
       return task;
     });
@@ -206,27 +354,7 @@ export default function Home() {
     setDailyTasks(updatedTasks);
     localStorage.setItem(`kidmindset_tasks_${today}`, JSON.stringify(updatedTasks));
     
-    // Award points
-    const newPoints = playerData.points + 10;
-    const updatedPlayer = { ...playerData, points: newPoints };
-    
-    if (newPoints >= playerData.level * 100) {
-      updatedPlayer.level += 1;
-    toast({
-      title: "🎉 Level Up!",
-      description: `Congratulations! You're now level ${updatedPlayer.level}!`,
-    });
-    }
-    
-    setPlayerData(updatedPlayer);
-    localStorage.setItem('kidmindset_player', JSON.stringify(updatedPlayer));
-    
-    console.log('[KidMindset] Task completed:', taskId);
-    
-    toast({
-      title: "Task completed! +10 points",
-      description: "Great job staying consistent!",
-    });
+    console.log('[KidMindset] Task toggled:', taskId);
   };
 
   const handleAddCustomTask = () => {
@@ -470,15 +598,36 @@ export default function Home() {
                 </div>
               </div>
 
-              {!task.completed && (
+              <div className="flex items-center gap-2">
                 <Button
-                  onClick={() => handleTaskComplete(task.id)}
+                  onClick={() => handleTaskToggle(task.id)}
                   size="sm"
-                  className="shadow-sm"
+                  variant={task.completed ? "default" : "outline"}
+                  className={cn(
+                    "w-8 h-8 p-0 transition-all duration-200",
+                    task.completed 
+                      ? "bg-success hover:bg-success/80 text-white" 
+                      : "hover:border-primary/50"
+                  )}
                 >
-                  Complete
+                  {task.completed ? (
+                    <Check className="w-4 h-4" />
+                  ) : (
+                    <Check className="w-4 h-4 text-muted-foreground" />
+                  )}
                 </Button>
-              )}
+                
+                {task.completed && (
+                  <Button
+                    onClick={() => handleTaskToggle(task.id)}
+                    size="sm"
+                    variant="outline"
+                    className="w-8 h-8 p-0 hover:border-destructive/50 hover:text-destructive"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           ))}
 
