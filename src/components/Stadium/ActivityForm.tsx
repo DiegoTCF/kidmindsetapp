@@ -46,6 +46,12 @@ interface PostActivityReflection {
   performance: number;
   workRate: number;
   superBehaviours: {
+    braveOnBall: {
+      question1: number;
+      question2: number;
+      question3: number;
+      question4: number;
+    };
     braveOffBall: {
       question1: number;
       question2: number;
@@ -96,10 +102,10 @@ const defaultPreActivityItems: PreActivityItem[] = [
 ];
 
 const superBehaviours: SuperBehaviour[] = [
-  { id: "brave-on-ball", name: "Brave on the ball", emoji: "⚽", selected: false, description: "" },
-  { id: "brave-off-ball", name: "Brave off the ball", emoji: "🛡️", selected: false, description: "" },
+  { id: "brave-on-ball", name: "Brave on the ball", emoji: "🔥", selected: false, description: "" },
+  { id: "brave-off-ball", name: "Brave off the ball", emoji: "🧱", selected: false, description: "" },
   { id: "electric", name: "Electric", emoji: "⚡", selected: false, description: "" },
-  { id: "aggressive", name: "Aggressive", emoji: "💥", selected: false, description: "" },
+  { id: "aggressive", name: "Aggressive", emoji: "💢", selected: false, description: "" },
 ];
 
 export default function ActivityForm({ activity, onComplete, existingActivityId, isResumingActivity = false }: ActivityFormProps) {
@@ -111,6 +117,19 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
   const [preActivityItems, setPreActivityItems] = useState<PreActivityItem[]>(defaultPreActivityItems);
   const [preActivityCompleted, setPreActivityCompleted] = useState(isResumingActivity);
   const [postActivityCompleted, setPostActivityCompleted] = useState(false);
+  // Step-by-step question state for super behaviors
+  const [superBehaviorSteps, setSuperBehaviorSteps] = useState<{
+    braveOnBall: number;
+    braveOffBall: number;
+    electric: number;
+    aggressive: number;
+  }>({
+    braveOnBall: 0,
+    braveOffBall: 0,
+    electric: 0,
+    aggressive: 0,
+  });
+
   const [postActivityData, setPostActivityData] = useState<PostActivityReflection>({
     mood: null,
     confidence: 5,
@@ -119,6 +138,12 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
     performance: 5,
     workRate: 5,
     superBehaviours: {
+      braveOnBall: {
+        question1: 5,
+        question2: 5,
+        question3: 5,
+        question4: 5,
+      },
       braveOffBall: {
         question1: 5,
         question2: 5,
@@ -203,7 +228,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
     // Reflection sliders (5 points each)
     points += 5 * 5; // confidence, focus, mistakes, performance, workRate
     
-    // Super behaviours (average of 4 questions)
+    // Super behaviours (average of 4 questions) - includes braveOnBall, braveOffBall, electric, aggressive
     Object.values(postActivityData.superBehaviours).forEach(behaviour => {
       const average = (behaviour.question1 + behaviour.question2 + behaviour.question3 + behaviour.question4) / 4;
       points += Math.round(average);
@@ -335,6 +360,15 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
 
         // Save detailed super behaviour ratings
         const behaviourEntries = [
+          {
+            activity_id: activityId,
+            child_id: currentChildId,
+            behaviour_type: 'brave_on_ball',
+            question_1_rating: postActivityData.superBehaviours.braveOnBall.question1,
+            question_2_rating: postActivityData.superBehaviours.braveOnBall.question2,
+            question_3_rating: postActivityData.superBehaviours.braveOnBall.question3,
+            question_4_rating: postActivityData.superBehaviours.braveOnBall.question4,
+          },
           {
             activity_id: activityId,
             child_id: currentChildId,
@@ -981,152 +1015,455 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
           <Card className="shadow-soft">
             <CardHeader>
               <CardTitle className="text-lg">Super-Behaviour Ratings (1-10)</CardTitle>
-              <p className="text-sm text-muted-foreground">Rate yourself on each question. Your final score will be the average of all 4 questions.</p>
+              <p className="text-sm text-muted-foreground">Rate yourself step-by-step. Answer each question individually and your final score will be the average of all 4 questions.</p>
             </CardHeader>
             <CardContent className="space-y-8">
+              {/* Brave on the Ball */}
+              {(() => {
+                const behaviorData = [
+                  { key: 'question1', text: 'How often did you try to take players on or play forward?', subtext: '(1 = Not at all, 10 = All the time)' },
+                  { key: 'question2', text: 'How much intent did you show when doing it — did you really go for it?', subtext: '(1 = Hesitant / Half-hearted, 10 = Full commitment every time)' },
+                  { key: 'question3', text: 'Did you take risks even when you made mistakes or lost the ball?', subtext: '(1 = I avoided it after mistakes, 10 = I kept trying and stayed brave)' },
+                  { key: 'question4', text: 'How much did you play to win your 1v1s, not just avoid losing the ball?', subtext: '(1 = Playing it safe, 10 = Attacking every 1v1 with purpose)' }
+                ];
+                const currentStep = superBehaviorSteps.braveOnBall;
+                const currentQuestion = behaviorData[currentStep];
+                const isComplete = currentStep >= 4;
+                const average = isComplete ? ((postActivityData.superBehaviours.braveOnBall.question1 + postActivityData.superBehaviours.braveOnBall.question2 + postActivityData.superBehaviours.braveOnBall.question3 + postActivityData.superBehaviours.braveOnBall.question4) / 4).toFixed(1) : null;
+
+                return (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-xl">🔥</span>
+                      <h3 className="text-lg font-bold">Brave on the Ball</h3>
+                      {isComplete && (
+                        <span className="ml-auto text-primary font-bold">
+                          Avg: {average}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">Trying forward actions, dribbling, risky passes</p>
+                    
+                    {!isComplete ? (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-muted-foreground">Question {currentStep + 1} of 4</span>
+                          <div className="flex gap-1">
+                            {[0, 1, 2, 3].map((step) => (
+                              <div
+                                key={step}
+                                className={`w-2 h-2 rounded-full ${
+                                  step <= currentStep ? 'bg-primary' : 'bg-muted'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-4 p-4 bg-muted/20 rounded-xl">
+                          <div>
+                            <p className="text-sm font-medium mb-1">{currentQuestion.text}</p>
+                            <p className="text-xs text-muted-foreground">{currentQuestion.subtext}</p>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm">Rate this:</span>
+                              <span className="text-primary font-bold">
+                                {postActivityData.superBehaviours.braveOnBall[currentQuestion.key as keyof typeof postActivityData.superBehaviours.braveOnBall]}/10
+                              </span>
+                            </div>
+                            <Slider
+                              value={[postActivityData.superBehaviours.braveOnBall[currentQuestion.key as keyof typeof postActivityData.superBehaviours.braveOnBall]]}
+                              onValueChange={(value) => setPostActivityData(prev => ({
+                                ...prev,
+                                superBehaviours: {
+                                  ...prev.superBehaviours,
+                                  braveOnBall: {
+                                    ...prev.superBehaviours.braveOnBall,
+                                    [currentQuestion.key]: value[0]
+                                  }
+                                }
+                              }))}
+                              max={10}
+                              min={1}
+                              step={1}
+                              className="w-full"
+                            />
+                          </div>
+                          
+                          <Button 
+                            onClick={() => {
+                              setSuperBehaviorSteps(prev => ({ ...prev, braveOnBall: prev.braveOnBall + 1 }));
+                              if (currentStep === 3) {
+                                toast({
+                                  title: "🔥 Brave on the Ball Complete!",
+                                  description: `Average score: ${((postActivityData.superBehaviours.braveOnBall.question1 + postActivityData.superBehaviours.braveOnBall.question2 + postActivityData.superBehaviours.braveOnBall.question3 + postActivityData.superBehaviours.braveOnBall.question4) / 4).toFixed(1)}/10`,
+                                });
+                              }
+                            }}
+                            className="w-full"
+                          >
+                            {currentStep === 3 ? 'Complete Brave on the Ball' : 'Next Question'}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-4 bg-success/10 border border-success/30 rounded-xl">
+                        <p className="text-sm font-medium text-success mb-2">✅ Completed!</p>
+                        <p className="text-xs text-muted-foreground">Final score: {average}/10</p>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="mt-2"
+                          onClick={() => setSuperBehaviorSteps(prev => ({ ...prev, braveOnBall: 0 }))}
+                        >
+                          Redo
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
               {/* Brave off the Ball */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-xl">🧱</span>
-                  <h3 className="text-lg font-bold">Brave off the Ball</h3>
-                  <span className="ml-auto text-primary font-bold">
-                    Avg: {((postActivityData.superBehaviours.braveOffBall.question1 + postActivityData.superBehaviours.braveOffBall.question2 + postActivityData.superBehaviours.braveOffBall.question3 + postActivityData.superBehaviours.braveOffBall.question4) / 4).toFixed(1)}
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground mb-4">Getting into the game, showing for the ball, staying involved</p>
-                
-                {[
+              {(() => {
+                const behaviorData = [
                   { key: 'question1', text: 'How often did you show for the ball or move into space?', subtext: '(1 = I hid or waited, 10 = I was always available and active)' },
                   { key: 'question2', text: 'How much intent did you show when trying to get involved?', subtext: '(1 = Passive movements, 10 = Sharp, purposeful movements)' },
                   { key: 'question3', text: 'Did you keep moving even when things weren\'t going well?', subtext: '(1 = I gave up a bit, 10 = I kept trying no matter what)' },
                   { key: 'question4', text: 'Did you create good angles and options for your teammates?', subtext: '(1 = Rarely, 10 = Constantly helped the team with my positioning)' }
-                ].map(({ key, text, subtext }, index) => (
-                  <div key={key} className="space-y-2">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">{index + 1}. {text}</p>
-                        <p className="text-xs text-muted-foreground">{subtext}</p>
-                      </div>
-                      <span className="ml-4 text-primary font-bold text-sm">
-                        {postActivityData.superBehaviours.braveOffBall[key as keyof typeof postActivityData.superBehaviours.braveOffBall]}/10
-                      </span>
+                ];
+                const currentStep = superBehaviorSteps.braveOffBall;
+                const currentQuestion = behaviorData[currentStep];
+                const isComplete = currentStep >= 4;
+                const average = isComplete ? ((postActivityData.superBehaviours.braveOffBall.question1 + postActivityData.superBehaviours.braveOffBall.question2 + postActivityData.superBehaviours.braveOffBall.question3 + postActivityData.superBehaviours.braveOffBall.question4) / 4).toFixed(1) : null;
+                const canStart = superBehaviorSteps.braveOnBall >= 4;
+
+                return (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-xl">🧱</span>
+                      <h3 className="text-lg font-bold">Brave off the Ball</h3>
+                      {isComplete && (
+                        <span className="ml-auto text-primary font-bold">
+                          Avg: {average}
+                        </span>
+                      )}
                     </div>
-                    <Slider
-                      value={[postActivityData.superBehaviours.braveOffBall[key as keyof typeof postActivityData.superBehaviours.braveOffBall]]}
-                      onValueChange={(value) => setPostActivityData(prev => ({
-                        ...prev,
-                        superBehaviours: {
-                          ...prev.superBehaviours,
-                          braveOffBall: {
-                            ...prev.superBehaviours.braveOffBall,
-                            [key]: value[0]
-                          }
-                        }
-                      }))}
-                      max={10}
-                      min={1}
-                      step={1}
-                      className="w-full"
-                    />
+                    <p className="text-sm text-muted-foreground mb-4">Getting into the game, showing for the ball, staying involved</p>
+                    
+                    {!canStart ? (
+                      <div className="p-4 bg-muted/20 rounded-xl text-center">
+                        <p className="text-sm text-muted-foreground">Complete "Brave on the Ball" first</p>
+                      </div>
+                    ) : !isComplete ? (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-muted-foreground">Question {currentStep + 1} of 4</span>
+                          <div className="flex gap-1">
+                            {[0, 1, 2, 3].map((step) => (
+                              <div
+                                key={step}
+                                className={`w-2 h-2 rounded-full ${
+                                  step <= currentStep ? 'bg-primary' : 'bg-muted'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-4 p-4 bg-muted/20 rounded-xl">
+                          <div>
+                            <p className="text-sm font-medium mb-1">{currentQuestion.text}</p>
+                            <p className="text-xs text-muted-foreground">{currentQuestion.subtext}</p>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm">Rate this:</span>
+                              <span className="text-primary font-bold">
+                                {postActivityData.superBehaviours.braveOffBall[currentQuestion.key as keyof typeof postActivityData.superBehaviours.braveOffBall]}/10
+                              </span>
+                            </div>
+                            <Slider
+                              value={[postActivityData.superBehaviours.braveOffBall[currentQuestion.key as keyof typeof postActivityData.superBehaviours.braveOffBall]]}
+                              onValueChange={(value) => setPostActivityData(prev => ({
+                                ...prev,
+                                superBehaviours: {
+                                  ...prev.superBehaviours,
+                                  braveOffBall: {
+                                    ...prev.superBehaviours.braveOffBall,
+                                    [currentQuestion.key]: value[0]
+                                  }
+                                }
+                              }))}
+                              max={10}
+                              min={1}
+                              step={1}
+                              className="w-full"
+                            />
+                          </div>
+                          
+                          <Button 
+                            onClick={() => {
+                              setSuperBehaviorSteps(prev => ({ ...prev, braveOffBall: prev.braveOffBall + 1 }));
+                              if (currentStep === 3) {
+                                toast({
+                                  title: "🧱 Brave off the Ball Complete!",
+                                  description: `Average score: ${((postActivityData.superBehaviours.braveOffBall.question1 + postActivityData.superBehaviours.braveOffBall.question2 + postActivityData.superBehaviours.braveOffBall.question3 + postActivityData.superBehaviours.braveOffBall.question4) / 4).toFixed(1)}/10`,
+                                });
+                              }
+                            }}
+                            className="w-full"
+                          >
+                            {currentStep === 3 ? 'Complete Brave off the Ball' : 'Next Question'}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-4 bg-success/10 border border-success/30 rounded-xl">
+                        <p className="text-sm font-medium text-success mb-2">✅ Completed!</p>
+                        <p className="text-xs text-muted-foreground">Final score: {average}/10</p>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="mt-2"
+                          onClick={() => setSuperBehaviorSteps(prev => ({ ...prev, braveOffBall: 0 }))}
+                        >
+                          Redo
+                        </Button>
+                      </div>
+                    )}
                   </div>
-                ))}
-              </div>
+                );
+              })()}
 
               {/* Electric */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-xl">⚡️</span>
-                  <h3 className="text-lg font-bold">Electric</h3>
-                  <span className="ml-auto text-primary font-bold">
-                    Avg: {((postActivityData.superBehaviours.electric.question1 + postActivityData.superBehaviours.electric.question2 + postActivityData.superBehaviours.electric.question3 + postActivityData.superBehaviours.electric.question4) / 4).toFixed(1)}
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground mb-4">Energy, speed, quick reactions, intensity</p>
-                
-                {[
+              {(() => {
+                const behaviorData = [
                   { key: 'question1', text: 'How much energy did you bring to the game today?', subtext: '(1 = Very flat, 10 = Full of energy the whole time)' },
                   { key: 'question2', text: 'How quick were your reactions during the game?', subtext: '(1 = Slow to react, 10 = Switched on and alert)' },
                   { key: 'question3', text: 'How fast and sharp were your decisions?', subtext: '(1 = I delayed or hesitated, 10 = I made fast, confident choices)' },
                   { key: 'question4', text: 'Did you move with speed and urgency when the team needed it?', subtext: '(1 = I jogged or walked a lot, 10 = I exploded into actions)' }
-                ].map(({ key, text, subtext }, index) => (
-                  <div key={key} className="space-y-2">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">{index + 1}. {text}</p>
-                        <p className="text-xs text-muted-foreground">{subtext}</p>
-                      </div>
-                      <span className="ml-4 text-primary font-bold text-sm">
-                        {postActivityData.superBehaviours.electric[key as keyof typeof postActivityData.superBehaviours.electric]}/10
-                      </span>
+                ];
+                const currentStep = superBehaviorSteps.electric;
+                const currentQuestion = behaviorData[currentStep];
+                const isComplete = currentStep >= 4;
+                const average = isComplete ? ((postActivityData.superBehaviours.electric.question1 + postActivityData.superBehaviours.electric.question2 + postActivityData.superBehaviours.electric.question3 + postActivityData.superBehaviours.electric.question4) / 4).toFixed(1) : null;
+                const canStart = superBehaviorSteps.braveOffBall >= 4;
+
+                return (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-xl">⚡️</span>
+                      <h3 className="text-lg font-bold">Electric</h3>
+                      {isComplete && (
+                        <span className="ml-auto text-primary font-bold">
+                          Avg: {average}
+                        </span>
+                      )}
                     </div>
-                    <Slider
-                      value={[postActivityData.superBehaviours.electric[key as keyof typeof postActivityData.superBehaviours.electric]]}
-                      onValueChange={(value) => setPostActivityData(prev => ({
-                        ...prev,
-                        superBehaviours: {
-                          ...prev.superBehaviours,
-                          electric: {
-                            ...prev.superBehaviours.electric,
-                            [key]: value[0]
-                          }
-                        }
-                      }))}
-                      max={10}
-                      min={1}
-                      step={1}
-                      className="w-full"
-                    />
+                    <p className="text-sm text-muted-foreground mb-4">Energy, speed, quick reactions, intensity</p>
+                    
+                    {!canStart ? (
+                      <div className="p-4 bg-muted/20 rounded-xl text-center">
+                        <p className="text-sm text-muted-foreground">Complete "Brave off the Ball" first</p>
+                      </div>
+                    ) : !isComplete ? (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-muted-foreground">Question {currentStep + 1} of 4</span>
+                          <div className="flex gap-1">
+                            {[0, 1, 2, 3].map((step) => (
+                              <div
+                                key={step}
+                                className={`w-2 h-2 rounded-full ${
+                                  step <= currentStep ? 'bg-primary' : 'bg-muted'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-4 p-4 bg-muted/20 rounded-xl">
+                          <div>
+                            <p className="text-sm font-medium mb-1">{currentQuestion.text}</p>
+                            <p className="text-xs text-muted-foreground">{currentQuestion.subtext}</p>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm">Rate this:</span>
+                              <span className="text-primary font-bold">
+                                {postActivityData.superBehaviours.electric[currentQuestion.key as keyof typeof postActivityData.superBehaviours.electric]}/10
+                              </span>
+                            </div>
+                            <Slider
+                              value={[postActivityData.superBehaviours.electric[currentQuestion.key as keyof typeof postActivityData.superBehaviours.electric]]}
+                              onValueChange={(value) => setPostActivityData(prev => ({
+                                ...prev,
+                                superBehaviours: {
+                                  ...prev.superBehaviours,
+                                  electric: {
+                                    ...prev.superBehaviours.electric,
+                                    [currentQuestion.key]: value[0]
+                                  }
+                                }
+                              }))}
+                              max={10}
+                              min={1}
+                              step={1}
+                              className="w-full"
+                            />
+                          </div>
+                          
+                          <Button 
+                            onClick={() => {
+                              setSuperBehaviorSteps(prev => ({ ...prev, electric: prev.electric + 1 }));
+                              if (currentStep === 3) {
+                                toast({
+                                  title: "⚡️ Electric Complete!",
+                                  description: `Average score: ${((postActivityData.superBehaviours.electric.question1 + postActivityData.superBehaviours.electric.question2 + postActivityData.superBehaviours.electric.question3 + postActivityData.superBehaviours.electric.question4) / 4).toFixed(1)}/10`,
+                                });
+                              }
+                            }}
+                            className="w-full"
+                          >
+                            {currentStep === 3 ? 'Complete Electric' : 'Next Question'}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-4 bg-success/10 border border-success/30 rounded-xl">
+                        <p className="text-sm font-medium text-success mb-2">✅ Completed!</p>
+                        <p className="text-xs text-muted-foreground">Final score: {average}/10</p>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="mt-2"
+                          onClick={() => setSuperBehaviorSteps(prev => ({ ...prev, electric: 0 }))}
+                        >
+                          Redo
+                        </Button>
+                      </div>
+                    )}
                   </div>
-                ))}
-              </div>
+                );
+              })()}
 
               {/* Aggressive */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-xl">💢</span>
-                  <h3 className="text-lg font-bold">Aggressive</h3>
-                  <span className="ml-auto text-primary font-bold">
-                    Avg: {((postActivityData.superBehaviours.aggressive.question1 + postActivityData.superBehaviours.aggressive.question2 + postActivityData.superBehaviours.aggressive.question3 + postActivityData.superBehaviours.aggressive.question4) / 4).toFixed(1)}
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground mb-4">Competing, pressing, tackling, 1v1 duels</p>
-                
-                {[
+              {(() => {
+                const behaviorData = [
                   { key: 'question1', text: 'How often did you go into 1v1 duels or physical challenges?', subtext: '(1 = Avoided them, 10 = Went into everything)' },
                   { key: 'question2', text: 'When you pressed or challenged, how committed were you?', subtext: '(1 = Soft / hesitant, 10 = 100% effort every time)' },
                   { key: 'question3', text: 'How often did you win your battles or at least make it difficult?', subtext: '(1 = Lost most or backed out, 10 = Made it a real fight every time)' },
                   { key: 'question4', text: 'How much did you enjoy competing and fighting for the ball?', subtext: '(1 = Didn\'t enjoy it, 10 = Loved the challenge and looked for it)' }
-                ].map(({ key, text, subtext }, index) => (
-                  <div key={key} className="space-y-2">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">{index + 1}. {text}</p>
-                        <p className="text-xs text-muted-foreground">{subtext}</p>
-                      </div>
-                      <span className="ml-4 text-primary font-bold text-sm">
-                        {postActivityData.superBehaviours.aggressive[key as keyof typeof postActivityData.superBehaviours.aggressive]}/10
-                      </span>
+                ];
+                const currentStep = superBehaviorSteps.aggressive;
+                const currentQuestion = behaviorData[currentStep];
+                const isComplete = currentStep >= 4;
+                const average = isComplete ? ((postActivityData.superBehaviours.aggressive.question1 + postActivityData.superBehaviours.aggressive.question2 + postActivityData.superBehaviours.aggressive.question3 + postActivityData.superBehaviours.aggressive.question4) / 4).toFixed(1) : null;
+                const canStart = superBehaviorSteps.electric >= 4;
+
+                return (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-xl">💢</span>
+                      <h3 className="text-lg font-bold">Aggressive</h3>
+                      {isComplete && (
+                        <span className="ml-auto text-primary font-bold">
+                          Avg: {average}
+                        </span>
+                      )}
                     </div>
-                    <Slider
-                      value={[postActivityData.superBehaviours.aggressive[key as keyof typeof postActivityData.superBehaviours.aggressive]]}
-                      onValueChange={(value) => setPostActivityData(prev => ({
-                        ...prev,
-                        superBehaviours: {
-                          ...prev.superBehaviours,
-                          aggressive: {
-                            ...prev.superBehaviours.aggressive,
-                            [key]: value[0]
-                          }
-                        }
-                      }))}
-                      max={10}
-                      min={1}
-                      step={1}
-                      className="w-full"
-                    />
+                    <p className="text-sm text-muted-foreground mb-4">Competing, pressing, tackling, 1v1 duels</p>
+                    
+                    {!canStart ? (
+                      <div className="p-4 bg-muted/20 rounded-xl text-center">
+                        <p className="text-sm text-muted-foreground">Complete "Electric" first</p>
+                      </div>
+                    ) : !isComplete ? (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-muted-foreground">Question {currentStep + 1} of 4</span>
+                          <div className="flex gap-1">
+                            {[0, 1, 2, 3].map((step) => (
+                              <div
+                                key={step}
+                                className={`w-2 h-2 rounded-full ${
+                                  step <= currentStep ? 'bg-primary' : 'bg-muted'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-4 p-4 bg-muted/20 rounded-xl">
+                          <div>
+                            <p className="text-sm font-medium mb-1">{currentQuestion.text}</p>
+                            <p className="text-xs text-muted-foreground">{currentQuestion.subtext}</p>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm">Rate this:</span>
+                              <span className="text-primary font-bold">
+                                {postActivityData.superBehaviours.aggressive[currentQuestion.key as keyof typeof postActivityData.superBehaviours.aggressive]}/10
+                              </span>
+                            </div>
+                            <Slider
+                              value={[postActivityData.superBehaviours.aggressive[currentQuestion.key as keyof typeof postActivityData.superBehaviours.aggressive]]}
+                              onValueChange={(value) => setPostActivityData(prev => ({
+                                ...prev,
+                                superBehaviours: {
+                                  ...prev.superBehaviours,
+                                  aggressive: {
+                                    ...prev.superBehaviours.aggressive,
+                                    [currentQuestion.key]: value[0]
+                                  }
+                                }
+                              }))}
+                              max={10}
+                              min={1}
+                              step={1}
+                              className="w-full"
+                            />
+                          </div>
+                          
+                          <Button 
+                            onClick={() => {
+                              setSuperBehaviorSteps(prev => ({ ...prev, aggressive: prev.aggressive + 1 }));
+                              if (currentStep === 3) {
+                                toast({
+                                  title: "💢 Aggressive Complete!",
+                                  description: `Average score: ${((postActivityData.superBehaviours.aggressive.question1 + postActivityData.superBehaviours.aggressive.question2 + postActivityData.superBehaviours.aggressive.question3 + postActivityData.superBehaviours.aggressive.question4) / 4).toFixed(1)}/10`,
+                                });
+                              }
+                            }}
+                            className="w-full"
+                          >
+                            {currentStep === 3 ? 'Complete Aggressive' : 'Next Question'}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-4 bg-success/10 border border-success/30 rounded-xl">
+                        <p className="text-sm font-medium text-success mb-2">✅ Completed!</p>
+                        <p className="text-xs text-muted-foreground">Final score: {average}/10</p>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="mt-2"
+                          onClick={() => setSuperBehaviorSteps(prev => ({ ...prev, aggressive: 0 }))}
+                        >
+                          Redo
+                        </Button>
+                      </div>
+                    )}
                   </div>
-                ))}
-              </div>
+                );
+              })()}
             </CardContent>
           </Card>
 
