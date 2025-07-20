@@ -298,46 +298,6 @@ export default function Charts({ selectedFilter }: ChartsProps) {
           <CardHeader>
             <CardTitle className="text-lg">Mood & Confidence Trend</CardTitle>
           </CardHeader>
-          <CardContent>
-            {moodTrends.length > 0 ? (
-              <ResponsiveContainer width="100%" height={200}>
-                <LineChart data={moodTrends}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="date" 
-                    tickFormatter={formatDate}
-                    fontSize={12}
-                  />
-                  <YAxis domain={[0, 10]} fontSize={12} />
-                  <Tooltip 
-                    labelFormatter={(label) => formatDate(label)}
-                    formatter={(value, name) => [
-                      `${value}${name === 'mood' ? '/5' : '/10'}`, 
-                      name === 'mood' ? 'Mood' : 'Confidence'
-                    ]}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="mood" 
-                    stroke="hsl(var(--warning))" 
-                    strokeWidth={2}
-                    dot={{ fill: "hsl(var(--warning))", strokeWidth: 2, r: 4 }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="confidence" 
-                    stroke="hsl(var(--accent))" 
-                    strokeWidth={2}
-                    dot={{ fill: "hsl(var(--accent))", strokeWidth: 2, r: 4 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="text-center text-muted-foreground py-8">
-                Complete some activities with post-activity reflections to see trends
-              </div>
-            )}
-          </CardContent>
         </Card>
       </div>
 
