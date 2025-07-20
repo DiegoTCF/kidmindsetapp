@@ -91,7 +91,7 @@ const superBehaviours: SuperBehaviour[] = [
 export default function ActivityForm({ activity, onComplete, existingActivityId, isResumingActivity = false }: ActivityFormProps) {
   const { toast } = useToast();
   
-  const [confidenceLevel, setConfidenceLevel] = useState<number>(5);
+  const [confidenceLevel, setConfidenceLevel] = useState<number>(0);
   const [intention, setIntention] = useState("");
   const [selectedBehaviours, setSelectedBehaviours] = useState<SuperBehaviour[]>(superBehaviours);
   const [preActivityItems, setPreActivityItems] = useState<PreActivityItem[]>(defaultPreActivityItems);
@@ -425,7 +425,8 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
     const allItemsHandled = preActivityItems.every(item => item.completed || item.skipped);
     const hasConfidence = confidenceLevel > 0;
     const hasIntention = intention.trim().length > 0 || selectedBehaviours.some(b => b.selected && b.description.trim().length > 0);
-    return allItemsHandled && hasConfidence && hasIntention;
+    const hasWorryHandled = confidenceLevel > 7 || (confidenceLevel >= 1 && confidenceLevel <= 7 && worryData);
+    return allItemsHandled && hasConfidence && hasIntention && hasWorryHandled;
   };
 
   const isPostActivityComplete = () => {
@@ -519,7 +520,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
               <div className="space-y-4">
                 <div className="px-2">
                   <Slider
-                    value={[confidenceLevel]}
+                    value={confidenceLevel === 0 ? [0] : [confidenceLevel]}
                     onValueChange={(value) => {
                       setConfidenceLevel(value[0]);
                       // Show mindset support flow if confidence is between 1-7
@@ -528,16 +529,47 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                       }
                     }}
                     max={10}
-                    min={1}
+                    min={0}
                     step={1}
                     className="w-full"
                   />
                 </div>
                 <div className="text-center">
                   <span className="text-2xl font-bold text-primary">
-                    {confidenceLevel}/10
+                    {confidenceLevel === 0 ? "Not selected" : `${confidenceLevel}/10`}
                   </span>
                 </div>
+                
+                {/* Show worry selection if confidence is between 1-7 and no mindset flow active */}
+                {confidenceLevel >= 1 && confidenceLevel <= 7 && !showMindsetFlow && !worryData && (
+                  <div className="mt-6 space-y-4">
+                    <h3 className="text-lg font-semibold text-center">What is worrying you?</h3>
+                    <div className="space-y-2">
+                      {[
+                        { id: 'physical-big', text: 'The players look good or physically big', emoji: '💪' },
+                        { id: 'people-think', text: "I'm worried about what people might think", emoji: '👥' },
+                        { id: 'making-mistakes', text: "I'm scared of making mistakes", emoji: '😬' },
+                        { id: 'getting-hurt', text: "I'm scared of getting hurt", emoji: '🛡️' },
+                        { id: 'pressure-perform', text: "I'm feeling pressure to perform", emoji: '🎯' }
+                      ].map((worry) => (
+                        <Button
+                          key={worry.id}
+                          variant="outline"
+                          className="w-full h-auto p-4 text-left border-2 hover:border-primary/50 transition-all duration-200"
+                          onClick={() => {
+                            setWorryData({ reason: worry.text, answers: {} });
+                            setShowMindsetFlow(true);
+                          }}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-xl">{worry.emoji}</span>
+                            <span className="text-sm font-medium">{worry.text}</span>
+                          </div>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 
                 {/* Show worry data if completed */}
                 {worryData && confidenceLevel <= 7 && (
@@ -953,8 +985,9 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
       </Tabs>
 
       {/* Mindset Support Flow Modal */}
-      {showMindsetFlow && (
+      {showMindsetFlow && worryData && (
         <MindsetSupportFlow
+          worryReason={worryData.reason}
           onComplete={handleMindsetFlowComplete}
           onClose={handleMindsetFlowClose}
         />

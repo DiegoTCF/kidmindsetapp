@@ -2,142 +2,242 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { X, Heart, Brain, Shield, Lightbulb, Star } from 'lucide-react';
+import { X, Brain, Lightbulb } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface WorryOption {
-  id: string;
-  text: string;
-  icon: React.ReactNode;
-}
-
-interface SupportFlow {
-  fact: string;
-  questions: {
-    id: string;
-    question: string;
-    type: 'yes-no' | 'text';
-  }[];
-  affirmation: string;
-}
-
 interface MindsetSupportFlowProps {
+  worryReason: string;
   onComplete: (worryReason: string, answers: Record<string, string>) => void;
   onClose: () => void;
 }
 
-const worryOptions: WorryOption[] = [
-  {
-    id: 'physical-intimidation',
-    text: 'The players look good or physically big',
-    icon: <Shield className="w-5 h-5" />
-  },
-  {
-    id: 'judgment-worry',
-    text: "I'm worried about what people might think",
-    icon: <Heart className="w-5 h-5" />
-  },
-  {
-    id: 'mistake-fear',
-    text: "I'm scared of making mistakes",
-    icon: <Brain className="w-5 h-5" />
-  },
-  {
-    id: 'injury-fear',
-    text: "I'm scared of getting hurt",
-    icon: <Shield className="w-5 h-5" />
-  },
-  {
-    id: 'performance-pressure',
-    text: "I'm feeling pressure to perform",
-    icon: <Star className="w-5 h-5" />
-  }
-];
+interface FlowStep {
+  type: 'fact' | 'question' | 'affirmation';
+  content: string;
+  questionType?: 'yes-no' | 'text';
+  questionId?: string;
+  yesResponse?: string;
+  noResponse?: string;
+}
 
-const supportFlows: Record<string, SupportFlow> = {
-  'physical-intimidation': {
-    fact: "Did you know? Size doesn't determine skill! Many of the world's best players like Messi, Modric, and Verratti are smaller than average. Football is about technique, intelligence, and heart - not just physical size.",
-    questions: [
-      { id: 'skills-confidence', question: 'Do you feel confident about your technical skills?', type: 'yes-no' },
-      { id: 'speed-advantage', question: 'Can you think of ways your speed or agility might be an advantage?', type: 'text' },
-      { id: 'past-success', question: 'Tell me about a time you succeeded against bigger/stronger opponents:', type: 'text' }
-    ],
-    affirmation: "You have unique strengths that make you special. Size is just one factor - your skill, speed, and intelligence are your superpowers! 🌟"
-  },
-  'judgment-worry': {
-    fact: "Fun fact: Even professional players worry about what others think sometimes! The secret is that most people are focused on their own performance, not judging yours. Those who support you want to see you succeed.",
-    questions: [
-      { id: 'support-system', question: 'Do you have people cheering for you today?', type: 'yes-no' },
-      { id: 'positive-focus', question: 'What would you tell a friend who was worried about the same thing?', type: 'text' },
-      { id: 'proud-moment', question: 'What skill or quality are you most proud of in your game?', type: 'text' }
-    ],
-    affirmation: "You belong on that field! The people who matter are rooting for you. Play with joy and let your personality shine through! ✨"
-  },
-  'mistake-fear': {
-    fact: "Here's the truth: Even Ronaldo and Messi make mistakes in every game! Mistakes are how we learn and grow. The best players don't avoid mistakes - they learn from them quickly and bounce back stronger.",
-    questions: [
-      { id: 'learning-mindset', question: 'Can you think of mistakes as learning opportunities?', type: 'yes-no' },
-      { id: 'recovery-plan', question: 'What will you do if you make a mistake during the game?', type: 'text' },
-      { id: 'growth-example', question: 'Tell me about a mistake that helped you improve:', type: 'text' }
-    ],
-    affirmation: "Mistakes are just stepping stones to greatness! Every mistake is a chance to show your resilience and grow stronger. You've got this! 💪"
-  },
-  'injury-fear': {
-    fact: "Good news: Most football activities have very low injury rates, especially when you're prepared! Your body is designed to move and be active. Proper warm-up and listening to your body keeps you safe.",
-    questions: [
-      { id: 'preparation-confidence', question: 'Do you feel physically prepared and warmed up?', type: 'yes-no' },
-      { id: 'safety-awareness', question: 'What safety rules do you know that help protect players?', type: 'text' },
-      { id: 'body-listening', question: 'How will you listen to your body during the activity?', type: 'text' }
-    ],
-    affirmation: "Your body is strong and capable! Trust in your preparation and play smart. You know how to keep yourself safe while having fun! 🛡️"
-  },
-  'performance-pressure': {
-    fact: "Did you know? Pressure is actually your body getting ready to perform! Champions learn to use this energy positively. Remember, you're here to learn, grow, and have fun - the performance will follow naturally.",
-    questions: [
-      { id: 'fun-focus', question: 'Can you focus on having fun rather than being perfect?', type: 'yes-no' },
-      { id: 'effort-goals', question: 'What effort goals (not outcome goals) can you set for today?', type: 'text' },
-      { id: 'pressure-release', question: 'What helps you feel relaxed and enjoy playing?', type: 'text' }
-    ],
-    affirmation: "You're exactly where you need to be! Focus on effort, learning, and joy. When you play with freedom, your best performance naturally follows! 🎯"
-  }
+const supportFlows: Record<string, FlowStep[]> = {
+  'The players look good or physically big': [
+    {
+      type: 'fact',
+      content: "When your brain sees a threat (like a big or skilful opponent), it switches into survival mode. That means fear, doubt, and hesitation — it wants to avoid the problem to protect you.\nBut here's the thing: you need to be in charge — not your brain."
+    },
+    {
+      type: 'question',
+      content: "Have you ever played well at this level before?",
+      questionType: 'yes-no',
+      questionId: 'played-well-before',
+      yesResponse: "There you go — that's proof you've done it before.",
+      noResponse: "That's OK. Today can be the first time. Embrace the challenge."
+    },
+    {
+      type: 'question',
+      content: "If you didn't care how big or good they were — how would you play today?",
+      questionType: 'text',
+      questionId: 'play-freely'
+    },
+    {
+      type: 'question',
+      content: "If you focused only on yourself and your behaviours — how do you think that would help you?",
+      questionType: 'text',
+      questionId: 'self-focus'
+    },
+    {
+      type: 'affirmation',
+      content: "🧠 Breathe. Relax.\nRepeat: \"You don't need to be perfect or better — you just need to be you, and focus on your actions.\""
+    }
+  ],
+  "I'm worried about what people might think": [
+    {
+      type: 'fact',
+      content: "Your brain is wired to care about fitting in. It hates the idea of rejection or judgment — so it creates fear, even when you're not in danger.\nBut most of the time… people aren't thinking about you at all."
+    },
+    {
+      type: 'question',
+      content: "Do you think worrying about what others think makes you play better?",
+      questionType: 'yes-no',
+      questionId: 'worry-helps',
+      yesResponse: "Or does it just make you hesitate and play safe?",
+      noResponse: "Exactly. If it doesn't help, drop it."
+    },
+    {
+      type: 'question',
+      content: "Have you ever played freely, even with people watching?",
+      questionType: 'yes-no',
+      questionId: 'played-freely',
+      yesResponse: "There's your proof — you can play your game.",
+      noResponse: "Maybe today is the first time."
+    },
+    {
+      type: 'question',
+      content: "If you only focused on enjoying your football and your behaviours — what would change?",
+      questionType: 'text',
+      questionId: 'enjoy-focus'
+    },
+    {
+      type: 'affirmation',
+      content: "🧠 Breathe. Smile.\nRepeat this affirmation: \"No matter what other people think, say or do — I only focus on my behaviours.\""
+    }
+  ],
+  "I'm scared of making mistakes": [
+    {
+      type: 'fact',
+      content: "The fear of making mistakes feels like danger. But it's not. In fact, mistakes are how you grow.\nEvery confident player you admire makes them too — they just don't freeze because of it."
+    },
+    {
+      type: 'question',
+      content: "Do you think avoiding mistakes makes you play better?",
+      questionType: 'yes-no',
+      questionId: 'avoid-mistakes',
+      yesResponse: "Or does it just make you cautious and slow?",
+      noResponse: "Then take risks and express yourself — that's how you improve."
+    },
+    {
+      type: 'question',
+      content: "Can you remember a time when you made a mistake… but recovered well?",
+      questionType: 'yes-no',
+      questionId: 'mistake-recovery',
+      yesResponse: "That's the mindset — bounce back and go again.",
+      noResponse: "That's OK. Today is a chance to practise it."
+    },
+    {
+      type: 'question',
+      content: "If you didn't fear mistakes — how brave would you be on the ball today?",
+      questionType: 'text',
+      questionId: 'brave-no-fear'
+    },
+    {
+      type: 'affirmation',
+      content: "🧠 Breathe. Be brave.\nRepeat: \"Mistakes don't define me — my response does.\""
+    }
+  ],
+  "I'm scared of getting hurt": [
+    {
+      type: 'fact',
+      content: "If you're scared of getting hurt, your brain will tell your body to slow down, avoid tackles, and stay safe.\nBut here's the truth: playing half-hearted actually makes injuries more likely — not less."
+    },
+    {
+      type: 'question',
+      content: "Do you think holding back keeps you safer?",
+      questionType: 'yes-no',
+      questionId: 'holding-back',
+      yesResponse: "Actually, going in strong and with intention is what protects you.",
+      noResponse: "Then trust your body and give your best."
+    },
+    {
+      type: 'question',
+      content: "Have you ever gone in with full commitment and come out fine?",
+      questionType: 'yes-no',
+      questionId: 'full-commitment',
+      yesResponse: "There's your evidence — your body is stronger than your brain says.",
+      noResponse: "That's OK. Be smart — but be committed."
+    },
+    {
+      type: 'question',
+      content: "If you trusted yourself to be aggressive and in control — how would you play today?",
+      questionType: 'text',
+      questionId: 'aggressive-control'
+    },
+    {
+      type: 'affirmation',
+      content: "🧠 Breathe. Lock in.\nRepeat: \"Playing strong is how I stay safe — and play my best.\""
+    }
+  ],
+  "I'm feeling pressure to perform": [
+    {
+      type: 'fact',
+      content: "Science shows that putting pressure on yourself actually makes you play worse. It clutters your mind and tightens your body."
+    },
+    {
+      type: 'question',
+      content: "Do you think putting pressure on yourself will help you play better?",
+      questionType: 'yes-no',
+      questionId: 'pressure-helps',
+      yesResponse: "No — in fact, it can make you play worse!",
+      noResponse: "Exactly. If it doesn't help, why do it?"
+    },
+    {
+      type: 'question',
+      content: "Have you played in important sessions or matches and still done well?",
+      questionType: 'yes-no',
+      questionId: 'important-games',
+      yesResponse: "There you go — you've got evidence. If you've done it before, you can do it again.",
+      noResponse: ""
+    },
+    {
+      type: 'question',
+      content: "If there was no pressure, and you focused only on your behaviours — how would you play today?",
+      questionType: 'text',
+      questionId: 'no-pressure-focus'
+    },
+    {
+      type: 'affirmation',
+      content: "🧠 Breathe. Focus on yourself and the behaviours you can control.\nRepeat: \"No matter who with, or who against, I focus on my behaviours.\""
+    }
+  ]
 };
 
-export default function MindsetSupportFlow({ onComplete, onClose }: MindsetSupportFlowProps) {
-  const [selectedWorry, setSelectedWorry] = useState<string | null>(null);
+export default function MindsetSupportFlow({ worryReason, onComplete, onClose }: MindsetSupportFlowProps) {
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [currentStep, setCurrentStep] = useState<'selection' | 'flow' | 'affirmation'>('selection');
+  const [showResponse, setShowResponse] = useState<string | null>(null);
 
-  const handleWorrySelect = (worryId: string) => {
-    setSelectedWorry(worryId);
-    setCurrentStep('flow');
-  };
+  const flow = supportFlows[worryReason];
+  if (!flow) return null;
 
-  const handleAnswerChange = (questionId: string, answer: string) => {
-    setAnswers(prev => ({ ...prev, [questionId]: answer }));
-  };
+  const currentStep = flow[currentStepIndex];
+  const isLastStep = currentStepIndex === flow.length - 1;
 
-  const handleContinue = () => {
-    if (selectedWorry) {
-      const flow = supportFlows[selectedWorry];
-      const allQuestionsAnswered = flow.questions.every(q => 
-        answers[q.id] && answers[q.id].trim().length > 0
-      );
+  const handleYesNoAnswer = (answer: string) => {
+    if (currentStep.questionId) {
+      setAnswers(prev => ({ ...prev, [currentStep.questionId!]: answer }));
       
-      if (allQuestionsAnswered) {
-        setCurrentStep('affirmation');
+      // Show the appropriate response
+      const response = answer === 'Yes' ? currentStep.yesResponse : currentStep.noResponse;
+      if (response) {
+        setShowResponse(response);
+      } else {
+        // If no response, move to next step immediately
+        handleContinue();
       }
     }
   };
 
-  const handleComplete = () => {
-    if (selectedWorry) {
-      const worryOption = worryOptions.find(w => w.id === selectedWorry);
-      onComplete(worryOption?.text || '', answers);
+  const handleTextAnswer = (text: string) => {
+    if (currentStep.questionId) {
+      setAnswers(prev => ({ ...prev, [currentStep.questionId!]: text }));
     }
   };
 
-  const selectedFlow = selectedWorry ? supportFlows[selectedWorry] : null;
+  const handleContinue = () => {
+    setShowResponse(null);
+    
+    if (isLastStep) {
+      onComplete(worryReason, answers);
+    } else {
+      setCurrentStepIndex(prev => prev + 1);
+    }
+  };
+
+  const canContinue = () => {
+    if (currentStep.type === 'fact' || currentStep.type === 'affirmation') {
+      return true;
+    }
+    if (currentStep.type === 'question') {
+      if (currentStep.questionType === 'yes-no') {
+        return currentStep.questionId ? !!answers[currentStep.questionId] : false;
+      }
+      if (currentStep.questionType === 'text') {
+        return currentStep.questionId ? 
+          (answers[currentStep.questionId] || '').trim().length > 0 : false;
+      }
+    }
+    return false;
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
@@ -159,131 +259,93 @@ export default function MindsetSupportFlow({ onComplete, onClose }: MindsetSuppo
         </div>
 
         {/* Content */}
-        <div className="p-4">
-          {currentStep === 'selection' && (
+        <div className="p-4 space-y-6">
+          {currentStep.type === 'fact' && (
+            <Card className="bg-primary/5 border-primary/20">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Lightbulb className="w-5 h-5 text-primary" />
+                  FACT
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm leading-relaxed whitespace-pre-line">
+                  {currentStep.content}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {currentStep.type === 'question' && (
             <div className="space-y-4">
-              <div className="text-center mb-6">
-                <h3 className="text-xl font-semibold mb-2">What's worrying you?</h3>
-                <p className="text-muted-foreground text-sm">
-                  It's completely normal to feel worried before activities. Let's work through it together!
+              <div className="p-4 bg-muted/30 rounded-xl">
+                <p className="font-medium text-foreground">
+                  {currentStep.content}
                 </p>
               </div>
 
-              <div className="space-y-3">
-                {worryOptions.map((worry) => (
-                  <Button
-                    key={worry.id}
-                    variant="outline"
-                    className="w-full h-auto p-4 text-left border-2 hover:border-primary/50 transition-all duration-200"
-                    onClick={() => handleWorrySelect(worry.id)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="text-primary">
-                        {worry.icon}
-                      </div>
-                      <span className="text-sm font-medium">{worry.text}</span>
-                    </div>
-                  </Button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {currentStep === 'flow' && selectedFlow && (
-            <div className="space-y-6">
-              {/* Fact */}
-              <Card className="bg-primary/5 border-primary/20">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Lightbulb className="w-5 h-5 text-primary" />
-                    Did You Know?
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-foreground/90">{selectedFlow.fact}</p>
-                </CardContent>
-              </Card>
-
-              {/* Questions */}
-              <div className="space-y-4">
-                <h4 className="font-semibold">Let's think through this together:</h4>
-                {selectedFlow.questions.map((question, index) => (
-                  <div key={question.id} className="space-y-2">
-                    <label className="text-sm font-medium">
-                      {index + 1}. {question.question}
-                    </label>
-                    {question.type === 'yes-no' ? (
-                      <div className="flex gap-2">
-                        {['Yes', 'No'].map((option) => (
-                          <Button
-                            key={option}
-                            variant={answers[question.id] === option ? 'default' : 'outline'}
-                            size="sm"
-                            onClick={() => handleAnswerChange(question.id, option)}
-                            className={cn(
-                              "flex-1 transition-all duration-200",
-                              answers[question.id] === option && "bg-primary text-primary-foreground"
-                            )}
-                          >
-                            {option}
-                          </Button>
-                        ))}
-                      </div>
-                    ) : (
-                      <Textarea
-                        placeholder="Type your thoughts here..."
-                        value={answers[question.id] || ''}
-                        onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                        className="min-h-[80px] resize-none"
-                      />
-                    )}
+              {currentStep.questionType === 'yes-no' && (
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    {['Yes', 'No'].map((option) => (
+                      <Button
+                        key={option}
+                        variant={answers[currentStep.questionId!] === option ? 'default' : 'outline'}
+                        className={cn(
+                          "flex-1 transition-all duration-200",
+                          answers[currentStep.questionId!] === option && "bg-primary text-primary-foreground"
+                        )}
+                        onClick={() => handleYesNoAnswer(option)}
+                      >
+                        {option}
+                      </Button>
+                    ))}
                   </div>
-                ))}
-              </div>
 
-              <Button 
-                onClick={handleContinue}
-                className="w-full bg-primary hover:bg-primary/90"
-                disabled={!selectedFlow.questions.every(q => 
-                  answers[q.id] && answers[q.id].trim().length > 0
-                )}
-              >
-                Continue
-              </Button>
+                  {/* Show response */}
+                  {showResponse && (
+                    <div className="mt-4 p-3 bg-accent/10 border border-accent/30 rounded-xl animate-fade-in">
+                      <p className="text-sm font-medium text-accent">
+                        → {showResponse}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {currentStep.questionType === 'text' && (
+                <Textarea
+                  placeholder="Type your thoughts here..."
+                  value={answers[currentStep.questionId!] || ''}
+                  onChange={(e) => handleTextAnswer(e.target.value)}
+                  className="min-h-[100px] resize-none"
+                />
+              )}
             </div>
           )}
 
-          {currentStep === 'affirmation' && selectedFlow && (
-            <div className="space-y-6 text-center">
+          {currentStep.type === 'affirmation' && (
+            <div className="text-center space-y-6">
               <div className="text-6xl mb-4">🌟</div>
               
               <Card className="bg-gradient-to-br from-primary/10 to-accent/10 border-primary/30">
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-4">Remember This:</h3>
-                  <p className="text-foreground/90 leading-relaxed">
-                    {selectedFlow.affirmation}
+                  <p className="text-foreground/90 leading-relaxed whitespace-pre-line">
+                    {currentStep.content}
                   </p>
                 </CardContent>
               </Card>
-
-              <div className="space-y-3">
-                <Button 
-                  onClick={handleComplete}
-                  className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-3"
-                >
-                  Ready to Continue!
-                </Button>
-                
-                <Button 
-                  variant="outline"
-                  onClick={onClose}
-                  className="w-full"
-                >
-                  Go Back to Form
-                </Button>
-              </div>
             </div>
           )}
+
+          {/* Continue Button */}
+          <Button 
+            onClick={handleContinue}
+            className="w-full bg-primary hover:bg-primary/90"
+            disabled={!canContinue()}
+          >
+            {isLastStep ? 'Continue to Activity' : 'Continue'}
+          </Button>
         </div>
       </div>
     </div>
