@@ -1,47 +1,63 @@
 import { cn } from "@/lib/utils";
+import { 
+  FrownIcon, 
+  MehIcon, 
+  SmileIcon, 
+  LaughIcon, 
+  Target, 
+  Home, 
+  Building2, 
+  TrendingUp,
+  Brain,
+  Trophy,
+  PartyPopper,
+  Flame
+} from "lucide-react";
 
-interface CustomEmojiProps {
-  type: 'sad' | 'not-great' | 'okay' | 'good' | 'amazing' | 'target' | 'home' | 'stadium' | 'progress';
+interface CustomIconProps {
+  type: 'sad' | 'not-great' | 'okay' | 'good' | 'amazing' | 'target' | 'home' | 'stadium' | 'progress' | 'brain' | 'trophy' | 'party' | 'flame';
   size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }
 
-const emojiStyles = {
-  sm: 'text-lg',
-  md: 'text-2xl',
-  lg: 'text-3xl',
-  xl: 'text-4xl'
+const iconSizes = {
+  sm: 'w-4 h-4',
+  md: 'w-6 h-6',
+  lg: 'w-8 h-8',
+  xl: 'w-10 h-10'
 };
 
-const emojiMap = {
-  sad: '😢',
-  'not-great': '😕',
-  okay: '😐',
-  good: '😊',
-  amazing: '😁',
-  target: '🎯',
-  home: '🏠',
-  stadium: '🏟️',
-  progress: '📈'
+const iconMap = {
+  sad: FrownIcon,
+  'not-great': MehIcon,
+  okay: MehIcon,
+  good: SmileIcon,
+  amazing: LaughIcon,
+  target: Target,
+  home: Home,
+  stadium: Building2,
+  progress: TrendingUp,
+  brain: Brain,
+  trophy: Trophy,
+  party: PartyPopper,
+  flame: Flame
 };
 
-export function CustomEmoji({ type, size = 'md', className }: CustomEmojiProps) {
+export function CustomIcon({ type, size = 'md', className }: CustomIconProps) {
+  const IconComponent = iconMap[type];
+  
   return (
-    <span 
+    <IconComponent 
       className={cn(
-        "font-bold inline-block transition-all duration-200",
-        emojiStyles[size],
+        "transition-all duration-200",
+        iconSizes[size],
         className
       )}
       style={{
         color: '#ff0066',
-        filter: 'brightness(1) contrast(1.1)',
-        textShadow: 'none'
+        strokeWidth: '2.5'
       }}
-      role="img"
       aria-label={type}
-    >
-      {emojiMap[type]}
-    </span>
+    />
   );
 }

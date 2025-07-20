@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Star, Flame, Trophy } from "lucide-react";
+import { Plus, Star, Trophy, Edit2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,9 +7,10 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { TopNavigation } from "@/components/nav/TopNavigation";
+import { CustomIcon } from "@/components/ui/custom-emoji";
 
 interface MoodOption {
-  emoji: string;
+  iconType: 'sad' | 'not-great' | 'okay' | 'good' | 'amazing';
   label: string;
   value: number;
 }
@@ -30,11 +31,11 @@ interface PlayerData {
 }
 
 const moodOptions: MoodOption[] = [
-  { emoji: "😢", label: "Sad", value: 1 },
-  { emoji: "😕", label: "Not Great", value: 2 },
-  { emoji: "😐", label: "Okay", value: 3 },
-  { emoji: "😊", label: "Good", value: 4 },
-  { emoji: "😁", label: "Amazing", value: 5 },
+  { iconType: "sad", label: "Sad", value: 1 },
+  { iconType: "not-great", label: "Not Great", value: 2 },
+  { iconType: "okay", label: "Okay", value: 3 },
+  { iconType: "good", label: "Good", value: 4 },
+  { iconType: "amazing", label: "Amazing", value: 5 },
 ];
 
 const defaultTasks: DailyTask[] = [
@@ -59,6 +60,7 @@ export default function Home() {
   // Mood tracking
   const [todayMood, setTodayMood] = useState<number | null>(null);
   const [moodSubmitted, setMoodSubmitted] = useState(false);
+  const [showMoodReview, setShowMoodReview] = useState(false);
 
   // Task management
   const [dailyTasks, setDailyTasks] = useState<DailyTask[]>(defaultTasks);
@@ -151,10 +153,10 @@ export default function Home() {
     
     if (newPoints >= playerData.level * 100) {
       updatedPlayer.level += 1;
-      toast({
-        title: "🎉 Level Up!",
-        description: `Congratulations! You're now level ${updatedPlayer.level}!`,
-      });
+    toast({
+      title: "🎉 Level Up!",
+      description: `Congratulations! You're now level ${updatedPlayer.level}!`,
+    });
     }
     
     setPlayerData(updatedPlayer);
@@ -164,6 +166,23 @@ export default function Home() {
     
     toast({
       title: "Mood recorded! +5 points",
+      description: getMoodMessage(moodValue),
+    });
+  };
+
+  const handleMoodChange = (moodValue: number) => {
+    const today = new Date().toDateString();
+    
+    setTodayMood(moodValue);
+    setShowMoodReview(false);
+    
+    // Update saved mood
+    localStorage.setItem(`kidmindset_mood_${today}`, moodValue.toString());
+    
+    console.log('[KidMindset] Mood changed to:', moodValue);
+    
+    toast({
+      title: "Mood updated!",
       description: getMoodMessage(moodValue),
     });
   };
@@ -193,10 +212,10 @@ export default function Home() {
     
     if (newPoints >= playerData.level * 100) {
       updatedPlayer.level += 1;
-      toast({
-        title: "🎉 Level Up!",
-        description: `Congratulations! You're now level ${updatedPlayer.level}!`,
-      });
+    toast({
+      title: "🎉 Level Up!",
+      description: `Congratulations! You're now level ${updatedPlayer.level}!`,
+    });
     }
     
     setPlayerData(updatedPlayer);
@@ -257,8 +276,9 @@ export default function Home() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              Welcome back, {playerData.name}! 🧠
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              Welcome back, {playerData.name}! 
+              <CustomIcon type="brain" size="md" />
             </h1>
             <div className="flex items-center gap-4 mt-2">
               <div className="flex items-center gap-1 px-3 py-1 bg-level-bg rounded-full">
@@ -293,7 +313,8 @@ export default function Home() {
       <Card className="mb-6 shadow-soft">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            How are you feeling today? 💙
+            How are you feeling today?
+            <CustomIcon type="good" size="sm" />
           </CardTitle>
           {playerData.weeklyMoodAvg && (
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -305,57 +326,70 @@ export default function Home() {
           )}
         </CardHeader>
         <CardContent>
-          {!moodSubmitted ? (
-            <div className="grid grid-cols-5 gap-2">
-              {moodOptions.map((mood) => (
-                <button
-                  key={mood.value}
-                  onClick={() => handleMoodSubmit(mood.value)}
-                  className="flex flex-col items-center gap-1 p-3 rounded-xl border-2 border-transparent
-                           hover:border-primary/30 hover:bg-primary/5 transition-all duration-200
-                           active:scale-95 touch-manipulation"
-                >
-                  <span 
-                    className="text-3xl font-bold transition-all duration-200" 
-                    style={{
-                      color: '#ff0066',
-                      filter: 'brightness(1) contrast(1.1)',
-                      textShadow: 'none'
-                    }}
-                    role="img" 
-                    aria-label={mood.label}
+          {!moodSubmitted || showMoodReview ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-5 gap-2">
+                {moodOptions.map((mood) => (
+                  <button
+                    key={mood.value}
+                    onClick={() => showMoodReview ? handleMoodChange(mood.value) : handleMoodSubmit(mood.value)}
+                    className={cn(
+                      "flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all duration-200",
+                      "active:scale-95 touch-manipulation",
+                      showMoodReview && todayMood === mood.value
+                        ? "border-primary bg-primary/10"
+                        : "border-transparent hover:border-primary/30 hover:bg-primary/5"
+                    )}
                   >
-                    {mood.emoji}
-                  </span>
-                  <span className="text-xs font-medium text-muted-foreground">
-                    {mood.label}
-                  </span>
-                  <span className="text-xs font-bold text-primary">
-                    {mood.value}
-                  </span>
-                </button>
-              ))}
+                    <CustomIcon type={mood.iconType} size="lg" />
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {mood.label}
+                    </span>
+                    <span className="text-xs font-bold text-primary">
+                      {mood.value}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              {showMoodReview && (
+                <div className="flex justify-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setShowMoodReview(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
             </div>
           ) : (
-            <div className="text-center py-4">
-              <span 
-                className="text-3xl mb-2 block font-bold"
-                style={{
-                  color: '#ff0066',
-                  filter: 'brightness(1) contrast(1.1)',
-                  textShadow: 'none'
-                }}
-              >
-                {moodOptions.find(m => m.value === todayMood)?.emoji}
-              </span>
-              <p className="text-sm text-muted-foreground">
-                Mood recorded for today! Come back tomorrow to check in again.
-              </p>
-              {playerData.weeklyMoodAvg && (
-                <p className="text-xs text-muted-foreground mt-2">
-                  Weekly average: {playerData.weeklyMoodAvg.toFixed(1)}/5
+            <div className="text-center py-4 space-y-3">
+              <div className="flex justify-center">
+                <CustomIcon 
+                  type={moodOptions.find(m => m.value === todayMood)?.iconType || 'okay'} 
+                  size="xl" 
+                />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  Mood recorded for today! Come back tomorrow to check in again.
                 </p>
-              )}
+                {playerData.weeklyMoodAvg && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Weekly average: {playerData.weeklyMoodAvg.toFixed(1)}/5
+                  </p>
+                )}
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setShowMoodReview(true)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <Edit2 className="w-3 h-3 mr-1" />
+                Change mood
+              </Button>
             </div>
           )}
         </CardContent>
@@ -366,18 +400,7 @@ export default function Home() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg flex items-center gap-2">
-              <span 
-                className="text-xl font-bold"
-                style={{
-                  color: '#ff0066',
-                  filter: 'brightness(1) contrast(1.1)',
-                  textShadow: 'none'
-                }}
-                role="img"
-                aria-label="target"
-              >
-                🎯
-              </span>
+              <CustomIcon type="target" size="md" />
               Daily Tasks
             </CardTitle>
             <Button
@@ -440,16 +463,7 @@ export default function Home() {
                   </p>
                   {task.streak > 0 && (
                     <p className="text-xs flex items-center gap-1" style={{ color: '#ff0066' }}>
-                      <span 
-                        className="text-sm font-bold"
-                        style={{
-                          color: '#ff0066',
-                          filter: 'brightness(1) contrast(1.1)',
-                          textShadow: 'none'
-                        }}
-                      >
-                        🔥
-                      </span>
+                      <CustomIcon type="flame" size="sm" />
                       {task.streak} day streak
                     </p>
                   )}
@@ -470,15 +484,8 @@ export default function Home() {
 
           {dailyTasks.every(task => task.completed) && dailyTasks.length > 0 && (
             <div className="text-center py-4">
-              <div 
-                className="text-4xl mb-2 font-bold"
-                style={{
-                  color: '#ff0066',
-                  filter: 'brightness(1) contrast(1.1)',
-                  textShadow: 'none'
-                }}
-              >
-                🎉
+              <div className="flex justify-center mb-2">
+                <CustomIcon type="party" size="xl" />
               </div>
               <p className="font-semibold text-success">All tasks completed!</p>
               <p className="text-sm text-muted-foreground">

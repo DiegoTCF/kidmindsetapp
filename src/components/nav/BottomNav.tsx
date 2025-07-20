@@ -1,20 +1,20 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Trophy, TrendingUp, User, Settings } from "lucide-react";
+import { Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CustomIcon } from "@/components/ui/custom-emoji";
 
 interface NavItem {
   id: string;
   label: string;
-  icon: React.ComponentType<any>;
-  emoji: string;
+  iconType: 'home' | 'stadium' | 'progress';
   path: string;
 }
 
 const navItems: NavItem[] = [
-  { id: "home", label: "Home", icon: Home, emoji: "🏠", path: "/" },
-  { id: "stadium", label: "Stadium", icon: Trophy, emoji: "🏟️", path: "/stadium" },
-  { id: "progress", label: "Progress", icon: TrendingUp, emoji: "📈", path: "/progress" },
+  { id: "home", label: "Home", iconType: "home", path: "/" },
+  { id: "stadium", label: "Stadium", iconType: "stadium", path: "/stadium" },
+  { id: "progress", label: "Progress", iconType: "progress", path: "/progress" },
 ];
 
 export function BottomNav() {
@@ -51,7 +51,6 @@ export function BottomNav() {
         <div className="flex items-center justify-around max-w-md mx-auto">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
-            const Icon = item.icon;
             
             return (
               <button
@@ -70,18 +69,7 @@ export function BottomNav() {
                   "flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200",
                   isActive && "bg-primary/20 scale-110"
                 )}>
-                  <span 
-                    className="text-lg font-bold transition-all duration-200" 
-                    style={{
-                      color: '#ff0066',
-                      filter: 'brightness(1) contrast(1.1)',
-                      textShadow: 'none'
-                    }}
-                    role="img" 
-                    aria-label={item.label}
-                  >
-                    {item.emoji}
-                  </span>
+                  <CustomIcon type={item.iconType} size="md" />
                 </div>
                 <span className={cn(
                   "text-xs font-medium truncate transition-all duration-200",
