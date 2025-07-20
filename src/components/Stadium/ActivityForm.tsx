@@ -694,21 +694,14 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                         <Button
                           key={worry.id}
                           variant="outline"
-                          className="w-full h-auto p-3 text-left border-2 hover:border-primary/50 transition-all duration-200"
+                          className="w-full h-auto p-4 text-left border-2 hover:border-primary/50 transition-all duration-200"
                           onClick={() => {
                             console.log('Worry button clicked:', worry.text);
                             setWorryData({ reason: worry.text, answers: {} });
                             setShowMindsetFlow(true);
                           }}
                         >
-                          <div className="flex items-center gap-3">
-                            <CustomIcon 
-                              type={worry.emoji === 'target' ? 'target' : worry.emoji === '💪' ? 'flame' : worry.emoji === '👥' ? 'brain' : worry.emoji === '😬' ? 'target' : 'brain'} 
-                              size="sm" 
-                              className="text-primary"
-                            />
-                            <span className="text-sm font-medium leading-tight">{worry.text}</span>
-                          </div>
+                          <span className="text-sm font-medium leading-relaxed">{worry.text}</span>
                         </Button>
                       ))}
                     </div>
