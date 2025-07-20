@@ -541,7 +541,15 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                 </div>
                 
                 {/* Show worry selection if confidence is between 1-7 and no mindset flow active */}
-                {confidenceLevel >= 1 && confidenceLevel <= 7 && !showMindsetFlow && !worryData && (
+                {(() => {
+                  console.log('Debug worry selection:', {
+                    confidenceLevel,
+                    showMindsetFlow,
+                    worryData,
+                    shouldShow: confidenceLevel >= 1 && confidenceLevel <= 7 && !showMindsetFlow && !worryData
+                  });
+                  return confidenceLevel >= 1 && confidenceLevel <= 7 && !showMindsetFlow && !worryData;
+                })() && (
                   <div className="mt-6 space-y-4">
                     <h3 className="text-lg font-semibold text-center">What is worrying you?</h3>
                     <div className="space-y-2">
