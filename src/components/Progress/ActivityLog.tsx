@@ -107,11 +107,36 @@ export default function ActivityLog({ selectedFilter }: ActivityLogProps) {
     const activityToDelete = activities.find(activity => activity.id === activityId);
     const wasIncomplete = activityToDelete ? !activityToDelete.post_activity_completed : false;
     
-    console.log('Deleting activity:', activityId, activityName); // Debug log
+    console.log('=== DELETE ACTIVITY DEBUG ===');
+    console.log('Activity ID to delete:', activityId);
+    console.log('Activity name:', activityName);
+    console.log('Activity found in local state:', activityToDelete);
+    console.log('Current user auth state:', await supabase.auth.getUser());
     
     try {
+      // First, let's verify the activity exists in the database and we can access it
+      const { data: verifyActivity, error: verifyError } = await supabase
+        .from('activities')
+        .select('id, activity_name, child_id')
+        .eq('id', activityId)
+        .single();
+      
+      console.log('Verification query result:', { verifyActivity, verifyError });
+      
+      if (verifyError) {
+        console.error('Cannot find activity to delete:', verifyError);
+        throw new Error(`Activity not found: ${verifyError.message}`);
+      }
+      
+      if (!verifyActivity) {
+        console.error('Activity does not exist in database');
+        throw new Error('Activity not found in database');
+      }
+      
       // Optimistically remove from UI first
       setActivities(prev => prev.filter(activity => activity.id !== activityId));
+      
+      console.log('Attempting database deletion...');
       
       // Delete the activity from database
       const { error: deleteError, count } = await supabase
@@ -119,23 +144,32 @@ export default function ActivityLog({ selectedFilter }: ActivityLogProps) {
         .delete({ count: 'exact' })
         .eq('id', activityId);
 
-      console.log('Delete result:', { deleteError, count }); // Debug log
+      console.log('Delete operation result:', { deleteError, count });
 
       if (deleteError) {
-        console.error('Delete failed:', deleteError);
+        console.error('Database delete failed:', deleteError);
+        console.error('Delete error details:', {
+          code: deleteError.code,
+          message: deleteError.message,
+          details: deleteError.details,
+          hint: deleteError.hint
+        });
+        
         // If delete failed, restore the activity in UI
         loadActivities();
-        throw deleteError;
+        throw new Error(`Database deletion failed: ${deleteError.message}`);
       }
 
       if (count === 0) {
-        console.warn('No rows were deleted - activity might not exist');
-        throw new Error('Activity not found in database');
+        console.warn('No rows were deleted - activity might not exist or user lacks permissions');
+        loadActivities();
+        throw new Error('No rows were deleted. You may not have permission to delete this activity.');
       }
 
-      console.log('Successfully deleted activity from database'); // Debug log
+      console.log('Successfully deleted activity from database. Rows affected:', count);
 
       // Update child's points (subtract the deleted activity points)
+      console.log('Updating child points...');
       const { data: children } = await supabase
         .from('children')
         .select('id, points')
@@ -143,6 +177,7 @@ export default function ActivityLog({ selectedFilter }: ActivityLogProps) {
         
       if (children && children.length > 0) {
         const newPoints = Math.max(0, children[0].points - points); // Ensure points don't go negative
+        console.log('Updating points from', children[0].points, 'to', newPoints);
         
         const { error: pointsError } = await supabase
           .from('children')
@@ -153,7 +188,7 @@ export default function ActivityLog({ selectedFilter }: ActivityLogProps) {
           console.error('Error updating points:', pointsError);
           // Don't throw here as the activity was already deleted successfully
         } else {
-          console.log('Successfully updated child points:', newPoints); // Debug log
+          console.log('Successfully updated child points to:', newPoints);
         }
       }
 
@@ -172,15 +207,25 @@ export default function ActivityLog({ selectedFilter }: ActivityLogProps) {
         detail: { activityId, wasIncomplete }
       }));
       
+      console.log('=== DELETE SUCCESS ===');
+      
       toast({
         title: "Activity deleted successfully",
         description: `"${activityName}" has been removed from your log.`,
       });
     } catch (error) {
-      console.error('Error deleting activity:', error);
+      console.error('=== DELETE FAILED ===');
+      console.error('Full error object:', error);
+      
+      let errorMessage = "Something went wrong while deleting. Please try again.";
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Delete Failed",
-        description: "Could not delete the activity. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
