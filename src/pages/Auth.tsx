@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useUserLogging } from '@/hooks/useUserLogging';
 import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface OnboardingData {
@@ -39,6 +40,7 @@ const Auth = () => {
     pin: '',
   });
   const { toast } = useToast();
+  const { logLogin, logError } = useUserLogging();
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -56,6 +58,8 @@ const Auth = () => {
 
     if (error) {
       console.log('[AuthFlow] Sign in error:', error.message);
+      // Log failed login attempt
+      await logError('login_failed', error.message, '/auth');
       toast({
         title: "Error signing in",
         description: error.message,
@@ -63,6 +67,8 @@ const Auth = () => {
       });
     } else {
       console.log('[AuthRedirect] Sign in successful, user:', data.user);
+      // Log successful login
+      await logLogin();
       if (data.user?.email_confirmed_at) {
         console.log('[AuthRedirect] Email confirmed, redirecting to home');
         window.location.href = '/';

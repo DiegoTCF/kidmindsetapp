@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserLogging } from '@/hooks/useUserLogging';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -35,6 +36,7 @@ type ViewMode = 'users' | 'children' | 'progress';
 export default function Admin() {
   const { isAdmin, loading } = useAdmin();
   const { user } = useAuth();
+  const { logAdminAccess } = useUserLogging();
   const { toast } = useToast();
   
   // Check if current user is the superadmin
@@ -47,9 +49,10 @@ export default function Admin() {
 
   useEffect(() => {
     if (isAdmin) {
+      logAdminAccess(); // Log admin access
       loadUsers();
     }
-  }, [isAdmin]);
+  }, [isAdmin, logAdminAccess]);
 
   const loadUsers = async () => {
     setLoadingData(true);

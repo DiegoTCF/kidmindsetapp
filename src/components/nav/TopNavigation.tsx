@@ -10,6 +10,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
+import { useUserLogging } from "@/hooks/useUserLogging";
 import { useToast } from "@/hooks/use-toast";
 import { MoreVertical } from "lucide-react";
 
@@ -21,11 +22,13 @@ export function TopNavigation({ isGrownUpZone = false }: TopNavigationProps) {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const { isAdmin } = useAdmin();
+  const { logLogout, logNavigation, logAdminAccess } = useUserLogging();
   const { toast } = useToast();
 
   console.log('[TopNavigation] isAdmin:', isAdmin, 'isGrownUpZone:', isGrownUpZone);
 
   const handleLogout = async () => {
+    await logLogout();
     if (isGrownUpZone) {
       // For grown up zone, just clear session and navigate to home
       sessionStorage.removeItem('kidmindset_parent_auth');
@@ -36,7 +39,8 @@ export function TopNavigation({ isGrownUpZone = false }: TopNavigationProps) {
     }
   };
 
-  const handleGrownUpZone = () => {
+  const handleGrownUpZone = async () => {
+    await logNavigation(window.location.pathname, '/grown-up');
     navigate('/grown-up');
   };
 
@@ -54,9 +58,10 @@ export function TopNavigation({ isGrownUpZone = false }: TopNavigationProps) {
     navigate('/admin');
   };
 
-  const handleAdminPanel = () => {
+  const handleAdminPanel = async () => {
     // Check if user is admin before navigating
     if (isAdmin) {
+      await logAdminAccess();
       navigate('/admin');
     } else {
       // Redirect to grown-up with access denied message

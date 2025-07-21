@@ -296,6 +296,48 @@ export type Database = {
           },
         ]
       }
+      user_action_logs: {
+        Row: {
+          action_details: Json
+          action_type: string
+          child_id: string | null
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          page_location: string | null
+          session_id: string | null
+          timestamp: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action_details?: Json
+          action_type: string
+          child_id?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          page_location?: string | null
+          session_id?: string | null
+          timestamp?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action_details?: Json
+          action_type?: string
+          child_id?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          page_location?: string | null
+          session_id?: string | null
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -329,9 +371,24 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_user_child_ids: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          child_id: string
+        }[]
+      }
       is_admin: {
         Args: { check_user_id?: string }
         Returns: boolean
+      }
+      log_user_action: {
+        Args: {
+          action_type_param: string
+          action_details_param?: Json
+          page_location_param?: string
+          child_id_param?: string
+        }
+        Returns: string
       }
       test_admin_access: {
         Args: Record<PropertyKey, never>

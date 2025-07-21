@@ -1,7 +1,8 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useUserLogging } from "@/hooks/useUserLogging";
 import ActivityLog from "@/components/Progress/ActivityLog";
 import Charts from "@/components/Progress/Charts";
 import BehaviourCharts from "@/components/Progress/BehaviourCharts";
@@ -18,6 +19,12 @@ const activityFilters = [
 
 export default function Progress() {
   const [selectedFilter, setSelectedFilter] = useState("All");
+  const { logProgressView } = useUserLogging();
+
+  // Log progress view when component mounts
+  React.useEffect(() => {
+    logProgressView();
+  }, [logProgressView]);
 
   return (
     <div className="min-h-screen bg-background p-4">

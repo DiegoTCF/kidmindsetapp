@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useUserLogging } from "@/hooks/useUserLogging";
 import { cn } from "@/lib/utils";
 import { CustomIcon } from "@/components/ui/custom-emoji";
 import { supabase } from "@/integrations/supabase/client";
@@ -111,6 +112,7 @@ const superBehaviours: SuperBehaviour[] = [
 
 export default function ActivityForm({ activity, onComplete, existingActivityId, isResumingActivity = false }: ActivityFormProps) {
   const { toast } = useToast();
+  const { logActivity, logActivityCompletion, logError } = useUserLogging();
   
   const [confidenceLevel, setConfidenceLevel] = useState<number>(0);
   const [intention, setIntention] = useState("");
@@ -281,7 +283,14 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
         .select()
         .single();
 
-      if (activityError) throw activityError;
+      if (activityError) {
+        console.error('Activity creation error:', activityError);
+        await logError('activity_creation_failed', activityError.message, '/stadium');
+        throw activityError;
+      }
+
+      // Log successful activity creation
+      await logActivity(activity.name, activity.type, currentChildId);
 
       // Update child points
       const { error: pointsError } = await supabase
@@ -295,6 +304,9 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
 
       if (pointsError) throw pointsError;
 
+      // Log pre-activity completion
+      await logActivityCompletion(activity.name, 'pre', currentChildId);
+      
       setPreActivityCompleted(true);
       
       toast({
@@ -303,6 +315,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
       });
     } catch (error) {
       console.error('Error saving pre-activity:', error);
+      await logError('pre_activity_failed', error.message || 'Unknown error', '/stadium');
       toast({
         title: "Error saving progress",
         description: "Please try again later",
@@ -423,6 +436,9 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
 
         if (pointsError) throw pointsError;
 
+        // Log post-activity completion
+        await logActivityCompletion(activity.name, 'post', currentChildId);
+
         setPostActivityCompleted(true);
         
         toast({
@@ -437,6 +453,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
       }
     } catch (error) {
       console.error('Error saving post-activity:', error);
+      await logError('post_activity_failed', error.message || 'Unknown error', '/stadium');
       toast({
         title: "Error saving progress",
         description: "Please try again later",
