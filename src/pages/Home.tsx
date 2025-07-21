@@ -674,7 +674,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="w-full max-w-sm mx-auto p-4"> {/* Mobile-optimized container */}
+      <div className="w-full max-w-sm mx-auto p-4">
         {/* Top Navigation */}
         <TopNavigation />
 
@@ -951,8 +951,8 @@ export default function Home() {
             )}
           </CardContent>
         </Card>
-      </div> {/* Close mobile container */}
-    </div> {/* Close min-h-screen */}
+      </div>
+    </div>
   );
 }
 
