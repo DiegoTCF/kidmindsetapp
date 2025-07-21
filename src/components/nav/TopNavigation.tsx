@@ -1,4 +1,4 @@
-import { LogOut, Settings, GraduationCap, UserCheck, Shield } from "lucide-react";
+import { LogOut, Settings, GraduationCap, UserCheck, Shield, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,6 +10,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
+import { useToast } from "@/hooks/use-toast";
 import { MoreVertical } from "lucide-react";
 
 interface TopNavigationProps {
@@ -20,6 +21,7 @@ export function TopNavigation({ isGrownUpZone = false }: TopNavigationProps) {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const { isAdmin } = useAdmin();
+  const { toast } = useToast();
 
   console.log('[TopNavigation] isAdmin:', isAdmin, 'isGrownUpZone:', isGrownUpZone);
 
@@ -50,6 +52,20 @@ export function TopNavigation({ isGrownUpZone = false }: TopNavigationProps) {
 
   const handleAdminArea = () => {
     navigate('/admin');
+  };
+
+  const handleAdminPanel = () => {
+    // Check if user is admin before navigating
+    if (isAdmin) {
+      navigate('/admin');
+    } else {
+      // Show error toast for unauthorized access
+      toast({
+        title: "Access Denied",
+        description: "You don't have permission for this area",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -90,6 +106,10 @@ export function TopNavigation({ isGrownUpZone = false }: TopNavigationProps) {
               <DropdownMenuItem onClick={handleIndividualMentorship}>
                 <UserCheck className="mr-2 h-4 w-4" />
                 Apply for Individual Mentorship
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleAdminPanel}>
+                <ShieldAlert className="mr-2 h-4 w-4" />
+                Admin Panel
               </DropdownMenuItem>
               <DropdownMenuSeparator />
             </>
