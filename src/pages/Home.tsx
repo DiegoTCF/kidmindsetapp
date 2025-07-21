@@ -704,7 +704,7 @@ export default function Home() {
           </div>
 
           {/* Progress Bar */}
-          <div className="w-full bg-muted rounded-full h-3 mb-2">
+          <div className="w-full max-w-full bg-muted rounded-full h-3 mb-2 overflow-hidden">
             <div 
               className="bg-gradient-to-r from-primary to-accent h-3 rounded-full transition-all duration-500 shadow-sm"
               style={{ width: `${getProgressToNextLevel()}%` }}
