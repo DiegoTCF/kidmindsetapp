@@ -1,4 +1,4 @@
-import { LogOut, Settings, GraduationCap, UserCheck } from "lucide-react";
+import { LogOut, Settings, GraduationCap, UserCheck, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdmin } from "@/hooks/useAdmin";
 import { MoreVertical } from "lucide-react";
 
 interface TopNavigationProps {
@@ -18,6 +19,7 @@ interface TopNavigationProps {
 export function TopNavigation({ isGrownUpZone = false }: TopNavigationProps) {
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  const { isAdmin } = useAdmin();
 
   const handleLogout = async () => {
     if (isGrownUpZone) {
@@ -31,7 +33,7 @@ export function TopNavigation({ isGrownUpZone = false }: TopNavigationProps) {
   };
 
   const handleGrownUpZone = () => {
-    navigate('/grown-up-zone');
+    navigate('/grown-up');
   };
 
   const handleJoinAcademy = () => {
@@ -42,6 +44,10 @@ export function TopNavigation({ isGrownUpZone = false }: TopNavigationProps) {
   const handleIndividualMentorship = () => {
     // Placeholder - non-functional for now
     console.log('Apply for individual mentorship clicked');
+  };
+
+  const handleAdminArea = () => {
+    navigate('/admin');
   };
 
   return (
@@ -63,6 +69,12 @@ export function TopNavigation({ isGrownUpZone = false }: TopNavigationProps) {
                 <Settings className="mr-2 h-4 w-4" />
                 Grown Up Zone
               </DropdownMenuItem>
+              {isAdmin && (
+                <DropdownMenuItem onClick={handleAdminArea}>
+                  <Shield className="mr-2 h-4 w-4" />
+                  Admin Dashboard
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
             </>
           )}

@@ -9,9 +9,11 @@ import Stadium from "./pages/Stadium";
 import Progress from "./pages/Progress";
 import Profile from "./pages/Profile";
 import GrownUpZone from "./pages/GrownUpZone";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import { useAuth } from "./hooks/useAuth";
+import { AdminProvider } from "./hooks/useAdmin";
 
 const queryClient = new QueryClient();
 
@@ -39,49 +41,58 @@ const AppContent = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Auth route */}
-            <Route path="/auth" element={<Auth />} />
-            
-            {/* Main app routes with navigation - protected */}
-            <Route path="/" element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <Home />
-                </AppLayout>
-              </ProtectedRoute>
-            } />
-            <Route path="/stadium" element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <Stadium />
-                </AppLayout>
-              </ProtectedRoute>
-            } />
-            <Route path="/progress" element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <Progress />
-                </AppLayout>
-              </ProtectedRoute>
-            } />
-            
-            {/* Grown Up Zone - no navigation - protected */}
-            <Route path="/grown-up" element={
-              <ProtectedRoute>
-                <AppLayout hideNavigation>
-                  <GrownUpZone />
-                </AppLayout>
-              </ProtectedRoute>
-            } />
-            
-            {/* Catch-all route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <AdminProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Auth route */}
+              <Route path="/auth" element={<Auth />} />
+              
+              {/* Main app routes with navigation - protected */}
+              <Route path="/" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Home />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/stadium" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Stadium />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/progress" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Progress />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Grown Up Zone - no navigation - protected */}
+              <Route path="/grown-up" element={
+                <ProtectedRoute>
+                  <AppLayout hideNavigation>
+                    <GrownUpZone />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+
+              {/* Admin route - no navigation */}
+              <Route path="/admin" element={
+                <ProtectedRoute>
+                  <Admin />
+                </ProtectedRoute>
+              } />
+              
+              {/* Catch-all route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </AdminProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

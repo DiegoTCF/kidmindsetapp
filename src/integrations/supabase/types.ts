@@ -296,6 +296,30 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -304,6 +328,10 @@ export type Database = {
       get_current_user_child_id: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      is_admin: {
+        Args: { check_user_id?: string }
+        Returns: boolean
       }
     }
     Enums: {
