@@ -220,7 +220,7 @@ export default function Admin() {
   }
 
   if (!isAdmin) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/grown-up" replace state={{ accessDenied: true }} />;
   }
 
   return (

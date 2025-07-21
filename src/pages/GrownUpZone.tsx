@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
-import { Lock, ArrowLeft, Loader2, User, BarChart3, CreditCard } from "lucide-react";
+import { Lock, ArrowLeft, Loader2, User, BarChart3, CreditCard, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { ProfileTab } from "@/components/tabs/ProfileTab";
@@ -29,6 +30,7 @@ interface ChildProgress {
 
 export default function GrownUpZone() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { user } = useAuth();
   
@@ -52,13 +54,22 @@ export default function GrownUpZone() {
   useEffect(() => {
     console.log('[GrownUpZone] Accessing Grown Up Zone');
     
+    // Show access denied message if redirected from admin
+    if (location.state?.accessDenied) {
+      toast({
+        title: "Acesso Negado",
+        description: "Você não tem permissão para acessar esta área.",
+        variant: "destructive"
+      });
+    }
+    
     // Check if already authenticated in this session
     const authToken = sessionStorage.getItem('kidmindset_parent_auth');
     if (authToken === 'authenticated') {
       setIsAuthenticated(true);
       loadChildProgress();
     }
-  }, []);
+  }, [location.state, toast]);
 
   const handlePinAuth = async () => {
     if (!user?.id) {
@@ -274,6 +285,16 @@ export default function GrownUpZone() {
           </div>
 
           {/* Auth Methods */}
+          {/* Access Denied Alert */}
+          {location.state?.accessDenied && (
+            <Alert className="border-destructive bg-destructive/10">
+              <AlertCircle className="h-4 w-4 text-destructive" />
+              <AlertDescription className="text-destructive">
+                Você não tem permissão para acessar esta área.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="space-y-4">
             <div className="flex rounded-lg border p-1">
               <button

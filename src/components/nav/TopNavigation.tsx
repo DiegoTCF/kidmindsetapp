@@ -59,12 +59,8 @@ export function TopNavigation({ isGrownUpZone = false }: TopNavigationProps) {
     if (isAdmin) {
       navigate('/admin');
     } else {
-      // Show error toast for unauthorized access
-      toast({
-        title: "Access Denied",
-        description: "You don't have permission for this area",
-        variant: "destructive"
-      });
+      // Redirect to grown-up with access denied message
+      navigate('/grown-up', { state: { accessDenied: true } });
     }
   };
 
@@ -107,10 +103,12 @@ export function TopNavigation({ isGrownUpZone = false }: TopNavigationProps) {
                 <UserCheck className="mr-2 h-4 w-4" />
                 Apply for Individual Mentorship
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleAdminPanel}>
-                <ShieldAlert className="mr-2 h-4 w-4" />
-                Admin Panel
-              </DropdownMenuItem>
+              {isAdmin && (
+                <DropdownMenuItem onClick={handleAdminPanel}>
+                  <ShieldAlert className="mr-2 h-4 w-4" />
+                  Admin Panel
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
             </>
           )}
