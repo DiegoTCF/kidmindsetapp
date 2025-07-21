@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdmin } from '@/hooks/useAdmin';
+import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, UserCog, ArrowLeft, User, Trophy, TrendingUp } from 'lucide-react';
+import { Users, UserCog, ArrowLeft, User, Trophy, TrendingUp, Shield } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ActivityLog from '@/components/Progress/ActivityLog';
 import Charts from '@/components/Progress/Charts';
@@ -33,7 +34,11 @@ type ViewMode = 'users' | 'children' | 'progress';
 
 export default function Admin() {
   const { isAdmin, loading } = useAdmin();
+  const { user } = useAuth();
   const { toast } = useToast();
+  
+  // Check if current user is the superadmin
+  const isSuperAdmin = user?.email === 'pagliusodiego@gmail.com';
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [children, setChildren] = useState<Child[]>([]);
   const [selectedChild, setSelectedChild] = useState<Child | null>(null);
@@ -196,7 +201,13 @@ export default function Admin() {
                 Back
               </Button>
             )}
-            <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
+              <Badge variant="default" className="flex items-center gap-1">
+                <Shield className="h-3 w-3" />
+                Admin
+              </Badge>
+            </div>
           </div>
           
           {/* Breadcrumb */}
@@ -235,7 +246,7 @@ export default function Admin() {
                                 {user.role || 'user'}
                               </Badge>
                             </div>
-                            {user.role !== 'admin' && (
+                            {user.role !== 'admin' && isSuperAdmin && (
                               <Button
                                 size="sm"
                                 variant="outline"
