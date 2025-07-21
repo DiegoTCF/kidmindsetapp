@@ -111,12 +111,12 @@ export default function Admin() {
       const { data: adminCheck } = await supabase.rpc('is_admin');
       console.log('[AdminPanel] Admin check result:', adminCheck);
 
-      // First get the parent record
+      // First get the parent record (now guaranteed unique)
       const { data: parentData, error: parentError } = await supabase
         .from('parents')
         .select('id, name, user_id')
         .eq('user_id', userId)
-        .maybeSingle();
+        .single();
 
       console.log('[AdminPanel] Parent query result:', { parentData, parentError });
 
