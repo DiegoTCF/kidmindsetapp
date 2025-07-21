@@ -107,12 +107,18 @@ export default function Admin() {
     console.log('[AdminPanel] Loading children for user:', userId);
     setLoadingData(true);
     try {
+      // Test admin access first
+      const { data: adminCheck } = await supabase.rpc('is_admin');
+      console.log('[AdminPanel] Admin check result:', adminCheck);
+
       // First get the parent record
       const { data: parentData, error: parentError } = await supabase
         .from('parents')
-        .select('id')
+        .select('id, name, user_id')
         .eq('user_id', userId)
         .maybeSingle();
+
+      console.log('[AdminPanel] Parent query result:', { parentData, parentError });
 
       if (parentError) {
         console.error('[AdminPanel] Error loading parent:', parentError);
@@ -123,10 +129,15 @@ export default function Admin() {
         console.log('[AdminPanel] No parent found for user:', userId);
         setChildren([]);
         setViewMode('children');
+        toast({
+          title: 'No Parent Found',
+          description: 'This user does not have a parent profile set up.',
+          variant: 'default'
+        });
         return;
       }
 
-      console.log('[AdminPanel] Found parent ID:', parentData.id);
+      console.log('[AdminPanel] Found parent:', parentData);
 
       // Now get the children for this parent
       const { data: childrenData, error: childrenError } = await supabase
@@ -134,19 +145,30 @@ export default function Admin() {
         .select('*')
         .eq('parent_id', parentData.id);
 
+      console.log('[AdminPanel] Children query result:', { childrenData, childrenError });
+
       if (childrenError) {
         console.error('[AdminPanel] Error loading children:', childrenError);
         throw childrenError;
       }
 
-      console.log('[AdminPanel] Loaded children:', childrenData);
+      console.log('[AdminPanel] Successfully loaded children:', childrenData);
       setChildren(childrenData || []);
       setViewMode('children');
+
+      if (!childrenData || childrenData.length === 0) {
+        toast({
+          title: 'No Children Found',
+          description: `${parentData.name || 'This parent'} has no children registered.`,
+          variant: 'default'
+        });
+      }
+
     } catch (error) {
       console.error('[AdminPanel] Error in loadChildren:', error);
       toast({
         title: 'Error',
-        description: 'Failed to load children',
+        description: `Failed to load children: ${error.message || 'Unknown error'}`,
         variant: 'destructive'
       });
     } finally {
