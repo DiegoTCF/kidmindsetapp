@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useUserLogging } from "@/hooks/useUserLogging";
+import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { CustomIcon } from "@/components/ui/custom-emoji";
 import { supabase } from "@/integrations/supabase/client";
@@ -112,6 +113,7 @@ const superBehaviours: SuperBehaviour[] = [
 
 export default function ActivityForm({ activity, onComplete, existingActivityId, isResumingActivity = false }: ActivityFormProps) {
   const { toast } = useToast();
+  const { user, session } = useAuth();
   const { logActivity, logActivityCompletion, logError } = useUserLogging();
   
   const [confidenceLevel, setConfidenceLevel] = useState<number>(0);
@@ -254,6 +256,17 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
 
   const handlePreActivitySubmit = async () => {
     if (!currentChildId) return;
+
+    // Check authentication first
+    if (!user || !session) {
+      console.log('[ActivityForm] User not authenticated, redirecting to login');
+      toast({
+        title: "Session expired",
+        description: "Please sign in again to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     const prePoints = calculatePreActivityPoints();
     
@@ -326,6 +339,17 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
 
   const handlePostActivitySubmit = async () => {
     if (!currentChildId) return;
+
+    // Check authentication first
+    if (!user || !session) {
+      console.log('[ActivityForm] User not authenticated, redirecting to login');
+      toast({
+        title: "Session expired",
+        description: "Please sign in again to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     const postPoints = calculatePostActivityPoints();
     const fullActivityBonus = 20; // Bonus for completing both pre and post
