@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, Phone, Mail, Lock, Key } from "lucide-react";
+import { User, Mail, Lock, Key } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,12 +15,14 @@ export function ProfileTab() {
   const [loading, setLoading] = useState(false);
   const [parentData, setParentData] = useState({
     name: "",
-    phone: "",
     pin: ""
   });
   const [newPin, setNewPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
   const [showPinChange, setShowPinChange] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPasswordChange, setShowPasswordChange] = useState(false);
 
   useEffect(() => {
     loadParentData();
@@ -32,7 +34,7 @@ export function ProfileTab() {
     try {
       const { data, error } = await supabase
         .from('parents')
-        .select('name, phone, pin')
+        .select('name, pin')
         .eq('user_id', user.id)
         .maybeSingle();
 
@@ -41,7 +43,6 @@ export function ProfileTab() {
       if (data) {
         setParentData({
           name: data.name || "",
-          phone: data.phone || "",
           pin: data.pin || ""
         });
       }
@@ -65,7 +66,6 @@ export function ProfileTab() {
         .upsert({
           user_id: user.id,
           name: parentData.name,
-          phone: parentData.phone,
           updated_at: new Date().toISOString()
         });
 
@@ -109,6 +109,7 @@ export function ProfileTab() {
 
     setLoading(true);
     try {
+      console.log('[UpdatePIN] Starting PIN update process...');
       const { error } = await supabase
         .from('parents')
         .upsert({
@@ -118,8 +119,12 @@ export function ProfileTab() {
           updated_at: new Date().toISOString()
         });
 
-      if (error) throw error;
+      if (error) {
+        console.log('[UpdatePIN] Supabase error:', error);
+        throw error;
+      }
 
+      console.log('[UpdatePIN] PIN updated successfully');
       setParentData(prev => ({ ...prev, pin: newPin }));
       setNewPin("");
       setConfirmPin("");
@@ -130,10 +135,56 @@ export function ProfileTab() {
         description: "Your PIN has been changed successfully"
       });
     } catch (error) {
-      console.error('Error updating PIN:', error);
+      console.log('[UpdatePIN] Error updating PIN:', error);
       toast({
         title: "Error",
         description: "Failed to update PIN",
+        variant: "destructive"
+      });
+    }
+    setLoading(false);
+  };
+
+  const changePassword = async () => {
+    if (!newPassword || newPassword.length < 6) {
+      toast({
+        title: "Invalid Password",
+        description: "Password must be at least 6 characters",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Password mismatch",
+        description: "Passwords do not match",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
+
+      setNewPassword("");
+      setConfirmPassword("");
+      setShowPasswordChange(false);
+
+      toast({
+        title: "Password updated",
+        description: "Your password has been changed successfully"
+      });
+    } catch (error) {
+      console.error('Error updating password:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update password",
         variant: "destructive"
       });
     }
@@ -157,9 +208,6 @@ export function ProfileTab() {
                 {parentData.name.split(' ').map(n => n[0]).join('').toUpperCase() || '👤'}
               </AvatarFallback>
             </Avatar>
-            <Button variant="outline" size="sm">
-              Upload Photo
-            </Button>
           </div>
 
           <div className="space-y-3">
@@ -185,17 +233,6 @@ export function ProfileTab() {
               <p className="text-xs text-muted-foreground mt-1">
                 Email cannot be changed here. Use account settings.
               </p>
-            </div>
-
-            <div>
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={parentData.phone}
-                onChange={(e) => setParentData(prev => ({ ...prev, phone: e.target.value }))}
-                placeholder="Enter your phone number"
-              />
             </div>
 
             <Button onClick={updateProfile} disabled={loading} className="w-full">
@@ -277,18 +314,66 @@ export function ProfileTab() {
             </div>
           )}
 
-          <div className="p-3 bg-muted/50 rounded-lg">
-            <div className="flex items-center gap-2 mb-1">
-              <Mail className="w-4 h-4" />
-              <span className="text-sm font-medium">Change Password</span>
+          {!showPasswordChange ? (
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Lock className="w-4 h-4" />
+                <span className="text-sm">Change Password</span>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowPasswordChange(true)}
+              >
+                Change Password
+              </Button>
             </div>
-            <p className="text-xs text-muted-foreground mb-2">
-              To change your password, use the "Forgot Password" option on the sign-in page.
-            </p>
-            <Button variant="outline" size="sm" disabled>
-              Reset Password (Coming Soon)
-            </Button>
-          </div>
+          ) : (
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="newPassword">New Password</Label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Enter new password"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm new password"
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  onClick={changePassword}
+                  disabled={loading || !newPassword || newPassword.length < 6}
+                  className="flex-1"
+                >
+                  Update Password
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowPasswordChange(false);
+                    setNewPassword("");
+                    setConfirmPassword("");
+                  }}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

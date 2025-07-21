@@ -21,7 +21,7 @@ export function PaymentsTab() {
       id: "1",
       type: "subscription",
       description: "KidMindset Premium Monthly",
-      amount: "$9.99",
+      amount: "XXXX",
       date: "2024-12-15",
       status: "paid"
     },
@@ -29,7 +29,7 @@ export function PaymentsTab() {
       id: "2",
       type: "session",
       description: "1-on-1 Coaching Session",
-      amount: "$45.00",
+      amount: "XXXX",
       date: "2024-12-01",
       status: "paid"
     },
@@ -37,7 +37,7 @@ export function PaymentsTab() {
       id: "3",
       type: "academy",
       description: "Mindfulness Academy Course",
-      amount: "$29.99",
+      amount: "XXXX",
       date: "2024-11-20",
       status: "paid"
     },
@@ -45,7 +45,7 @@ export function PaymentsTab() {
       id: "4",
       type: "subscription",
       description: "KidMindset Premium Monthly",
-      amount: "$9.99",
+      amount: "XXXX",
       date: "2024-11-15",
       status: "paid"
     }
@@ -113,7 +113,7 @@ export function PaymentsTab() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="font-semibold">KidMindset Premium</h3>
-              <p className="text-sm text-muted-foreground">Monthly Plan • $9.99/month</p>
+              <p className="text-sm text-muted-foreground">Monthly Plan • XXXX/month</p>
             </div>
             <Badge className="bg-green-100 text-green-800">Active</Badge>
           </div>
@@ -154,7 +154,7 @@ export function PaymentsTab() {
               Schedule a personalized coaching session with our certified mindfulness experts.
             </p>
             <div className="text-sm mb-4">
-              <span className="font-medium">Price: $45.00/session</span>
+              <span className="font-medium">Price: XXXX/session</span>
             </div>
             <Button onClick={handleBookSession} className="w-full">
               <ExternalLink className="w-4 h-4 mr-2" />
@@ -174,7 +174,7 @@ export function PaymentsTab() {
               Explore our library of structured mindfulness courses designed for children.
             </p>
             <div className="text-sm mb-4">
-              <span className="font-medium">Starting at $29.99</span>
+              <span className="font-medium">Starting at XXXX</span>
             </div>
             <Button variant="outline" className="w-full" disabled>
               Browse Courses (Coming Soon)
