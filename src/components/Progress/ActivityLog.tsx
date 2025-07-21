@@ -453,25 +453,61 @@ export default function ActivityLog({ selectedFilter }: ActivityLogProps) {
                         {selectedActivity.post_activity_data.superBehaviours.braveOnBall && (
                           <div className="text-center p-3 bg-background rounded-lg">
                             <p className="text-sm font-medium">Brave on Ball</p>
-                            <p className="text-xl font-bold text-primary">{selectedActivity.post_activity_data.superBehaviours.braveOnBall}/10</p>
+                            <p className="text-xl font-bold text-primary">
+                              {(() => {
+                                const ratings = selectedActivity.post_activity_data.superBehaviours.braveOnBall;
+                                if (typeof ratings === 'object' && ratings.question1 !== undefined) {
+                                  const avg = (ratings.question1 + ratings.question2 + ratings.question3 + ratings.question4) / 4;
+                                  return `${avg.toFixed(1)}/10`;
+                                }
+                                return `${ratings}/10`;
+                              })()}
+                            </p>
                           </div>
                         )}
                         {selectedActivity.post_activity_data.superBehaviours.braveOffBall && (
                           <div className="text-center p-3 bg-background rounded-lg">
                             <p className="text-sm font-medium">Brave off Ball</p>
-                            <p className="text-xl font-bold text-primary">{selectedActivity.post_activity_data.superBehaviours.braveOffBall}/10</p>
+                            <p className="text-xl font-bold text-primary">
+                              {(() => {
+                                const ratings = selectedActivity.post_activity_data.superBehaviours.braveOffBall;
+                                if (typeof ratings === 'object' && ratings.question1 !== undefined) {
+                                  const avg = (ratings.question1 + ratings.question2 + ratings.question3 + ratings.question4) / 4;
+                                  return `${avg.toFixed(1)}/10`;
+                                }
+                                return `${ratings}/10`;
+                              })()}
+                            </p>
                           </div>
                         )}
                         {selectedActivity.post_activity_data.superBehaviours.electric && (
                           <div className="text-center p-3 bg-background rounded-lg">
                             <p className="text-sm font-medium">Electric</p>
-                            <p className="text-xl font-bold text-primary">{selectedActivity.post_activity_data.superBehaviours.electric}/10</p>
+                            <p className="text-xl font-bold text-primary">
+                              {(() => {
+                                const ratings = selectedActivity.post_activity_data.superBehaviours.electric;
+                                if (typeof ratings === 'object' && ratings.question1 !== undefined) {
+                                  const avg = (ratings.question1 + ratings.question2 + ratings.question3 + ratings.question4) / 4;
+                                  return `${avg.toFixed(1)}/10`;
+                                }
+                                return `${ratings}/10`;
+                              })()}
+                            </p>
                           </div>
                         )}
                         {selectedActivity.post_activity_data.superBehaviours.aggressive && (
                           <div className="text-center p-3 bg-background rounded-lg">
                             <p className="text-sm font-medium">Aggressive</p>
-                            <p className="text-xl font-bold text-primary">{selectedActivity.post_activity_data.superBehaviours.aggressive}/10</p>
+                            <p className="text-xl font-bold text-primary">
+                              {(() => {
+                                const ratings = selectedActivity.post_activity_data.superBehaviours.aggressive;
+                                if (typeof ratings === 'object' && ratings.question1 !== undefined) {
+                                  const avg = (ratings.question1 + ratings.question2 + ratings.question3 + ratings.question4) / 4;
+                                  return `${avg.toFixed(1)}/10`;
+                                }
+                                return `${ratings}/10`;
+                              })()}
+                            </p>
                           </div>
                         )}
                       </div>
