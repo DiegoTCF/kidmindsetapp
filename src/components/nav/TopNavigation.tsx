@@ -21,6 +21,8 @@ export function TopNavigation({ isGrownUpZone = false }: TopNavigationProps) {
   const { signOut } = useAuth();
   const { isAdmin } = useAdmin();
 
+  console.log('[TopNavigation] isAdmin:', isAdmin, 'isGrownUpZone:', isGrownUpZone);
+
   const handleLogout = async () => {
     if (isGrownUpZone) {
       // For grown up zone, just clear session and navigate to home
