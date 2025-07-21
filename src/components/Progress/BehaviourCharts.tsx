@@ -337,7 +337,10 @@ export default function BehaviourCharts({ selectedFilter }: BehaviourChartsProps
                       <p className="text-xs font-medium text-foreground leading-tight">{question}</p>
                       <p className="text-xs text-muted-foreground leading-tight">{config.scales[index]}</p>
                       <p className="text-xs font-semibold text-primary">
-                        Score: {[data.question_1_rating, data.question_2_rating, data.question_3_rating, data.question_4_rating][index].toFixed(1)}/10
+                        Score: {(() => {
+                          const scores = [data.question_1_rating, data.question_2_rating, data.question_3_rating, data.question_4_rating];
+                          return scores[index]?.toFixed(1) || 0;
+                        })()} /10
                       </p>
                     </div>
                   </div>
