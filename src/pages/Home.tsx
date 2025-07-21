@@ -143,26 +143,63 @@ export default function Home() {
         return;
       }
       
+      let tasksToUse: DailyTask[] = defaultTasks; // Fallback to defaults
+      
       if (tasksData && tasksData.length > 0) {
         console.log('[KidMindset] Tasks loaded from Supabase:', tasksData);
         
         // Convert Supabase tasks to DailyTask format
-        const supabaseTasks: DailyTask[] = tasksData.map(task => ({
+        tasksToUse = tasksData.map(task => ({
           id: task.id,
           name: task.label,
           completed: false,
           streak: 0
         }));
         
-        // Update default tasks with data from Supabase
-        setDailyTasks(supabaseTasks);
-        console.log('[KidMindset] Daily tasks updated from Supabase');
+        console.log('[KidMindset] Using tasks from Supabase');
       } else {
         console.log('[KidMindset] No tasks found in Supabase, using defaults');
+      }
+
+      // Now check if there's saved completion state for today
+      const today = new Date().toDateString();
+      const savedTasks = localStorage.getItem(`kidmindset_tasks_${today}`);
+      
+      if (savedTasks) {
+        console.log('[KidMindset] Found saved task states for today, merging...');
+        const savedTasksData: DailyTask[] = JSON.parse(savedTasks);
+        
+        // Merge saved completion states with current task definitions
+        const mergedTasks = tasksToUse.map(task => {
+          const savedTask = savedTasksData.find(saved => saved.id === task.id);
+          if (savedTask) {
+            // Keep the completion state and streak from saved data
+            return {
+              ...task,
+              completed: savedTask.completed,
+              notDone: savedTask.notDone,
+              streak: savedTask.streak
+            };
+          }
+          return task;
+        });
+        
+        setDailyTasks(mergedTasks);
+        console.log('[KidMindset] Daily tasks updated with saved completion states');
+      } else {
+        console.log('[KidMindset] No saved task states for today, using fresh tasks');
+        setDailyTasks(tasksToUse);
       }
     } catch (error) {
       console.error('[KidMindset] Error fetching daily tasks:', error);
       console.log('[KidMindset] Using default tasks as fallback');
+      
+      // Still try to load saved states for defaults
+      const today = new Date().toDateString();
+      const savedTasks = localStorage.getItem(`kidmindset_tasks_${today}`);
+      if (savedTasks) {
+        setDailyTasks(JSON.parse(savedTasks));
+      }
     }
   };
 
@@ -176,11 +213,8 @@ export default function Home() {
       setMoodSubmitted(true);
     }
 
-    // Load tasks
-    const savedTasks = localStorage.getItem(`kidmindset_tasks_${today}`);
-    if (savedTasks) {
-      setDailyTasks(JSON.parse(savedTasks));
-    }
+    // Tasks are now loaded in loadDailyTasks() to properly merge with Supabase data
+    // This prevents overriding completion states
   };
 
   const loadWeeklyMoodAverage = async () => {

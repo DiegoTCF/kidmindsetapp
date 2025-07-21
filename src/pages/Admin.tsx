@@ -348,9 +348,18 @@ export default function Admin() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-4 max-w-7xl">
-        {/* Header */}
+        {/* Header with Back Button */}
         <div className="mb-6">
           <div className="flex items-center gap-4 mb-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.history.length > 1 ? window.history.back() : window.location.href = '/'}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
             {viewMode !== 'users' && (
               <Button
                 variant="outline"
@@ -366,7 +375,7 @@ export default function Admin() {
                 }}
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
+                Back to {viewMode === 'progress' ? 'Children' : 'Users'}
               </Button>
             )}
             <div className="flex items-center gap-3">
