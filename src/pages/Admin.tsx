@@ -348,34 +348,44 @@ export default function Admin() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-4 max-w-7xl">
-        {/* Header with Back Button */}
+        {/* Header with Navigation */}
         <div className="mb-6">
           <div className="flex items-center gap-4 mb-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.history.length > 1 ? window.history.back() : window.location.href = '/'}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </Button>
-            {viewMode !== 'users' && (
+            {viewMode === 'progress' && selectedChild ? (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  if (viewMode === 'progress') {
-                    setViewMode('children');
-                    setSelectedChild(null);
-                  } else {
-                    setViewMode('users');
-                    setChildren([]);
-                  }
+                  setViewMode('children');
+                  setSelectedChild(null);
                 }}
+                className="flex items-center gap-2"
               >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to {viewMode === 'progress' ? 'Children' : 'Users'}
+                <ArrowLeft className="h-4 w-4" />
+                Back to Children
+              </Button>
+            ) : viewMode === 'children' ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setViewMode('users');
+                  setChildren([]);
+                }}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Users
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.history.length > 1 ? window.history.back() : window.location.href = '/'}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back
               </Button>
             )}
             <div className="flex items-center gap-3">

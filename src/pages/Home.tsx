@@ -673,284 +673,286 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      {/* Top Navigation */}
-      <TopNavigation />
+    <div className="min-h-screen bg-background">
+      <div className="w-full max-w-sm mx-auto p-4"> {/* Mobile-optimized container */}
+        {/* Top Navigation */}
+        <TopNavigation />
 
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-              Welcome back, {playerData.name}! 
-              <CustomIcon type="brain" size="md" />
-            </h1>
-            <div className="flex items-center gap-4 mt-2">
-              <div className="flex items-center gap-1 px-3 py-1 bg-level-bg rounded-full">
-                <Star className="w-4 h-4 text-level-foreground" />
-                <span className="text-sm font-semibold text-level-foreground">
-                  Level {playerData.level}
-                </span>
-              </div>
-              <div className="flex items-center gap-1 px-3 py-1 bg-primary/10 rounded-full">
-                <Trophy className="w-4 h-4 text-primary" />
-                <span className="text-sm font-semibold text-primary">
-                  {playerData.points} pts
-                </span>
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                Welcome back, {playerData.name}! 
+                <CustomIcon type="brain" size="md" />
+              </h1>
+              <div className="flex items-center gap-4 mt-2">
+                <div className="flex items-center gap-1 px-3 py-1 bg-level-bg rounded-full">
+                  <Star className="w-4 h-4 text-level-foreground" />
+                  <span className="text-sm font-semibold text-level-foreground">
+                    Level {playerData.level}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 px-3 py-1 bg-primary/10 rounded-full">
+                  <Trophy className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-semibold text-primary">
+                    {playerData.points} pts
+                  </span>
+                </div>
               </div>
             </div>
           </div>
+
+          {/* Progress Bar */}
+          <div className="w-full bg-muted rounded-full h-3 mb-2">
+            <div 
+              className="bg-gradient-to-r from-primary to-accent h-3 rounded-full transition-all duration-500 shadow-sm"
+              style={{ width: `${getProgressToNextLevel()}%` }}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground text-center">
+            {100 - Math.floor(getProgressToNextLevel())}% to level {playerData.level + 1}
+          </p>
         </div>
 
-        {/* Progress Bar */}
-        <div className="w-full bg-muted rounded-full h-3 mb-2">
-          <div 
-            className="bg-gradient-to-r from-primary to-accent h-3 rounded-full transition-all duration-500 shadow-sm"
-            style={{ width: `${getProgressToNextLevel()}%` }}
-          />
-        </div>
-        <p className="text-xs text-muted-foreground text-center">
-          {100 - Math.floor(getProgressToNextLevel())}% to level {playerData.level + 1}
-        </p>
-      </div>
-
-      {/* Mood Check */}
-      <Card className="mb-6 shadow-soft">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            How are you feeling today?
-            <CustomIcon type="good" size="sm" />
-          </CardTitle>
-          {playerData.weeklyMoodAvg && (
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <span>Weekly average:</span>
-              <span className="font-semibold text-primary">
-                {playerData.weeklyMoodAvg.toFixed(1)}/5
-              </span>
-            </div>
-          )}
-        </CardHeader>
-        <CardContent>
-          {!moodSubmitted || showMoodReview ? (
-            <div className="space-y-4">
-              <div className="grid grid-cols-5 gap-2">
-                {moodOptions.map((mood) => (
-                  <button
-                    key={mood.value}
-                    onClick={() => showMoodReview ? handleMoodChange(mood.value) : handleMoodSubmit(mood.value)}
-                    className={cn(
-                      "flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all duration-200",
-                      "active:scale-95 touch-manipulation",
-                      showMoodReview && todayMood === mood.value
-                        ? "border-primary bg-primary/10"
-                        : "border-transparent hover:border-primary/30 hover:bg-primary/5"
-                    )}
-                  >
-                    <CustomIcon type={mood.iconType} size="lg" />
-                    <span className="text-xs font-medium text-muted-foreground">
-                      {mood.label}
-                    </span>
-                    <span className="text-xs font-bold text-primary">
-                      {mood.value}
-                    </span>
-                  </button>
-                ))}
+        {/* Mood Check */}
+        <Card className="mb-6 shadow-soft">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              How are you feeling today?
+              <CustomIcon type="good" size="sm" />
+            </CardTitle>
+            {playerData.weeklyMoodAvg && (
+              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                <span>Weekly average:</span>
+                <span className="font-semibold text-primary">
+                  {playerData.weeklyMoodAvg.toFixed(1)}/5
+                </span>
               </div>
-              {showMoodReview && (
-                <div className="flex justify-center gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setShowMoodReview(false)}
-                  >
-                    Cancel
-                  </Button>
+            )}
+          </CardHeader>
+          <CardContent>
+            {!moodSubmitted || showMoodReview ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-5 gap-2">
+                  {moodOptions.map((mood) => (
+                    <button
+                      key={mood.value}
+                      onClick={() => showMoodReview ? handleMoodChange(mood.value) : handleMoodSubmit(mood.value)}
+                      className={cn(
+                        "flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all duration-200",
+                        "active:scale-95 touch-manipulation",
+                        showMoodReview && todayMood === mood.value
+                          ? "border-primary bg-primary/10"
+                          : "border-transparent hover:border-primary/30 hover:bg-primary/5"
+                      )}
+                    >
+                      <CustomIcon type={mood.iconType} size="lg" />
+                      <span className="text-xs font-medium text-muted-foreground">
+                        {mood.label}
+                      </span>
+                      <span className="text-xs font-bold text-primary">
+                        {mood.value}
+                      </span>
+                    </button>
+                  ))}
                 </div>
-              )}
-            </div>
-          ) : (
-            <div className="text-center py-4 space-y-3">
-              <div className="flex justify-center">
-                <CustomIcon 
-                  type={moodOptions.find(m => m.value === todayMood)?.iconType || 'okay'} 
-                  size="xl" 
-                />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  Mood recorded for today! Come back tomorrow to check in again.
-                </p>
-                {playerData.weeklyMoodAvg && (
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Weekly average: {playerData.weeklyMoodAvg.toFixed(1)}/5
-                  </p>
+                {showMoodReview && (
+                  <div className="flex justify-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setShowMoodReview(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
                 )}
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => setShowMoodReview(true)}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <Edit2 className="w-3 h-3 mr-1" />
-                Change mood
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Daily Tasks */}
-      <Card className="mb-6 shadow-soft">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <CustomIcon type="target" size="md" />
-              Daily Tasks
-            </CardTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowAddTask(true)}
-              className="flex items-center gap-1"
-            >
-              <Plus className="w-4 h-4" />
-              Add Task
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {/* Add Custom Task */}
-          {showAddTask && (
-            <div className="flex gap-2 p-3 bg-muted/50 rounded-lg">
-              <Input
-                placeholder="Enter custom task..."
-                value={newTaskName}
-                onChange={(e) => setNewTaskName(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleAddCustomTask()}
-                className="flex-1"
-              />
-              <Button onClick={handleAddCustomTask} size="sm">
-                Add
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setShowAddTask(false)}
-              >
-                Cancel
-              </Button>
-            </div>
-          )}
-
-          {/* Task List */}
-          {dailyTasks.map((task) => (
-            <div
-              key={task.id}
-              className={cn(
-                "flex items-center justify-between p-4 rounded-lg border-2 transition-all duration-200",
-                task.completed 
-                  ? "bg-success/10 border-success/30" 
-                  : "bg-card border-border hover:border-primary/30"
-              )}
-            >
-              <div className="flex items-center gap-3">
-                <div className={cn(
-                  "w-2 h-2 rounded-full",
-                  task.completed ? "bg-success" : "bg-muted-foreground"
-                )} />
+            ) : (
+              <div className="text-center py-4 space-y-3">
+                <div className="flex justify-center">
+                  <CustomIcon 
+                    type={moodOptions.find(m => m.value === todayMood)?.iconType || 'okay'} 
+                    size="xl" 
+                  />
+                </div>
                 <div>
-                  <p className={cn(
-                    "font-medium",
-                    task.completed && "line-through text-muted-foreground"
-                  )}>
-                    {task.name}
+                  <p className="text-sm text-muted-foreground">
+                    Mood recorded for today! Come back tomorrow to check in again.
                   </p>
-                  {task.streak > 0 && (
-                    <p className="text-xs flex items-center gap-1" style={{ color: '#ff0066' }}>
-                      <CustomIcon type="flame" size="sm" />
-                      {task.streak} day streak
+                  {playerData.weeklyMoodAvg && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Weekly average: {playerData.weeklyMoodAvg.toFixed(1)}/5
                     </p>
                   )}
                 </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setShowMoodReview(true)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <Edit2 className="w-3 h-3 mr-1" />
+                  Change mood
+                </Button>
               </div>
+            )}
+          </CardContent>
+        </Card>
 
-              <div className="flex items-center gap-2">
-                {!task.completed && !task.notDone ? (
-                  // Show both options when no selection made
-                  <>
-                    <Button
-                      onClick={() => handleTaskComplete(task.id)}
-                      size="sm"
-                      variant="default"
-                      className="w-8 h-8 p-0 bg-success hover:bg-success/80 text-white"
-                      title="Mark as done"
-                    >
-                      <Check className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      onClick={() => handleTaskNotDone(task.id)}
-                      size="sm"
-                      variant="outline"
-                      className="w-8 h-8 p-0 hover:border-destructive/50 hover:text-destructive"
-                      title="Mark as not done"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </>
-                ) : task.completed ? (
-                  // Show done state with ability to change
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1 text-sm text-success">
-                      <Check className="w-4 h-4" />
-                      <span>Done</span>
-                    </div>
-                    <Button
-                      onClick={() => handleTaskReset(task.id)}
-                      size="sm"
-                      variant="ghost"
-                      className="w-6 h-6 p-0 text-xs text-muted-foreground hover:text-foreground"
-                      title="Change selection"
-                    >
-                      ↻
-                    </Button>
-                  </div>
-                ) : task.notDone ? (
-                  // Show not done state with ability to change
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1 text-sm text-destructive">
-                      <X className="w-4 h-4" />
-                      <span>Not done</span>
-                    </div>
-                    <Button
-                      onClick={() => handleTaskReset(task.id)}
-                      size="sm"
-                      variant="ghost"
-                      className="w-6 h-6 p-0 text-xs text-muted-foreground hover:text-foreground"
-                      title="Change selection"
-                    >
-                      ↻
-                    </Button>
-                  </div>
-                ) : null}
-              </div>
+        {/* Daily Tasks */}
+        <Card className="mb-6 shadow-soft">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <CustomIcon type="target" size="md" />
+                Daily Tasks
+              </CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAddTask(true)}
+                className="flex items-center gap-1"
+              >
+                <Plus className="w-4 h-4" />
+                Add Task
+              </Button>
             </div>
-          ))}
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {/* Add Custom Task */}
+            {showAddTask && (
+              <div className="flex gap-2 p-3 bg-muted/50 rounded-lg">
+                <Input
+                  placeholder="Enter custom task..."
+                  value={newTaskName}
+                  onChange={(e) => setNewTaskName(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddCustomTask()}
+                  className="flex-1"
+                />
+                <Button onClick={handleAddCustomTask} size="sm">
+                  Add
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowAddTask(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            )}
 
-          {dailyTasks.every(task => task.completed) && dailyTasks.length > 0 && (
-            <div className="text-center py-4">
-              <div className="flex justify-center mb-2">
-                <CustomIcon type="party" size="xl" />
+            {/* Task List */}
+            {dailyTasks.map((task) => (
+              <div
+                key={task.id}
+                className={cn(
+                  "flex items-center justify-between p-4 rounded-lg border-2 transition-all duration-200",
+                  task.completed 
+                    ? "bg-success/10 border-success/30" 
+                    : "bg-card border-border hover:border-primary/30"
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    "w-2 h-2 rounded-full",
+                    task.completed ? "bg-success" : "bg-muted-foreground"
+                  )} />
+                  <div>
+                    <p className={cn(
+                      "font-medium",
+                      task.completed && "line-through text-muted-foreground"
+                    )}>
+                      {task.name}
+                    </p>
+                    {task.streak > 0 && (
+                      <p className="text-xs flex items-center gap-1" style={{ color: '#ff0066' }}>
+                        <CustomIcon type="flame" size="sm" />
+                        {task.streak} day streak
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {!task.completed && !task.notDone ? (
+                    // Show both options when no selection made
+                    <>
+                      <Button
+                        onClick={() => handleTaskComplete(task.id)}
+                        size="sm"
+                        variant="default"
+                        className="w-8 h-8 p-0 bg-success hover:bg-success/80 text-white"
+                        title="Mark as done"
+                      >
+                        <Check className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        onClick={() => handleTaskNotDone(task.id)}
+                        size="sm"
+                        variant="outline"
+                        className="w-8 h-8 p-0 hover:border-destructive/50 hover:text-destructive"
+                        title="Mark as not done"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </>
+                  ) : task.completed ? (
+                    // Show done state with ability to change
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1 text-sm text-success">
+                        <Check className="w-4 h-4" />
+                        <span>Done</span>
+                      </div>
+                      <Button
+                        onClick={() => handleTaskReset(task.id)}
+                        size="sm"
+                        variant="ghost"
+                        className="w-6 h-6 p-0 text-xs text-muted-foreground hover:text-foreground"
+                        title="Change selection"
+                      >
+                        ↻
+                      </Button>
+                    </div>
+                  ) : task.notDone ? (
+                    // Show not done state with ability to change
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1 text-sm text-destructive">
+                        <X className="w-4 h-4" />
+                        <span>Not done</span>
+                      </div>
+                      <Button
+                        onClick={() => handleTaskReset(task.id)}
+                        size="sm"
+                        variant="ghost"
+                        className="w-6 h-6 p-0 text-xs text-muted-foreground hover:text-foreground"
+                        title="Change selection"
+                      >
+                        ↻
+                      </Button>
+                    </div>
+                  ) : null}
+                </div>
               </div>
-              <p className="font-semibold text-success">All tasks completed!</p>
-              <p className="text-sm text-muted-foreground">
-                Amazing work today, champion!
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+            ))}
+
+            {dailyTasks.every(task => task.completed) && dailyTasks.length > 0 && (
+              <div className="text-center py-4">
+                <div className="flex justify-center mb-2">
+                  <CustomIcon type="party" size="xl" />
+                </div>
+                <p className="font-semibold text-success">All tasks completed!</p>
+                <p className="text-sm text-muted-foreground">
+                  Amazing work today, champion!
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div> {/* Close mobile container */}
+    </div> {/* Close min-h-screen */}
   );
 }
 
