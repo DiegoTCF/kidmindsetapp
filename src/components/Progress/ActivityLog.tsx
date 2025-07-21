@@ -28,9 +28,10 @@ interface Activity {
 
 interface ActivityLogProps {
   selectedFilter: string;
+  childId?: string;
 }
 
-export default function ActivityLog({ selectedFilter }: ActivityLogProps) {
+export default function ActivityLog({ selectedFilter, childId }: ActivityLogProps) {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
@@ -38,24 +39,29 @@ export default function ActivityLog({ selectedFilter }: ActivityLogProps) {
 
   useEffect(() => {
     loadActivities();
-  }, [selectedFilter]);
+  }, [selectedFilter, childId]);
 
   const loadActivities = async () => {
     try {
       setLoading(true);
       
-      // Get current child ID
-      const { data: children } = await supabase
-        .from('children')
-        .select('id')
-        .limit(1);
+      let targetChildId = childId;
       
-      if (!children || children.length === 0) return;
+      // If no childId provided, get current user's child ID
+      if (!targetChildId) {
+        const { data: children } = await supabase
+          .from('children')
+          .select('id')
+          .limit(1);
+        
+        if (!children || children.length === 0) return;
+        targetChildId = children[0].id;
+      }
       
       let query = supabase
         .from('activities')
         .select('*')
-        .eq('child_id', children[0].id)
+        .eq('child_id', targetChildId)
         .order('activity_date', { ascending: false });
 
       if (selectedFilter !== 'All') {

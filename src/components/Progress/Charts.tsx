@@ -45,9 +45,10 @@ const getActivityColor = (activityType: string, index: number): string => {
 
 interface ChartsProps {
   selectedFilter: string;
+  childId?: string;
 }
 
-export default function Charts({ selectedFilter }: ChartsProps) {
+export default function Charts({ selectedFilter, childId }: ChartsProps) {
   const [activityStats, setActivityStats] = useState<ActivityStats[]>([]);
   const [moodTrends, setMoodTrends] = useState<MoodTrend[]>([]);
   const [worryStats, setWorryStats] = useState<WorryStats[]>([]);
@@ -62,25 +63,28 @@ export default function Charts({ selectedFilter }: ChartsProps) {
 
   useEffect(() => {
     loadChartData();
-  }, [selectedFilter]);
+  }, [selectedFilter, childId]);
 
   const loadChartData = async () => {
     try {
-      // Get current child ID
-      const { data: children } = await supabase
-        .from('children')
-        .select('id')
-        .limit(1);
+      let targetChildId = childId;
       
-      if (!children || children.length === 0) return;
-      
-      const childId = children[0].id;
+      // If no childId provided, get current user's child ID
+      if (!targetChildId) {
+        const { data: children } = await supabase
+          .from('children')
+          .select('id')
+          .limit(1);
+        
+        if (!children || children.length === 0) return;
+        targetChildId = children[0].id;
+      }
 
       // Load activities for stats
       const { data: activities, error: activitiesError } = await supabase
         .from('activities')
         .select('activity_type, post_activity_completed, post_activity_data, activity_date, goals_scored, assists_made, worry_reason')
-        .eq('child_id', childId)
+        .eq('child_id', targetChildId)
         .order('activity_date', { ascending: false });
 
       if (activitiesError) throw activitiesError;

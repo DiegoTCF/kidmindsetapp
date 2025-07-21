@@ -563,7 +563,7 @@ export default function Admin() {
                   <CardTitle>Activity Log</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ActivityLog selectedFilter="All" />
+                  <ActivityLog selectedFilter="All" childId={selectedChild.id} />
                 </CardContent>
               </Card>
 
@@ -572,7 +572,7 @@ export default function Admin() {
                   <CardTitle>Behaviour Analysis</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <BehaviourCharts selectedFilter="All" />
+                  <BehaviourCharts selectedFilter="All" childId={selectedChild.id} />
                 </CardContent>
               </Card>
 
@@ -581,7 +581,7 @@ export default function Admin() {
                   <CardTitle>Statistics & Charts</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Charts selectedFilter="All" />
+                  <Charts selectedFilter="All" childId={selectedChild.id} />
                 </CardContent>
               </Card>
             </div>

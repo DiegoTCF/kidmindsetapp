@@ -15,6 +15,7 @@ interface BehaviourData {
 
 interface BehaviourChartsProps {
   selectedFilter: string;
+  childId?: string;
 }
 
 const BEHAVIOUR_CONFIG = {
@@ -158,36 +159,39 @@ const SmallCircularProgress = ({ percentage, size = 60, strokeWidth = 4 }: { per
   );
 };
 
-export default function BehaviourCharts({ selectedFilter }: BehaviourChartsProps) {
+export default function BehaviourCharts({ selectedFilter, childId }: BehaviourChartsProps) {
   const [behaviourData, setBehaviourData] = useState<{ [key: string]: BehaviourData }>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadBehaviourData();
-  }, [selectedFilter]);
+  }, [selectedFilter, childId]);
 
   const loadBehaviourData = async () => {
     try {
       setLoading(true);
       
-      // Get current child ID
-      const { data: children } = await supabase
-        .from('children')
-        .select('id')
-        .limit(1);
+      let targetChildId = childId;
       
-      if (!children || children.length === 0) {
-        setLoading(false);
-        return;
+      // If no childId provided, get current user's child ID
+      if (!targetChildId) {
+        const { data: children } = await supabase
+          .from('children')
+          .select('id')
+          .limit(1);
+        
+        if (!children || children.length === 0) {
+          setLoading(false);
+          return;
+        }
+        targetChildId = children[0].id;
       }
-      
-      const childId = children[0].id;
 
       // Get all behaviour ratings for this child
       const { data: ratings, error } = await supabase
         .from('super_behaviour_ratings')
         .select('*')
-        .eq('child_id', childId)
+        .eq('child_id', targetChildId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
