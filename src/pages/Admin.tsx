@@ -104,22 +104,46 @@ export default function Admin() {
   };
 
   const loadChildren = async (userId: string) => {
+    console.log('[AdminPanel] Loading children for user:', userId);
     setLoadingData(true);
     try {
-      const { data, error } = await supabase
+      // First get the parent record
+      const { data: parentData, error: parentError } = await supabase
+        .from('parents')
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (parentError) {
+        console.error('[AdminPanel] Error loading parent:', parentError);
+        throw parentError;
+      }
+
+      if (!parentData) {
+        console.log('[AdminPanel] No parent found for user:', userId);
+        setChildren([]);
+        setViewMode('children');
+        return;
+      }
+
+      console.log('[AdminPanel] Found parent ID:', parentData.id);
+
+      // Now get the children for this parent
+      const { data: childrenData, error: childrenError } = await supabase
         .from('children')
         .select('*')
-        .eq('parent_id', (await supabase
-          .from('parents')
-          .select('id')
-          .eq('user_id', userId)
-          .single()).data?.id);
+        .eq('parent_id', parentData.id);
 
-      if (error) throw error;
-      setChildren(data || []);
+      if (childrenError) {
+        console.error('[AdminPanel] Error loading children:', childrenError);
+        throw childrenError;
+      }
+
+      console.log('[AdminPanel] Loaded children:', childrenData);
+      setChildren(childrenData || []);
       setViewMode('children');
     } catch (error) {
-      console.error('Error loading children:', error);
+      console.error('[AdminPanel] Error in loadChildren:', error);
       toast({
         title: 'Error',
         description: 'Failed to load children',
