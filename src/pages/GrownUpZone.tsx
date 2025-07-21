@@ -38,6 +38,7 @@ export default function GrownUpZone() {
   const [authMethod, setAuthMethod] = useState<"pin" | "email">("pin");
   const [pin, setPin] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [childProgress, setChildProgress] = useState<ChildProgress>({
     name: "Champion",
@@ -156,34 +157,95 @@ export default function GrownUpZone() {
   };
 
   const handleEmailAuth = async () => {
-    if (!user?.email) {
+    if (!email || !password) {
       toast({
-        title: "Authentication required",
-        description: "Please sign in to access the Grown Up Zone",
+        title: "Missing credentials",
+        description: "Please enter both email and password",
         variant: "destructive"
       });
-      navigate('/auth');
       return;
     }
 
-    if (email === user.email) {
+    setLoading(true);
+    console.log('[GrownUpZone] Verifying email and password authentication');
+
+    try {
+      // Authenticate with Supabase using email and password
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (authError) {
+        console.log('[GrownUpZone] Authentication error:', authError.message);
+        toast({
+          title: "Authentication failed",
+          description: "Invalid email or password",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (!authData.user) {
+        toast({
+          title: "Authentication failed",
+          description: "Unable to authenticate user",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Check if the authenticated user has a parent profile
+      const { data: parentData, error: parentError } = await supabase
+        .from('parents')
+        .select('id, name')
+        .eq('user_id', authData.user.id)
+        .maybeSingle();
+
+      if (parentError) {
+        console.log('[GrownUpZone] Error fetching parent data:', parentError.message);
+        toast({
+          title: "Error",
+          description: "Unable to verify parent status",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (!parentData) {
+        toast({
+          title: "Access denied",
+          description: "No parent profile found for this account",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Successfully authenticated as parent
       setIsAuthenticated(true);
       sessionStorage.setItem('kidmindset_parent_auth', 'authenticated');
       loadChildProgress();
       
-      console.log('[GrownUpZone] Parent authenticated via email');
+      console.log('[GrownUpZone] Parent authenticated via email/password');
       
       toast({
         title: "Access granted",
         description: "Welcome to the Grown Up Zone",
       });
-    } else {
+    } catch (error) {
+      console.log('[GrownUpZone] Unexpected error during email authentication:', error);
       toast({
-        title: "Email not recognized",
-        description: "Please use your registered email address",
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive"
       });
     }
+
+    setLoading(false);
   };
 
   const loadChildProgress = () => {
@@ -342,23 +404,36 @@ export default function GrownUpZone() {
                     />
                   </div>
                 ) : (
-                  <div>
-                    <Label htmlFor="email">Parent Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder={user?.email || "parent@example.com"}
-                      onKeyPress={(e) => e.key === 'Enter' && !loading && handleEmailAuth()}
-                    />
+                  <div className="space-y-3">
+                    <div>
+                      <Label htmlFor="email">Parent Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="parent@example.com"
+                        autoFocus
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="password">Password</Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Enter your password"
+                        onKeyPress={(e) => e.key === 'Enter' && !loading && handleEmailAuth()}
+                      />
+                    </div>
                   </div>
                 )}
 
                 <Button
                   onClick={authMethod === "pin" ? handlePinAuth : handleEmailAuth}
                   className="w-full"
-                  disabled={loading || (authMethod === "pin" ? pin.length !== 4 : !email)}
+                  disabled={loading || (authMethod === "pin" ? pin.length !== 4 : !email || !password)}
                 >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Access Grown Up Zone
