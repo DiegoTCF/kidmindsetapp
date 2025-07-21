@@ -333,6 +333,10 @@ export type Database = {
         Args: { check_user_id?: string }
         Returns: boolean
       }
+      test_admin_access: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never

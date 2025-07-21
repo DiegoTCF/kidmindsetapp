@@ -54,26 +54,77 @@ export default function Admin() {
   const loadUsers = async () => {
     setLoadingData(true);
     try {
-      // Get profiles with auth users data via RPC
+      // CRITICAL: Always verify admin permissions before any data access
+      const { data: adminCheck, error: adminError } = await supabase.rpc('is_admin');
+      
+      if (adminError || !adminCheck) {
+        console.error('[AdminPanel] Admin check failed - redirecting:', adminError);
+        toast({
+          title: 'Access Denied',
+          description: 'You do not have administrative privileges.',
+          variant: 'destructive'
+        });
+        // Force redirect to grown-up zone
+        window.location.href = '/grown-up';
+        return;
+      }
+
+      // Get profiles with auth users data via RPC - RLS will enforce admin-only access
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('*');
 
-      if (profilesError) throw profilesError;
+      if (profilesError) {
+        if (profilesError.code === 'PGRST001') {
+          console.error('[AdminPanel] RLS violation - access denied:', profilesError);
+          toast({
+            title: 'Access Denied',
+            description: 'Insufficient permissions to view profiles.',
+            variant: 'destructive'
+          });
+          window.location.href = '/grown-up';
+          return;
+        }
+        throw profilesError;
+      }
 
-      // Get parents data  
+      // Get parents data - RLS will enforce admin-only access
       const { data: parentsData, error: parentsError } = await supabase
         .from('parents')
         .select('*');
 
-      if (parentsError) throw parentsError;
+      if (parentsError) {
+        if (parentsError.code === 'PGRST001') {
+          console.error('[AdminPanel] RLS violation - access denied:', parentsError);
+          toast({
+            title: 'Access Denied',
+            description: 'Insufficient permissions to view parent data.',
+            variant: 'destructive'
+          });
+          window.location.href = '/grown-up';
+          return;
+        }
+        throw parentsError;
+      }
 
-      // Get user roles
+      // Get user roles - RLS will enforce admin-only access
       const { data: rolesData, error: rolesError } = await supabase
         .from('user_roles')
         .select('*');
 
-      if (rolesError) throw rolesError;
+      if (rolesError) {
+        if (rolesError.code === 'PGRST001') {
+          console.error('[AdminPanel] RLS violation - access denied:', rolesError);
+          toast({
+            title: 'Access Denied',
+            description: 'Insufficient permissions to view user roles.',
+            variant: 'destructive'
+          });
+          window.location.href = '/grown-up';
+          return;
+        }
+        throw rolesError;
+      }
 
       // Combine the data
       const combinedUsers = profilesData.map(profile => {
@@ -107,11 +158,23 @@ export default function Admin() {
     console.log('[AdminPanel] Loading children for user:', userId);
     setLoadingData(true);
     try {
-      // Test admin access first
-      const { data: adminCheck } = await supabase.rpc('is_admin');
+      // CRITICAL: Always verify admin permissions before any data access
+      const { data: adminCheck, error: adminError } = await supabase.rpc('is_admin');
       console.log('[AdminPanel] Admin check result:', adminCheck);
 
-      // First get the parent record (now guaranteed unique)
+      if (adminError || !adminCheck) {
+        console.error('[AdminPanel] Admin check failed - redirecting:', adminError);
+        toast({
+          title: 'Access Denied',
+          description: 'You do not have administrative privileges.',
+          variant: 'destructive'
+        });
+        // Force redirect to grown-up zone
+        window.location.href = '/grown-up';
+        return;
+      }
+
+      // First get the parent record (now guaranteed unique) - RLS will enforce admin-only access
       const { data: parentData, error: parentError } = await supabase
         .from('parents')
         .select('id, name, user_id')
@@ -122,6 +185,27 @@ export default function Admin() {
 
       if (parentError) {
         console.error('[AdminPanel] Error loading parent:', parentError);
+        if (parentError.code === 'PGRST001') {
+          console.error('[AdminPanel] RLS violation - access denied:', parentError);
+          toast({
+            title: 'Access Denied',
+            description: 'Insufficient permissions to view parent data.',
+            variant: 'destructive'
+          });
+          window.location.href = '/grown-up';
+          return;
+        }
+        if (parentError.code === 'PGRST116') {
+          console.log('[AdminPanel] No parent found for user:', userId);
+          setChildren([]);
+          setViewMode('children');
+          toast({
+            title: 'No Parent Found',
+            description: 'This user does not have a parent profile set up.',
+            variant: 'default'
+          });
+          return;
+        }
         throw parentError;
       }
 
@@ -139,7 +223,7 @@ export default function Admin() {
 
       console.log('[AdminPanel] Found parent:', parentData);
 
-      // Now get the children for this parent
+      // Now get the children for this parent - RLS will enforce admin-only access
       const { data: childrenData, error: childrenError } = await supabase
         .from('children')
         .select('*')
@@ -149,6 +233,16 @@ export default function Admin() {
 
       if (childrenError) {
         console.error('[AdminPanel] Error loading children:', childrenError);
+        if (childrenError.code === 'PGRST001') {
+          console.error('[AdminPanel] RLS violation - access denied:', childrenError);
+          toast({
+            title: 'Access Denied',
+            description: 'Insufficient permissions to view children data.',
+            variant: 'destructive'
+          });
+          window.location.href = '/grown-up';
+          return;
+        }
         throw childrenError;
       }
 
@@ -178,6 +272,19 @@ export default function Admin() {
 
   const promoteToAdmin = async (userId: string, userEmail: string) => {
     try {
+      // CRITICAL: Verify admin permissions before promoting anyone
+      const { data: adminCheck, error: adminError } = await supabase.rpc('is_admin');
+      
+      if (adminError || !adminCheck) {
+        console.error('[AdminPanel] Admin check failed - not authorized to promote users:', adminError);
+        toast({
+          title: 'Access Denied',
+          description: 'You do not have permission to promote users.',
+          variant: 'destructive'
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from('user_roles')
         .upsert({ 
@@ -185,7 +292,19 @@ export default function Admin() {
           role: 'admin' 
         });
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === 'PGRST001') {
+          console.error('[AdminPanel] RLS violation - access denied:', error);
+          toast({
+            title: 'Access Denied',
+            description: 'Insufficient permissions to modify user roles.',
+            variant: 'destructive'
+          });
+          window.location.href = '/grown-up';
+          return;
+        }
+        throw error;
+      }
 
       toast({
         title: 'Success',
