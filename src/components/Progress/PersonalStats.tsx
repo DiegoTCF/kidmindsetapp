@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, Target, Activity, TrendingUp } from "lucide-react";
+import DailyActivityPieChart from "./DailyActivityPieChart";
 
 interface PersonalStats {
   weeklyMoodAvg: number;
@@ -283,38 +283,8 @@ export default function PersonalStats() {
         </Card>
       </div>
 
-      {/* Daily Tasks Breakdown */}
-      <Card className="shadow-soft">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Target className="h-5 w-5" />
-            Daily Activities Progress
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {taskStats.length > 0 ? (
-            taskStats.map((task) => (
-              <div key={task.taskName} className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">{task.taskName}</span>
-                  <span className="text-sm text-muted-foreground">
-                    {task.completedDays} {task.completedDays === 1 ? 'day' : 'days'}
-                  </span>
-                </div>
-                <Progress 
-                  value={Math.min((task.completedDays / 7) * 100, 100)} 
-                  className="h-2"
-                />
-              </div>
-            ))
-          ) : (
-            <div className="text-center py-6 text-muted-foreground">
-              <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Start completing daily tasks to see your progress!</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Daily Activities Pie Chart */}
+      <DailyActivityPieChart />
 
       {/* Motivational Message */}
       {stats.weeklyMoodAvg > 0 && (
