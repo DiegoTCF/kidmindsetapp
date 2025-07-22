@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { supabase } from "@/integrations/supabase/client";
+import PersonalStats from "./PersonalStats";
 interface ActivityStats {
   type: string;
   count: number;
@@ -223,6 +224,13 @@ export default function Charts({
     });
   };
   return <div className="space-y-6">
+      {/* Personal Stats Section - New personalized metrics */}
+      <PersonalStats />
+      
+      {/* Activity-based Stats Header */}
+      <div className="border-t pt-6">
+        <h3 className="text-lg font-semibold text-foreground mb-4">Activity-based Analytics</h3>
+      </div>
       {/* Summary Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
         <Card className="shadow-soft">
