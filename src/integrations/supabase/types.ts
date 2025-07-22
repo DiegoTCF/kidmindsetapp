@@ -367,6 +367,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_current_user_child_data: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          child_id: string
+          child_name: string
+          child_level: number
+          child_points: number
+          weekly_mood_avg: number
+        }[]
+      }
       get_current_user_child_id: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -389,6 +399,10 @@ export type Database = {
           child_id_param?: string
         }
         Returns: string
+      }
+      sync_child_points: {
+        Args: { target_child_id?: string }
+        Returns: undefined
       }
       test_admin_access: {
         Args: Record<PropertyKey, never>
