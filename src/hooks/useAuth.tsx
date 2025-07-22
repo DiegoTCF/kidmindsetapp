@@ -44,7 +44,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           
           // Check if this is a new signup that needs profile creation
           const pendingData = localStorage.getItem('pendingSignupData');
-          if (pendingData) {
+          if (pendingData && !session.user.is_anonymous) {
             console.log('[AuthFix] Processing pending signup data');
             setTimeout(async () => {
               try {
@@ -189,16 +189,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setUser(session.user);
           setLoading(false);
         } else {
-          // No session exists, create anonymous user for demo
-          console.log('[AuthFix] No session found, creating anonymous user');
-          const { data: anonData, error: anonError } = await supabase.auth.signInAnonymously();
-          
-          if (anonError) {
-            console.log('[AuthFix] Anonymous signin error:', anonError.message);
-            setLoading(false);
+          // Only create anonymous user if we're not on the auth page
+          if (window.location.pathname !== '/auth') {
+            console.log('[AuthFix] No session found, creating anonymous user');
+            const { data: anonData, error: anonError } = await supabase.auth.signInAnonymously();
+            
+            if (anonError) {
+              console.log('[AuthFix] Anonymous signin error:', anonError.message);
+              setLoading(false);
+            } else {
+              console.log('[AuthFix] Anonymous user created successfully:', anonData.user?.id);
+              // The auth state change listener will handle the rest
+            }
           } else {
-            console.log('[AuthFix] Anonymous user created successfully:', anonData.user?.id);
-            // The auth state change listener will handle the rest
+            // On auth page, just set loading to false without creating anonymous user
+            console.log('[AuthFix] On auth page, not creating anonymous user');
+            setLoading(false);
           }
         }
       } catch (error) {

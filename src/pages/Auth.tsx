@@ -51,34 +51,44 @@ const Auth = () => {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      console.log('[AuthFlow] Sign in error:', error.message);
-      // Log failed login attempt
-      await logError('login_failed', error.message, '/auth');
-      toast({
-        title: "Error signing in",
-        description: error.message,
-        variant: "destructive",
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
-    } else {
-      console.log('[AuthRedirect] Sign in successful, user:', data.user);
-      // Log successful login
-      await logLogin();
-      if (data.user?.email_confirmed_at) {
-        console.log('[AuthRedirect] Email confirmed, redirecting to home');
-        window.location.href = '/';
-      } else {
+
+      if (error) {
+        console.log('[AuthFlow] Sign in error:', error.message);
+        // Only log if logging service is available
+        try {
+          await logError('login_failed', error.message, '/auth');
+        } catch (logError) {
+          console.log('[AuthFlow] Could not log error:', logError);
+        }
         toast({
-          title: "Email not confirmed",
-          description: "Please check your email and click the confirmation link before signing in.",
+          title: "Error signing in",
+          description: error.message,
           variant: "destructive",
         });
+      } else {
+        console.log('[AuthRedirect] Sign in successful, user:', data.user);
+        // Try to log successful login
+        try {
+          await logLogin();
+        } catch (logError) {
+          console.log('[AuthFlow] Could not log login:', logError);
+        }
+        // Auto-confirm users since we enabled auto-confirm
+        console.log('[AuthRedirect] Redirecting to home');
+        window.location.href = '/';
       }
+    } catch (networkError) {
+      console.log('[AuthFlow] Network/connection error:', networkError);
+      toast({
+        title: "Connection Error",
+        description: "Unable to connect to authentication service. Please check your internet connection and try again.",
+        variant: "destructive",
+      });
     }
     setLoading(false);
   };
@@ -91,24 +101,33 @@ const Auth = () => {
     const formData = new FormData(e.currentTarget);
     const email = formData.get('email') as string;
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth`,
-    });
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
 
-    if (error) {
-      console.log('[AuthFlow] Password reset error:', error.message);
+      if (error) {
+        console.log('[AuthFlow] Password reset error:', error.message);
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        console.log('[AuthFlow] Password reset email sent');
+        toast({
+          title: "Check your email",
+          description: "Password reset instructions have been sent to your email.",
+        });
+        setIsForgotPassword(false);
+      }
+    } catch (networkError) {
+      console.log('[AuthFlow] Network error in password reset:', networkError);
       toast({
-        title: "Error",
-        description: error.message,
+        title: "Connection Error",
+        description: "Unable to connect to authentication service. Please try again.",
         variant: "destructive",
       });
-    } else {
-      console.log('[AuthFlow] Password reset email sent');
-      toast({
-        title: "Check your email",
-        description: "Password reset instructions have been sent to your email.",
-      });
-      setIsForgotPassword(false);
     }
     setLoading(false);
   };
