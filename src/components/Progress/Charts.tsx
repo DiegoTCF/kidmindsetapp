@@ -243,7 +243,7 @@ export default function Charts({ selectedFilter, childId }: ChartsProps) {
           <CardContent className="p-4">
             <div className="text-center">
               <p className="text-2xl font-bold text-accent">{avgConfidence}/10</p>
-              <p className="text-sm text-muted-foreground">Avg Confidence</p>
+              <p className="text-sm text-muted-foreground">Avg Confidence before activity</p>
             </div>
           </CardContent>
         </Card>
