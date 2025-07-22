@@ -95,7 +95,7 @@ export default function Charts({
       const {
         data: activities,
         error: activitiesError
-      } = await supabase.from('activities').select('activity_type, post_activity_completed, post_activity_data, activity_date, goals_scored, assists_made, worry_reason').eq('child_id', targetChildId).order('activity_date', {
+      } = await supabase.from('activities').select('activity_type, post_activity_completed, post_activity_data, activity_date, goals_scored, assists_made, worry_reason, pre_confidence_excited, pre_confidence_nervous, pre_confidence_body_ready, pre_confidence_believe_well').eq('child_id', targetChildId).order('activity_date', {
         ascending: false
       });
       if (activitiesError) throw activitiesError;
@@ -119,6 +119,8 @@ export default function Charts({
         let assistsSum = 0;
         let matchesCount = 0;
         let worriesCount = 0;
+        let preConfidenceSum = 0;
+        let preConfidenceCount = 0;
         filteredActivities.forEach(activity => {
           typeStats[activity.activity_type] = (typeStats[activity.activity_type] || 0) + 1;
 
@@ -140,17 +142,31 @@ export default function Charts({
           if (activity.assists_made) {
             assistsSum += activity.assists_made;
           }
+
+          // Calculate pre-activity confidence average if available
+          if (activity.pre_confidence_excited && activity.pre_confidence_nervous && 
+              activity.pre_confidence_body_ready && activity.pre_confidence_believe_well) {
+            const confidenceAvg = (
+              activity.pre_confidence_excited + 
+              activity.pre_confidence_nervous + 
+              activity.pre_confidence_body_ready + 
+              activity.pre_confidence_believe_well
+            ) / 4;
+            preConfidenceSum += confidenceAvg;
+            preConfidenceCount++;
+          }
+
           if (activity.post_activity_completed) {
             completedCount++;
 
-            // Extract mood and confidence data
+            // Extract mood data
             if (activity.post_activity_data) {
               const data = activity.post_activity_data as any;
-              if (data.mood && data.confidence) {
+              if (data.mood) {
                 moodData.push({
                   date: activity.activity_date,
                   mood: data.mood,
-                  confidence: data.confidence
+                  confidence: 0 // We'll use pre-activity confidence separately
                 });
               }
             }
@@ -187,8 +203,12 @@ export default function Charts({
         // Calculate averages
         if (moodData.length > 0) {
           const avgMoodValue = moodData.reduce((sum, item) => sum + item.mood, 0) / moodData.length;
-          const avgConfidenceValue = moodData.reduce((sum, item) => sum + item.confidence, 0) / moodData.length;
           setAvgMood(Math.round(avgMoodValue * 10) / 10);
+        }
+
+        // Calculate pre-activity confidence average
+        if (preConfidenceCount > 0) {
+          const avgConfidenceValue = preConfidenceSum / preConfidenceCount;
           setAvgConfidence(Math.round(avgConfidenceValue * 10) / 10);
         }
       }
