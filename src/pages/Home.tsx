@@ -80,21 +80,56 @@ export default function Home() {
 
   const loadPlayerData = async () => {
     try {
-      // Load child data from Supabase
-      const { data: children } = await supabase
+      console.log('[Admin Child Fetch] Getting current user child ID...');
+      
+      // Use RLS-safe function to get the correct child ID for the current user
+      const { data: childIdResult, error: childIdError } = await supabase
+        .rpc('get_current_user_child_id');
+      
+      if (childIdError) {
+        console.error('[Admin Child Fetch] Error getting child ID:', childIdError);
+        throw childIdError;
+      }
+      
+      if (!childIdResult) {
+        console.log('[Admin Child Fetch] No child found for current user');
+        // Fallback to localStorage
+        const saved = localStorage.getItem('kidmindset_player');
+        const profileData = localStorage.getItem('kidmindset_profile');
+        
+        if (saved) {
+          const data = JSON.parse(saved);
+          const profileName = profileData ? JSON.parse(profileData).name : null;
+          
+          setPlayerData({
+            ...data,
+            name: profileName || data.name || "Player"
+          });
+          console.log('[Admin Child Fetch] Player data loaded from localStorage:', data);
+        }
+        return;
+      }
+      
+      // Load the specific child data for the current user
+      const { data: childData, error: childError } = await supabase
         .from('children')
         .select('id, name, level, points')
-        .limit(1);
+        .eq('id', childIdResult)
+        .single();
       
-      if (children && children.length > 0) {
-        const childData = children[0];
+      if (childError) {
+        console.error('[Admin Child Fetch] Error loading child data:', childError);
+        throw childError;
+      }
+      
+      if (childData) {
         setPlayerData({
           name: childData.name || "Player",
           level: childData.level || 1,
           points: childData.points || 0,
           weeklyMoodAvg: 3.5 // Could be calculated from mood entries
         });
-        console.log('[KidMindset] Child data loaded:', childData);
+        console.log('[Admin Child Fetch] Child data loaded for current user:', childData);
       } else {
         // Fallback to localStorage for demo purposes
         const saved = localStorage.getItem('kidmindset_player');
