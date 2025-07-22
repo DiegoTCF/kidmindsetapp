@@ -39,7 +39,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUser(session?.user ?? null);
         setLoading(false);
 
-        // Handle profile creation after email confirmation
+        // Handle profile creation for anonymous or signed in users
         if (event === 'SIGNED_IN' && session?.user) {
           // Check if this is a new signup that needs profile creation
           const pendingData = localStorage.getItem('pendingSignupData');
@@ -79,21 +79,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
                   return;
                 }
 
-                // Calculate level number from string
-                const levelMap: { [key: string]: number } = {
-                  'grassroots': 1,
-                  'dev_centres': 2,
-                  'academy': 3
-                };
-
-                // Create child record
+                // Create child record - ALWAYS start with level 1 and 0 points
                 const { error: childError } = await supabase
                   .from('children')
                   .insert({
                     parent_id: parentData.id,
                     name: signupData.childName,
                     age: signupData.childAge,
-                    level: levelMap[signupData.childLevel] || 1,
+                    level: 1,
                     weekly_schedule: JSON.stringify(signupData.weeklySchedule),
                     points: 0,
                   });
@@ -109,19 +102,97 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 console.log('[AuthFix] Error processing signup data:', error);
               }
             }, 0);
+          } else if (session.user.is_anonymous) {
+            // Create demo data for anonymous users
+            console.log('[AuthFix] Creating demo data for anonymous user');
+            setTimeout(async () => {
+              try {
+                // Create profile
+                const { error: profileError } = await supabase
+                  .from('profiles')
+                  .insert({
+                    user_id: session.user.id,
+                    email: `demo-${session.user.id}@example.com`,
+                  });
+
+                if (profileError) {
+                  console.log('[AuthFix] Demo profile creation error:', profileError.message);
+                }
+
+                // Create parent record
+                const { data: parentData, error: parentError } = await supabase
+                  .from('parents')
+                  .insert({
+                    user_id: session.user.id,
+                    name: 'Demo Parent',
+                    phone: '',
+                    payment_status: 'pending',
+                    pin: '1234',
+                  })
+                  .select('id')
+                  .single();
+
+                if (parentError) {
+                  console.log('[AuthFix] Demo parent creation error:', parentError.message);
+                  return;
+                }
+
+                // Create child record - ALWAYS start with level 1 and 0 points
+                const { error: childError } = await supabase
+                  .from('children')
+                  .insert({
+                    parent_id: parentData.id,
+                    name: 'Demo Player',
+                    age: 10,
+                    level: 1,
+                    weekly_schedule: JSON.stringify({}),
+                    points: 0,
+                  });
+
+                if (childError) {
+                  console.log('[AuthFix] Demo child creation error:', childError.message);
+                } else {
+                  console.log('[AuthFix] Demo profile setup completed successfully');
+                }
+              } catch (error) {
+                console.log('[AuthFix] Error creating demo data:', error);
+              }
+            }, 0);
           }
         }
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('[AuthFix] Initial session:', session?.user?.email);
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    // Check for existing session first
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('[AuthFix] Initial session:', session?.user?.email || 'anonymous');
+        
+        if (session) {
+          setSession(session);
+          setUser(session.user);
+          setLoading(false);
+        } else {
+          // No session exists, create anonymous user for demo
+          console.log('[AuthFix] No session found, creating anonymous user');
+          const { data: anonData, error: anonError } = await supabase.auth.signInAnonymously();
+          
+          if (anonError) {
+            console.log('[AuthFix] Anonymous signin error:', anonError.message);
+            setLoading(false);
+          } else {
+            console.log('[AuthFix] Anonymous user created successfully');
+            // The auth state change listener will handle the rest
+          }
+        }
+      } catch (error) {
+        console.log('[AuthFix] Error initializing auth:', error);
+        setLoading(false);
+      }
+    };
 
+    initializeAuth();
     return () => subscription.unsubscribe();
   }, []);
 
