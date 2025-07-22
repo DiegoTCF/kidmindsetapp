@@ -55,7 +55,10 @@ export default function AdminNotifications({ className }: AdminNotificationsProp
       }
 
       console.log('[AdminNotifications] Loaded notifications:', data);
-      setNotifications(data || []);
+      setNotifications(data?.map(item => ({
+        ...item,
+        notification_type: item.notification_type as 'user_signup' | 'activity_created'
+      })) || []);
     } catch (error) {
       console.error('[AdminNotifications] Error in loadNotifications:', error);
       toast({

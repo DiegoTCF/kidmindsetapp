@@ -1,1 +1,15 @@
 project_id = "wipmfpcxquwrjszigwac"
+[api]
+enabled = true
+[db]
+major_version = 15
+[realtime]
+enabled = true
+[auth]
+enabled = true
+[storage]
+enabled = true
+[edge_functions]
+enabled = true
+[functions.send-admin-email]
+verify_jwt = false
