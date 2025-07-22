@@ -430,6 +430,10 @@ export type Database = {
         }
         Returns: string
       }
+      auth_or_anon: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       get_current_user_child_data: {
         Args: Record<PropertyKey, never>
         Returns: {
