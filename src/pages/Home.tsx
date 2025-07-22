@@ -80,18 +80,18 @@ export default function Home() {
 
   const loadPlayerData = async () => {
     try {
-      console.log('[Admin Child Fetch] Getting current user child ID...');
+      console.log('[Admin Child Fetch] Getting current user child data...');
       
-      // Use RLS-safe function to get the correct child ID for the current user
-      const { data: childIdResult, error: childIdError } = await supabase
-        .rpc('get_current_user_child_id');
+      // Use the new comprehensive function that gets all child data including weekly mood
+      const { data: childDataResult, error: childDataError } = await supabase
+        .rpc('get_current_user_child_data');
       
-      if (childIdError) {
-        console.error('[Admin Child Fetch] Error getting child ID:', childIdError);
-        throw childIdError;
+      if (childDataError) {
+        console.error('[Admin Child Fetch] Error getting child data:', childDataError);
+        throw childDataError;
       }
       
-      if (!childIdResult) {
+      if (!childDataResult || childDataResult.length === 0) {
         console.log('[Admin Child Fetch] No child found for current user');
         // Fallback to localStorage
         const saved = localStorage.getItem('kidmindset_player');
@@ -110,52 +110,37 @@ export default function Home() {
         return;
       }
       
-      // Load the specific child data for the current user
-      const { data: childData, error: childError } = await supabase
-        .from('children')
-        .select('id, name, level, points')
-        .eq('id', childIdResult)
-        .single();
+      const childData = childDataResult[0]; // Get first (and only) result
+      console.log('[Admin Child Fetch] Child data loaded for current user:', childData);
       
-      if (childError) {
-        console.error('[Admin Child Fetch] Error loading child data:', childError);
-        throw childError;
-      }
+      // Update player data with fresh Supabase data
+      const updatedPlayer = {
+        name: childData.child_name || "Player",
+        level: childData.child_level || 1,
+        points: childData.child_points || 0,
+        weeklyMoodAvg: Number(childData.weekly_mood_avg) || 3.5
+      };
       
-      if (childData) {
-        setPlayerData({
-          name: childData.name || "Player",
-          level: childData.level || 1,
-          points: childData.points || 0,
-          weeklyMoodAvg: 3.5 // Could be calculated from mood entries
-        });
-        console.log('[Admin Child Fetch] Child data loaded for current user:', childData);
-      } else {
-        // Fallback to localStorage for demo purposes
-        const saved = localStorage.getItem('kidmindset_player');
-        const profileData = localStorage.getItem('kidmindset_profile');
-        
-        if (saved) {
-          const data = JSON.parse(saved);
-          const profileName = profileData ? JSON.parse(profileData).name : null;
-          
-          setPlayerData({
-            ...data,
-            name: profileName || data.name || "Player"
-          });
-          console.log('[KidMindset] Player data loaded from localStorage:', data);
-        }
-      }
+      setPlayerData(updatedPlayer);
+      
+      // Also save to localStorage for offline use
+      localStorage.setItem('kidmindset_player', JSON.stringify(updatedPlayer));
+      
     } catch (error) {
-      console.error('[KidMindset] Error loading player data:', error);
-      // Fallback to localStorage
+      console.error('[Admin Child Fetch] Error loading player data:', error);
+      
+      // Fallback to localStorage on error
       const saved = localStorage.getItem('kidmindset_player');
       if (saved) {
         const data = JSON.parse(saved);
         setPlayerData({
           ...data,
-          name: data.name || "Player"
+          name: data.name || "Player",
+          level: data.level || 1,
+          points: data.points || 0,
+          weeklyMoodAvg: data.weeklyMoodAvg || 3.5
         });
+        console.log('[Admin Child Fetch] Fallback to localStorage data');
       }
     }
   };
@@ -323,35 +308,30 @@ export default function Home() {
   };
 
   const handleMoodSubmit = async (moodValue: number) => {
-    console.log('[MoodChange]', moodValue);
-    const today = new Date().toDateString();
-    
-    setTodayMood(moodValue);
     setMoodSubmitted(true);
-    
-    // Save mood locally
-    localStorage.setItem(`kidmindset_mood_${today}`, moodValue.toString());
+    setTodayMood(moodValue);
+    const today = new Date().toDateString();
+    localStorage.setItem(`kidmindset_mood_${today}`, JSON.stringify({ 
+      mood: moodValue,
+      submitted: true 
+    }));
     
     // Save mood to Supabase
     try {
-      console.log('[KidMindset] Getting child ID via RLS-safe function...');
+      console.log('[KidMindset] Saving mood to Supabase...');
       
-      // Use the new RLS-safe function to get child ID
+      // Use RLS-safe function to get child ID
       const { data: childIdResult, error: childIdError } = await supabase
         .rpc('get_current_user_child_id');
       
       if (childIdError) {
-        console.error('[KidMindset] Error getting child ID:', childIdError);
+        console.error('[KidMindset] Error getting child ID for mood save:', childIdError);
         throw childIdError;
       }
       
       if (!childIdResult) {
         console.error('[KidMindset] No child found for current user');
-        toast({
-          title: "Setup required",
-          description: "Please complete your profile setup first.",
-        });
-        return;
+        throw new Error('No child found for current user');
       }
       
       const childId = childIdResult;
@@ -377,9 +357,10 @@ export default function Home() {
       
       console.log('[KidMindset] Mood saved successfully:', insertData);
       
-      // Reload weekly average
+      // Points and level are now automatically updated in Supabase via trigger
+      // Reload fresh data from Supabase
       setTimeout(() => {
-        loadWeeklyMoodAverage();
+        loadPlayerData(); // This will get the updated points and level from Supabase
       }, 1000);
     } catch (error) {
       console.error('[KidMindset] Error saving mood to database:', error);
@@ -390,27 +371,13 @@ export default function Home() {
       return;
     }
     
-    // Award points
-    const newPoints = playerData.points + 5;
-    const updatedPlayer = { ...playerData, points: newPoints };
-    
-    if (newPoints >= playerData.level * 100) {
-      updatedPlayer.level += 1;
-      toast({
-        title: "🎉 Level Up!",
-        description: `Congratulations! You're now level ${updatedPlayer.level}!`,
-      });
-    }
-    
-    setPlayerData(updatedPlayer);
-    localStorage.setItem('kidmindset_player', JSON.stringify(updatedPlayer));
-    
-    console.log('[KidMindset] Mood submitted:', moodValue);
-    
+    // Show immediate feedback while Supabase syncs
     toast({
       title: "Mood recorded! +5 points",
       description: getMoodMessage(moodValue),
     });
+    
+    console.log('[KidMindset] Mood submitted:', moodValue);
   };
 
   const handleMoodChange = async (moodValue: number) => {
@@ -532,27 +499,13 @@ export default function Home() {
     
     const updatedTasks = dailyTasks.map(task => {
       if (task.id === taskId) {
-        const newPoints = playerData.points + 10;
-        const updatedPlayer = { ...playerData, points: newPoints };
-        
-        if (newPoints >= playerData.level * 100) {
-          updatedPlayer.level += 1;
-          toast({
-            title: "🎉 Level Up!",
-            description: `Congratulations! You're now level ${updatedPlayer.level}!`,
-          });
-        }
-        
-        setPlayerData(updatedPlayer);
-        localStorage.setItem('kidmindset_player', JSON.stringify(updatedPlayer));
+        // Save task completion to Supabase (points will be automatically synced via trigger)
+        saveTaskToSupabase(taskId, true);
         
         toast({
           title: "Task completed! +10 points",
           description: "Great job staying consistent!",
         });
-        
-        // Save task completion to Supabase
-        saveTaskToSupabase(taskId, true);
         
         return { ...task, completed: true, notDone: false, streak: task.streak + 1 };
       }
@@ -561,6 +514,11 @@ export default function Home() {
     
     setDailyTasks(updatedTasks);
     localStorage.setItem(`kidmindset_tasks_${today}`, JSON.stringify(updatedTasks));
+    
+    // Reload player data to get updated points and level from Supabase
+    setTimeout(() => {
+      loadPlayerData();
+    }, 1000);
     
     console.log('[KidMindset] Task completed:', taskId);
   };
@@ -589,18 +547,14 @@ export default function Home() {
     });
   };
 
-  const handleTaskReset = (taskId: string) => {
+  const handleTaskReset = async (taskId: string) => {
     const today = new Date().toDateString();
     
     const updatedTasks = dailyTasks.map(task => {
       if (task.id === taskId) {
         if (task.completed) {
-          // Remove points if task was completed
-          const newPoints = Math.max(0, playerData.points - 10);
-          const updatedPlayer = { ...playerData, points: newPoints };
-          
-          setPlayerData(updatedPlayer);
-          localStorage.setItem('kidmindset_player', JSON.stringify(updatedPlayer));
+          // Delete the task entry from Supabase (points will be automatically recalculated via trigger)
+          deleteTaskFromSupabase(taskId);
           
           toast({
             title: "Task reset",
@@ -615,6 +569,11 @@ export default function Home() {
     
     setDailyTasks(updatedTasks);
     localStorage.setItem(`kidmindset_tasks_${today}`, JSON.stringify(updatedTasks));
+    
+    // Reload player data to get updated points from Supabase
+    setTimeout(() => {
+      loadPlayerData();
+    }, 1000);
     
     console.log('[KidMindset] Task reset:', taskId);
   };
@@ -638,7 +597,7 @@ export default function Home() {
         .eq('child_id', childIdResult)
         .eq('entry_type', 'task')
         .eq('entry_date', todayDate)
-        .eq('entry_value', taskId)
+        .filter('entry_value', 'cs', `{"task_id":"${taskId}"}`) // Filter JSON contains
         .maybeSingle();
       
       if (existingEntry) {
@@ -666,6 +625,38 @@ export default function Home() {
       console.log('[KidMindset] Task saved to Supabase:', taskId, completed);
     } catch (error) {
       console.error('[KidMindset] Error saving task to Supabase:', error);
+    }
+  };
+
+  const deleteTaskFromSupabase = async (taskId: string) => {
+    try {
+      const { data: childIdResult, error: childIdError } = await supabase
+        .rpc('get_current_user_child_id');
+      
+      if (childIdError || !childIdResult) {
+        console.error('[KidMindset] Error getting child ID for task delete:', childIdError);
+        return;
+      }
+      
+      const todayDate = new Date().toISOString().split('T')[0];
+      
+      // Delete task entry for today
+      const { error: deleteError } = await supabase
+        .from('progress_entries')
+        .delete()
+        .eq('child_id', childIdResult)
+        .eq('entry_type', 'task')
+        .eq('entry_date', todayDate)
+        .filter('entry_value', 'cs', `{"task_id":"${taskId}"}`) // Filter JSON contains
+      
+      if (deleteError) {
+        console.error('[KidMindset] Error deleting task from Supabase:', deleteError);
+        return;
+      }
+      
+      console.log('[KidMindset] Task deleted from Supabase:', taskId);
+    } catch (error) {
+      console.error('[KidMindset] Error deleting task from Supabase:', error);
     }
   };
 
