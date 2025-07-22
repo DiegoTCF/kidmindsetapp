@@ -37,7 +37,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 // Main App component
-const AppContent = () => {
+const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -96,10 +96,6 @@ const AppContent = () => {
       </TooltipProvider>
     </QueryClientProvider>
   );
-};
-
-const App = () => {
-  return <AppContent />;
 };
 
 export default App;
