@@ -86,6 +86,45 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          notification_type: string
+          related_activity_name: string | null
+          related_child_name: string | null
+          related_user_email: string | null
+          related_user_id: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          notification_type: string
+          related_activity_name?: string | null
+          related_child_name?: string | null
+          related_user_email?: string | null
+          related_user_id?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          notification_type?: string
+          related_activity_name?: string | null
+          related_child_name?: string | null
+          related_user_email?: string | null
+          related_user_id?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       children: {
         Row: {
           age: number
@@ -379,6 +418,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_admin_notification: {
+        Args: {
+          notification_type_param: string
+          title_param: string
+          message_param: string
+          related_user_id_param?: string
+          related_user_email_param?: string
+          related_child_name_param?: string
+          related_activity_name_param?: string
+        }
+        Returns: string
+      }
       get_current_user_child_data: {
         Args: Record<PropertyKey, never>
         Returns: {

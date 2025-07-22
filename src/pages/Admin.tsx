@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import ActivityLog from '@/components/Progress/ActivityLog';
 import Charts from '@/components/Progress/Charts';
 import BehaviourCharts from '@/components/Progress/BehaviourCharts';
+import AdminNotifications from '@/components/Admin/AdminNotifications';
 
 interface UserProfile {
   id: string;
@@ -404,6 +405,9 @@ export default function Admin() {
             {viewMode === 'progress' && selectedChild && `${selectedChild.name}'s Progress`}
           </div>
         </div>
+
+        {/* Admin Notifications */}
+        <AdminNotifications className="mb-6" />
 
         {/* Users View */}
         {viewMode === 'users' && (
