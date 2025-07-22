@@ -417,14 +417,17 @@ export default function Home() {
       
       console.log('[KidMindset] Updating mood for child:', childId, 'value:', moodValue, 'date:', todayDate);
       
-      // Check if mood entry exists for today
-      const { data: existingEntry, error: fetchError } = await supabase
+      // Check if mood entry exists for today (get the latest one)
+      const { data: existingEntries, error: fetchError } = await supabase
         .from('progress_entries')
         .select('id')
         .eq('child_id', childId)
         .eq('entry_type', 'mood')
         .eq('entry_date', todayDate)
-        .maybeSingle();
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      const existingEntry = existingEntries && existingEntries.length > 0 ? existingEntries[0] : null;
       
       if (fetchError) {
         console.error('[KidMindset] Error checking existing mood entry:', fetchError);
