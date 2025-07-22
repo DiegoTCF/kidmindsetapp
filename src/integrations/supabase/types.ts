@@ -30,6 +30,10 @@ export type Database = {
           post_activity_data: Json | null
           pre_activity_completed: boolean
           pre_activity_data: Json | null
+          pre_confidence_believe_well: number | null
+          pre_confidence_body_ready: number | null
+          pre_confidence_excited: number | null
+          pre_confidence_nervous: number | null
           updated_at: string
           worry_answers: Json | null
           worry_reason: string | null
@@ -49,6 +53,10 @@ export type Database = {
           post_activity_data?: Json | null
           pre_activity_completed?: boolean
           pre_activity_data?: Json | null
+          pre_confidence_believe_well?: number | null
+          pre_confidence_body_ready?: number | null
+          pre_confidence_excited?: number | null
+          pre_confidence_nervous?: number | null
           updated_at?: string
           worry_answers?: Json | null
           worry_reason?: string | null
@@ -68,6 +76,10 @@ export type Database = {
           post_activity_data?: Json | null
           pre_activity_completed?: boolean
           pre_activity_data?: Json | null
+          pre_confidence_believe_well?: number | null
+          pre_confidence_body_ready?: number | null
+          pre_confidence_excited?: number | null
+          pre_confidence_nervous?: number | null
           updated_at?: string
           worry_answers?: Json | null
           worry_reason?: string | null

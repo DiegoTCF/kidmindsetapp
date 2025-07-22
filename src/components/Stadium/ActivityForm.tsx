@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { CustomIcon } from "@/components/ui/custom-emoji";
 import { supabase } from "@/integrations/supabase/client";
 import MindsetSupportFlow from "./MindsetSupportFlow";
+import ConfidenceRating from "./ConfidenceRating";
 
 interface Activity {
   name: string;
@@ -116,7 +117,12 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
   const { user, session } = useAuth();
   const { logActivity, logActivityCompletion, logError } = useUserLogging();
   
-  const [confidenceLevel, setConfidenceLevel] = useState<number>(0);
+  const [confidenceRatings, setConfidenceRatings] = useState({
+    excited: 5,
+    nervous: 5,
+    bodyReady: 5,
+    believeWell: 5
+  });
   const [intention, setIntention] = useState("");
   const [selectedBehaviours, setSelectedBehaviours] = useState<SuperBehaviour[]>(superBehaviours);
   const [preActivityItems, setPreActivityItems] = useState<PreActivityItem[]>(defaultPreActivityItems);
@@ -214,6 +220,12 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
     }
   };
 
+  const calculateConfidenceAverage = () => {
+    const values = Object.values(confidenceRatings);
+    const sum = values.reduce((acc, val) => acc + val, 0);
+    return Math.round((sum / values.length) * 10) / 10;
+  };
+
   const calculatePreActivityPoints = () => {
     let points = 0;
     
@@ -282,8 +294,11 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
     
     console.log('[Pre-Log Save] Attempting to save pre-activity data for child:', currentChildId);
     console.log('[Pre-Log Save] User:', user?.email, 'Session valid:', !!session);
+    const confidenceAverage = calculateConfidenceAverage();
+    
     console.log('[Pre-Log Save] Pre-activity data:', {
-      confidence: confidenceLevel,
+      confidenceRatings,
+      confidenceAverage,
       intention,
       items: preActivityItems,
       activity: activity.name,
@@ -304,11 +319,16 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
           assists_made: activity.assistsMade,
           pre_activity_completed: true,
           pre_activity_data: {
-            confidence: confidenceLevel,
+            confidence: confidenceAverage,
+            confidenceRatings,
             intention,
             items: preActivityItems as any,
             completedAt: new Date().toISOString()
           } as any,
+          pre_confidence_excited: confidenceRatings.excited,
+          pre_confidence_nervous: confidenceRatings.nervous,
+          pre_confidence_body_ready: confidenceRatings.bodyReady,
+          pre_confidence_believe_well: confidenceRatings.believeWell,
           points_awarded: prePoints,
           worry_reason: worryData?.reason || null,
           worry_answers: worryData?.answers || null
@@ -588,7 +608,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
 
   const getPreActivityProgress = () => {
     const completedOrSkipped = preActivityItems.filter(item => item.completed || item.skipped).length;
-    const hasConfidence = confidenceLevel > 0;
+    const hasConfidence = Object.values(confidenceRatings).some(rating => rating > 0);
     const hasIntention = intention.trim().length > 0 || selectedBehaviours.some(b => b.selected);
     const completed = completedOrSkipped + (hasConfidence ? 1 : 0) + (hasIntention ? 1 : 0);
     const total = preActivityItems.length + 2; // +2 for confidence and intention
@@ -597,16 +617,17 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
 
   const isPreActivityComplete = () => {
     const allItemsHandled = preActivityItems.every(item => item.completed || item.skipped);
-    const hasConfidence = confidenceLevel > 0;
+    const hasConfidence = Object.values(confidenceRatings).some(rating => rating > 0);
     const hasIntention = intention.trim().length > 0 || selectedBehaviours.some(b => b.selected && b.description.trim().length > 0);
-    const hasWorryHandled = confidenceLevel > 7 || (confidenceLevel >= 1 && confidenceLevel <= 7 && worryData);
+    const confidenceAverage = calculateConfidenceAverage();
+    const hasWorryHandled = confidenceAverage >= 7 || (confidenceAverage < 7 && worryData);
     
     console.log('Pre-activity completion check:', {
       allItemsHandled,
       hasConfidence,
       hasIntention,
       hasWorryHandled,
-      confidenceLevel,
+      confidenceAverage,
       worryData: !!worryData,
       complete: allItemsHandled && hasConfidence && hasIntention && hasWorryHandled
     });
@@ -693,103 +714,92 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
             </CardContent>
           </Card>
 
-          {/* Confidence Scale */}
-          <Card className="shadow-soft">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Brain className="w-5 h-5" />
-                How confident are you feeling?
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="px-2">
-                  <Slider
-                    value={[confidenceLevel]}
-                    onValueChange={(value) => {
-                      console.log('Slider onChange triggered:', { 
-                        oldValue: confidenceLevel, 
-                        newValue: value[0],
-                        showMindsetFlow,
-                        worryData 
-                      });
-                      setConfidenceLevel(value[0]);
-                      
-                      // Reset worry data and mindset flow if confidence goes above 7
-                      if (value[0] > 7) {
-                        console.log('Clearing worry data and mindset flow for confidence > 7');
-                        setWorryData(null);
-                        setShowMindsetFlow(false);
-                      }
-                    }}
-                    max={10}
-                    min={0}
-                    step={1}
-                    className="w-full"
-                  />
-                </div>
-                <div className="text-center">
-                  <span className="text-2xl font-bold text-primary">
-                    {confidenceLevel === 0 ? "Not selected" : `${confidenceLevel}/10`}
-                  </span>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Current confidence level: {confidenceLevel}
+          {/* Confidence Rating */}
+          <ConfidenceRating
+            ratings={confidenceRatings}
+            onRatingsChange={(newRatings) => {
+              console.log('Confidence ratings changed:', { 
+                oldRatings: confidenceRatings, 
+                newRatings,
+                showMindsetFlow,
+                worryData 
+              });
+              setConfidenceRatings(newRatings);
+              
+              const newAverage = Math.round((Object.values(newRatings).reduce((sum, val) => sum + val, 0) / 4) * 10) / 10;
+              
+              // Reset worry data and mindset flow if confidence goes above 7
+              if (newAverage >= 7) {
+                console.log('Clearing worry data and mindset flow for confidence >= 7');
+                setWorryData(null);
+                setShowMindsetFlow(false);
+              }
+            }}
+            showAverage={true}
+          />
+
+          {/* Show worry selection if confidence is below 7 and no worry data */}
+          {(() => {
+            const confidenceAverage = calculateConfidenceAverage();
+            const shouldShowWorryButtons = confidenceAverage < 7 && !worryData && Object.values(confidenceRatings).some(rating => rating > 0);
+            console.log('Worry buttons visibility check:', {
+              confidenceAverage,
+              showMindsetFlow,
+              worryData: !!worryData,
+              shouldShowWorryButtons
+            });
+            return shouldShowWorryButtons;
+          })() && (
+            <Card className="shadow-soft border-orange-200">
+              <CardContent className="p-4">
+                <div className="mb-3">
+                  <p className="text-sm font-medium text-foreground mb-1">What is worrying you?</p>
+                  <p className="text-xs text-muted-foreground">
+                    Let's work through this together
                   </p>
                 </div>
                 
-                {/* Show worry selection if confidence is between 1-7 and no worry data */}
-                {(() => {
-                  const shouldShowWorryButtons = confidenceLevel >= 1 && confidenceLevel <= 7 && !worryData;
-                  console.log('Worry buttons visibility check:', {
-                    confidenceLevel,
-                    showMindsetFlow,
-                    worryData: !!worryData,
-                    shouldShowWorryButtons
-                  });
-                  return shouldShowWorryButtons;
-                })() && (
-                  <div className="mt-6 space-y-4">
-                    <h3 className="text-lg font-semibold text-center">What is worrying you?</h3>
-                    <div className="grid grid-cols-1 gap-2">
-                      {[
-                        { id: 'physical-big', text: 'The players look good or physically big', emoji: 'flame' },
-                        { id: 'people-think', text: "I'm worried about what people might think", emoji: 'brain' },
-                        { id: 'making-mistakes', text: "I'm scared of making mistakes", emoji: 'target' },
-                        { id: 'getting-hurt', text: "I'm scared of getting hurt", emoji: 'trophy' },
-                        { id: 'pressure-perform', text: "I'm feeling pressure to perform", emoji: 'target' }
-                      ].map((worry) => (
-                        <Button
-                          key={worry.id}
-                          variant="outline"
-                          className="w-full h-auto p-4 text-left border-2 hover:border-primary/50 transition-all duration-200"
-                          onClick={() => {
-                            console.log('Worry button clicked:', worry.text);
-                            setWorryData({ reason: worry.text, answers: {} });
-                            setShowMindsetFlow(true);
-                          }}
-                        >
-                          <span className="text-sm font-medium leading-relaxed">{worry.text}</span>
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {/* Show worry data if completed */}
-                {worryData && confidenceLevel <= 7 && (
-                  <div className="mt-4 p-3 bg-primary/5 border border-primary/20 rounded-xl">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Brain className="w-4 h-4 text-primary" />
-                      <p className="text-sm font-medium text-primary">Mindset Support Completed</p>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Worry: {worryData.reason}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                <div className="grid grid-cols-1 gap-2">
+                  {[
+                    { id: 'physical-big', text: 'The players look good or physically big', emoji: 'flame' },
+                    { id: 'people-think', text: "I'm worried about what people might think", emoji: 'brain' },
+                    { id: 'making-mistakes', text: "I'm scared of making mistakes", emoji: 'target' },
+                    { id: 'getting-hurt', text: "I'm scared of getting hurt", emoji: 'trophy' },
+                    { id: 'pressure-perform', text: "I'm feeling pressure to perform", emoji: 'target' }
+                  ].map((worry) => (
+                    <Button
+                      key={worry.id}
+                      variant="outline"
+                      size="sm"
+                      className="h-auto p-3 justify-start hover:bg-primary/10 hover:border-primary/30 text-left"
+                      onClick={() => {
+                        console.log('Worry button clicked:', worry.text);
+                        setWorryData({ reason: worry.text, answers: {} });
+                        setShowMindsetFlow(true);
+                      }}
+                    >
+                      <span className="text-sm font-medium leading-relaxed">{worry.text}</span>
+                    </Button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
+          {/* Show worry data if completed */}
+          {worryData && calculateConfidenceAverage() < 7 && (
+            <Card className="shadow-soft bg-primary/5 border-primary/20">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <Brain className="w-4 h-4 text-primary" />
+                  <p className="text-sm font-medium text-primary">Mindset Support Completed</p>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Worry: {worryData.reason}
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Checklist */}
           <Card className="shadow-soft">
