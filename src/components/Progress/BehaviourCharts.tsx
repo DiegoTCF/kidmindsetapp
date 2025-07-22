@@ -173,18 +173,27 @@ export default function BehaviourCharts({ selectedFilter, childId }: BehaviourCh
       
       let targetChildId = childId;
       
-      // If no childId provided, get current user's child ID
+      // If no childId provided, get current user's child ID using RLS-safe function
       if (!targetChildId) {
-        const { data: children } = await supabase
-          .from('children')
-          .select('id')
-          .limit(1);
+        console.log('[ProgressPage] BehaviourCharts: Getting current user child ID...');
         
-        if (!children || children.length === 0) {
+        const { data: childIdResult, error: childIdError } = await supabase
+          .rpc('get_current_user_child_id');
+        
+        if (childIdError) {
+          console.error('[ProgressPage] BehaviourCharts: Error getting child ID:', childIdError);
           setLoading(false);
           return;
         }
-        targetChildId = children[0].id;
+        
+        if (!childIdResult) {
+          console.log('[ProgressPage] BehaviourCharts: No child found for current user');
+          setLoading(false);
+          return;
+        }
+        
+        targetChildId = childIdResult;
+        console.log('[ProgressPage] BehaviourCharts: Using child ID:', targetChildId);
       }
 
       // Get all behaviour ratings for this child

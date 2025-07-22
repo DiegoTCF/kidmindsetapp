@@ -69,15 +69,25 @@ export default function Charts({ selectedFilter, childId }: ChartsProps) {
     try {
       let targetChildId = childId;
       
-      // If no childId provided, get current user's child ID
+      // If no childId provided, get current user's child ID using RLS-safe function
       if (!targetChildId) {
-        const { data: children } = await supabase
-          .from('children')
-          .select('id')
-          .limit(1);
+        console.log('[ProgressPage] Charts: Getting current user child ID...');
         
-        if (!children || children.length === 0) return;
-        targetChildId = children[0].id;
+        const { data: childIdResult, error: childIdError } = await supabase
+          .rpc('get_current_user_child_id');
+        
+        if (childIdError) {
+          console.error('[ProgressPage] Charts: Error getting child ID:', childIdError);
+          return;
+        }
+        
+        if (!childIdResult) {
+          console.log('[ProgressPage] Charts: No child found for current user');
+          return;
+        }
+        
+        targetChildId = childIdResult;
+        console.log('[ProgressPage] Charts: Using child ID:', targetChildId);
       }
 
       // Load activities for stats
