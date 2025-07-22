@@ -10,11 +10,11 @@ interface TaskCompletion {
   completionRate: number;
 }
 
-// Core tasks mapping
+// Core tasks mapping - exactly as requested by user
 const CORE_TASKS = [
   "20x Press Ups",
   "20x Sit Ups or 1 min plank", 
-  "Stretch your muscles",
+  "Stretches/Yoga",
   "Make your bed"
 ];
 
@@ -22,7 +22,7 @@ const CORE_TASKS = [
 const TASK_COLORS = {
   "20x Press Ups": 'hsl(var(--primary))',
   "20x Sit Ups or 1 min plank": 'hsl(var(--accent))',
-  "Stretch your muscles": 'hsl(var(--success))',
+  "Stretches/Yoga": 'hsl(var(--success))',
   "Make your bed": 'hsl(var(--warning))'
 };
 

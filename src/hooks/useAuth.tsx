@@ -33,14 +33,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log('[AuthFix] Auth state changed:', event, session?.user?.email);
+      async (event, session) => {
+        console.log('[AuthFix] Auth state changed:', event, session?.user?.email || 'anonymous');
         setSession(session);
         setUser(session?.user ?? null);
-        setLoading(false);
-
+        
         // Handle profile creation for anonymous or signed in users
         if (event === 'SIGNED_IN' && session?.user) {
+          console.log('[AuthFix] User signed in, checking for profile setup...');
+          
           // Check if this is a new signup that needs profile creation
           const pendingData = localStorage.getItem('pendingSignupData');
           if (pendingData) {
@@ -95,18 +96,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
                   console.log('[AuthFix] Child creation error:', childError.message);
                 } else {
                   console.log('[AuthFix] Profile setup completed successfully');
-                  // Clear the pending data
                   localStorage.removeItem('pendingSignupData');
                 }
               } catch (error) {
                 console.log('[AuthFix] Error processing signup data:', error);
               }
-            }, 0);
+            }, 100);
           } else if (session.user.is_anonymous) {
-            // Create demo data for anonymous users
+            // Create demo data for anonymous users - check if already exists
             console.log('[AuthFix] Creating demo data for anonymous user');
             setTimeout(async () => {
               try {
+                // Check if profile already exists
+                const { data: existingProfile } = await supabase
+                  .from('profiles')
+                  .select('id')
+                  .eq('user_id', session.user.id)
+                  .single();
+                
+                if (existingProfile) {
+                  console.log('[AuthFix] Demo profile already exists, skipping creation');
+                  return;
+                }
+
                 // Create profile
                 const { error: profileError } = await supabase
                   .from('profiles')
@@ -157,19 +169,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
               } catch (error) {
                 console.log('[AuthFix] Error creating demo data:', error);
               }
-            }, 0);
+            }, 100);
           }
         }
+        
+        setLoading(false);
       }
     );
 
     // Check for existing session first
     const initializeAuth = async () => {
       try {
+        console.log('[AuthFix] Checking for existing session...');
         const { data: { session } } = await supabase.auth.getSession();
-        console.log('[AuthFix] Initial session:', session?.user?.email || 'anonymous');
         
         if (session) {
+          console.log('[AuthFix] Existing session found:', session.user?.email || 'anonymous');
           setSession(session);
           setUser(session.user);
           setLoading(false);
@@ -182,7 +197,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             console.log('[AuthFix] Anonymous signin error:', anonError.message);
             setLoading(false);
           } else {
-            console.log('[AuthFix] Anonymous user created successfully');
+            console.log('[AuthFix] Anonymous user created successfully:', anonData.user?.id);
             // The auth state change listener will handle the rest
           }
         }
