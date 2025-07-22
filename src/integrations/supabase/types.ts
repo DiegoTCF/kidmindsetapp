@@ -430,6 +430,14 @@ export type Database = {
         }
         Returns: string
       }
+      admin_delete_notification: {
+        Args: { notification_id: string }
+        Returns: Json
+      }
+      admin_delete_user: {
+        Args: { target_user_id: string }
+        Returns: Json
+      }
       auth_or_anon: {
         Args: Record<PropertyKey, never>
         Returns: boolean

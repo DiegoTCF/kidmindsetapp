@@ -4,7 +4,7 @@ import { useAdmin } from '@/hooks/useAdmin';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, BellOff, User, Activity, Check, CheckCheck } from 'lucide-react';
+import { Bell, BellOff, User, Activity, Check, CheckCheck, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface AdminNotification {
@@ -150,6 +150,43 @@ export default function AdminNotifications({ className }: AdminNotificationsProp
     }
   };
 
+  const deleteNotification = async (notificationId: string) => {
+    try {
+      console.log('[AdminNotifications] Deleting notification:', notificationId);
+      
+      const { data, error } = await supabase.rpc('admin_delete_notification', {
+        notification_id: notificationId
+      });
+
+      if (error) {
+        console.error('[AdminNotifications] Error deleting notification:', error);
+        throw error;
+      }
+
+      const result = data as { success: boolean; error?: string };
+      if (!result?.success) {
+        throw new Error(result?.error || 'Failed to delete notification');
+      }
+
+      // Update local state
+      setNotifications(prev => prev.filter(notif => notif.id !== notificationId));
+
+      toast({
+        title: 'Success',
+        description: 'Notification deleted successfully',
+      });
+
+      console.log('[AdminNotifications] Notification deleted successfully');
+    } catch (error) {
+      console.error('[AdminNotifications] Error in deleteNotification:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete notification',
+        variant: 'destructive'
+      });
+    }
+  };
+
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'user_signup':
@@ -235,53 +272,63 @@ export default function AdminNotifications({ className }: AdminNotificationsProp
                     : 'bg-background border-border shadow-sm'
                 }`}
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-3 flex-1">
-                    <div className={`p-1.5 rounded-full ${getNotificationColor(notification.notification_type)}`}>
-                      {getNotificationIcon(notification.notification_type)}
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3 flex-1">
+                      <div className={`p-1.5 rounded-full ${getNotificationColor(notification.notification_type)}`}>
+                        {getNotificationIcon(notification.notification_type)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className={`font-medium text-sm ${notification.is_read ? 'text-muted-foreground' : 'text-foreground'}`}>
+                          {notification.title}
+                        </h4>
+                        <p className={`text-xs mt-1 ${notification.is_read ? 'text-muted-foreground' : 'text-muted-foreground'}`}>
+                          {notification.message}
+                        </p>
+                        {(notification.related_user_email || notification.related_child_name || notification.related_activity_name) && (
+                          <div className="mt-2 text-xs">
+                            {notification.related_user_email && (
+                              <Badge variant="outline" className="mr-1 text-xs">
+                                {notification.related_user_email}
+                              </Badge>
+                            )}
+                            {notification.related_child_name && (
+                              <Badge variant="outline" className="mr-1 text-xs">
+                                {notification.related_child_name}
+                              </Badge>
+                            )}
+                            {notification.related_activity_name && (
+                              <Badge variant="outline" className="mr-1 text-xs">
+                                {notification.related_activity_name}
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {new Date(notification.created_at).toLocaleString()}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className={`font-medium text-sm ${notification.is_read ? 'text-muted-foreground' : 'text-foreground'}`}>
-                        {notification.title}
-                      </h4>
-                      <p className={`text-xs mt-1 ${notification.is_read ? 'text-muted-foreground' : 'text-muted-foreground'}`}>
-                        {notification.message}
-                      </p>
-                      {(notification.related_user_email || notification.related_child_name || notification.related_activity_name) && (
-                        <div className="mt-2 text-xs">
-                          {notification.related_user_email && (
-                            <Badge variant="outline" className="mr-1 text-xs">
-                              {notification.related_user_email}
-                            </Badge>
-                          )}
-                          {notification.related_child_name && (
-                            <Badge variant="outline" className="mr-1 text-xs">
-                              {notification.related_child_name}
-                            </Badge>
-                          )}
-                          {notification.related_activity_name && (
-                            <Badge variant="outline" className="mr-1 text-xs">
-                              {notification.related_activity_name}
-                            </Badge>
-                          )}
-                        </div>
+                    <div className="flex items-center gap-1">
+                      {!notification.is_read && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => markAsRead(notification.id)}
+                          className="flex items-center gap-1 h-6 px-2"
+                        >
+                          <Check className="h-3 w-3" />
+                        </Button>
                       )}
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(notification.created_at).toLocaleString()}
-                      </p>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => deleteNotification(notification.id)}
+                        className="flex items-center gap-1 h-6 px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
                     </div>
                   </div>
-                  {!notification.is_read && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => markAsRead(notification.id)}
-                      className="flex items-center gap-1 h-6 px-2"
-                    >
-                      <Check className="h-3 w-3" />
-                    </Button>
-                  )}
-                </div>
               </div>
             ))}
           </div>

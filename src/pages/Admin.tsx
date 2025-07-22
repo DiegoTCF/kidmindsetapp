@@ -7,12 +7,13 @@ import { useUserLogging } from '@/hooks/useUserLogging';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, UserCog, ArrowLeft, User, Trophy, TrendingUp, Shield } from 'lucide-react';
+import { Users, UserCog, ArrowLeft, User, Trophy, TrendingUp, Shield, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ActivityLog from '@/components/Progress/ActivityLog';
 import Charts from '@/components/Progress/Charts';
 import BehaviourCharts from '@/components/Progress/BehaviourCharts';
 import AdminNotifications from '@/components/Admin/AdminNotifications';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 interface UserProfile {
   id: string;
@@ -47,6 +48,10 @@ export default function Admin() {
   const [selectedChild, setSelectedChild] = useState<Child | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('users');
   const [loadingData, setLoadingData] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    user: UserProfile | null;
+  }>({ open: false, user: null });
 
   useEffect(() => {
     if (isAdmin) {
@@ -331,6 +336,47 @@ export default function Admin() {
     setViewMode('progress');
   };
 
+  const deleteUser = async (user: UserProfile) => {
+    try {
+      console.log('[AdminPanel] Deleting user:', user.email);
+      
+      const { data, error } = await supabase.rpc('admin_delete_user', {
+        target_user_id: user.id
+      });
+
+      if (error) {
+        console.error('[AdminPanel] Error deleting user:', error);
+        throw error;
+      }
+
+      const result = data as { success: boolean; error?: string; details?: any };
+      if (!result?.success) {
+        throw new Error(result?.error || 'Failed to delete user');
+      }
+
+      toast({
+        title: 'Success',
+        description: `User ${user.email} and all associated data deleted successfully`,
+      });
+
+      // Reload users list
+      await loadUsers();
+
+      console.log('[AdminPanel] User deleted successfully:', result.details);
+    } catch (error) {
+      console.error('[AdminPanel] Error in deleteUser:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete user',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const openDeleteDialog = (user: UserProfile) => {
+    setDeleteDialog({ open: true, user });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -437,16 +483,28 @@ export default function Admin() {
                                 {user.role || 'user'}
                               </Badge>
                             </div>
-                            {user.role !== 'admin' && isSuperAdmin && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => promoteToAdmin(user.id, user.email)}
-                              >
-                                <UserCog className="h-3 w-3 mr-1" />
-                                Make Admin
-                              </Button>
-                            )}
+                            <div className="flex items-center gap-2">
+                              {user.role !== 'admin' && isSuperAdmin && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => promoteToAdmin(user.id, user.email)}
+                                >
+                                  <UserCog className="h-3 w-3 mr-1" />
+                                  Make Admin
+                                </Button>
+                              )}
+                              {isSuperAdmin && user.email !== 'pagliusodiego@gmail.com' && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openDeleteDialog(user)}
+                                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              )}
+                            </div>
                           </div>
                           
                           <div className="space-y-2">
@@ -602,6 +660,25 @@ export default function Admin() {
           </div>
         )}
       </div>
+
+      {/* Delete User Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => setDeleteDialog({ open, user: null })}
+        title="Delete User"
+        description={
+          deleteDialog.user
+            ? `Are you sure you want to permanently delete ${deleteDialog.user.email}? This will delete all associated data including children, activities, progress entries, and cannot be undone.`
+            : ''
+        }
+        confirmText="Delete User"
+        variant="destructive"
+        onConfirm={() => {
+          if (deleteDialog.user) {
+            deleteUser(deleteDialog.user);
+          }
+        }}
+      />
     </div>
   );
 }
