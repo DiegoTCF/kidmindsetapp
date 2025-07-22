@@ -458,6 +458,10 @@ export type Database = {
         Args: { check_user_id?: string }
         Returns: boolean
       }
+      is_authenticated: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       log_user_action: {
         Args: {
           action_type_param: string
