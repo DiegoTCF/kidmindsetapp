@@ -118,70 +118,68 @@ export default function PersonalStats() {
       // 3. Load Daily Task Completions
       console.log('[ProgressStats] Loading task completions...');
       
-      // Get all task completion entries
+      // Get all task completion entries from the past 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split('T')[0];
+      
+      // Get all task entries
       const { data: taskEntries, error: taskError } = await supabase
         .from('progress_entries')
         .select('entry_value, entry_date')
         .eq('child_id', childId)
-        .eq('entry_type', 'task_completion');
+        .eq('entry_type', 'task')
+        .gte('entry_date', thirtyDaysAgoStr);
 
       if (taskError) {
         console.error('[ProgressStats] Error fetching task entries:', taskError);
       }
 
-      // Default tasks for analysis
-      const defaultTasks = [
-        "20x Press Ups",
-        "20x Sit Ups or 1 min plank", 
-        "Make your bed",
-        "Stretch your muscles"
-      ];
-
+      // Process task entries from Supabase
       const taskCompletions: { [taskName: string]: number } = {};
       const taskStats: TaskCompletion[] = [];
-
-      // Initialize all default tasks with 0 completions
-      defaultTasks.forEach(taskName => {
-        taskCompletions[taskName] = 0;
-      });
-
-      // Process task entries (currently task completions might be in localStorage only)
-      // For now, let's try to get some data from localStorage as a fallback
-      try {
-        // This is a temporary solution - in a production app, task completions should be in Supabase
-        const today = new Date();
-        let completionCounts: { [taskName: string]: number } = {};
+      
+      // First get all task definitions to map IDs to names
+      const { data: taskDefinitions, error: taskDefError } = await supabase
+        .from('daily_tasks')
+        .select('id, label')
+        .eq('active', true);
         
-        // Check last 30 days for task completions in localStorage
-        for (let i = 0; i < 30; i++) {
-          const checkDate = new Date(today);
-          checkDate.setDate(checkDate.getDate() - i);
-          const dateStr = checkDate.toDateString();
-          
-          const savedTasks = localStorage.getItem(`kidmindset_tasks_${dateStr}`);
-          if (savedTasks) {
-            const tasks = JSON.parse(savedTasks);
-            tasks.forEach((task: any) => {
-              if (task.completed) {
-                completionCounts[task.name] = (completionCounts[task.name] || 0) + 1;
-              }
-            });
+      if (taskDefError) {
+        console.error('[ProgressStats] Error fetching task definitions:', taskDefError);
+      }
+      
+      // Create a mapping from task ID to task name
+      const taskIdToName: Record<string, string> = {};
+      if (taskDefinitions && taskDefinitions.length > 0) {
+        taskDefinitions.forEach(task => {
+          taskIdToName[task.id] = task.label;
+        });
+      }
+      
+      // Process task entries from Supabase
+      if (taskEntries && taskEntries.length > 0) {
+        taskEntries.forEach(entry => {
+          if (entry.entry_value && 
+              typeof entry.entry_value === 'object' &&
+              'task_id' in entry.entry_value &&
+              'completed' in entry.entry_value &&
+              entry.entry_value.completed === true) {
+              
+            const taskId = entry.entry_value.task_id as string;
+            const taskName = taskIdToName[taskId] || `Task ${taskId.substring(0, 4)}`;
+            
+            taskCompletions[taskName] = (taskCompletions[taskName] || 0) + 1;
           }
-        }
-        
-        // Convert to taskStats format
-        Object.keys(completionCounts).forEach(taskName => {
-          taskStats.push({
-            taskName,
-            completedDays: completionCounts[taskName]
-          });
         });
         
-        // Also update taskCompletions
-        Object.assign(taskCompletions, completionCounts);
-        
-      } catch (error) {
-        console.error('[ProgressStats] Error processing task completion data:', error);
+        // Convert to taskStats format
+        Object.keys(taskCompletions).forEach(taskName => {
+          taskStats.push({
+            taskName,
+            completedDays: taskCompletions[taskName]
+          });
+        });
       }
 
       console.log('[ProgressStats] Task completions calculated:', taskCompletions);

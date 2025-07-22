@@ -149,7 +149,15 @@ export default function Home() {
     try {
       console.log('[KidMindset] Loading daily tasks from Supabase...');
       
-      // Fetch tasks from daily_tasks table
+      // Get current user's child ID
+      const { data: childIdResult, error: childIdError } = await supabase
+        .rpc('get_current_user_child_id');
+      
+      if (childIdError) {
+        console.error('[KidMindset] Error getting child ID for loading tasks:', childIdError);
+      }
+      
+      // Fetch global tasks from daily_tasks table
       const { data: tasksData, error: tasksError } = await supabase
         .from('daily_tasks')
         .select('id, label, "order"')
@@ -161,6 +169,18 @@ export default function Home() {
         console.error('[KidMindset] Error loading tasks from Supabase:', tasksError);
         console.log('[KidMindset] Using default tasks as fallback');
         return;
+      }
+      
+      // Fetch user-specific task overrides
+      const { data: userTasks, error: userTasksError } = await supabase
+        .from('daily_tasks')
+        .select('id, label, "order"')
+        .eq('active', true)
+        .eq('user_id', user?.id) // User-specific tasks
+        .order('"order"', { ascending: true });
+      
+      if (userTasksError) {
+        console.error('[KidMindset] Error fetching user daily tasks:', userTasksError);
       }
       
       let tasksToUse: DailyTask[] = defaultTasks; // Fallback to defaults
@@ -176,13 +196,65 @@ export default function Home() {
           streak: 0
         }));
         
+        // Add user-specific tasks
+        if (userTasks && userTasks.length > 0) {
+          userTasks.forEach(userTask => {
+            tasksToUse.push({
+              id: userTask.id,
+              name: userTask.label,
+              completed: false,
+              streak: 0,
+              isCustom: true
+            });
+          });
+        }
+        
         console.log('[KidMindset] Using tasks from Supabase');
       } else {
         console.log('[KidMindset] No tasks found in Supabase, using defaults');
       }
-
-      // Now check if there's saved completion state for today
+      
       const today = new Date().toDateString();
+      
+      // Now fetch completed tasks for today from progress_entries
+      if (childIdResult) {
+        const todayDate = new Date().toISOString().split('T')[0];
+        
+        const { data: completedTasks, error: completedTasksError } = await supabase
+          .from('progress_entries')
+          .select('entry_value')
+          .eq('child_id', childIdResult)
+          .eq('entry_type', 'task')
+          .eq('entry_date', todayDate);
+        
+        if (completedTasksError) {
+          console.error('[KidMindset] Error fetching completed tasks:', completedTasksError);
+        }
+        
+        if (completedTasks && completedTasks.length > 0) {
+          // Mark tasks as completed based on Supabase data
+          tasksToUse = tasksToUse.map(task => {
+            // Check if this task is marked as completed in any entry
+            const taskStatus = completedTasks.find(entry => 
+              entry.entry_value && 
+              typeof entry.entry_value === 'object' &&
+              'task_id' in entry.entry_value &&
+              entry.entry_value.task_id === task.id
+            );
+            
+            if (taskStatus && taskStatus.entry_value && 
+                typeof taskStatus.entry_value === 'object' &&
+                'completed' in taskStatus.entry_value) {
+              task.completed = taskStatus.entry_value.completed === true;
+              task.notDone = taskStatus.entry_value.completed === false;
+            }
+            
+            return task;
+          });
+        }
+      }
+
+      // Now check if there's saved completion state for today in localStorage as backup
       const savedTasks = localStorage.getItem(`kidmindset_tasks_${today}`);
       
       if (savedTasks) {
@@ -196,8 +268,8 @@ export default function Home() {
             // Keep the completion state and streak from saved data
             return {
               ...task,
-              completed: savedTask.completed,
-              notDone: savedTask.notDone,
+              completed: task.completed || savedTask.completed, // Prioritize Supabase data
+              notDone: task.notDone || savedTask.notDone,      // Prioritize Supabase data
               streak: savedTask.streak
             };
           }
@@ -206,9 +278,15 @@ export default function Home() {
         
         setDailyTasks(mergedTasks);
         console.log('[KidMindset] Daily tasks updated with saved completion states');
+        
+        // Update localStorage with merged data
+        localStorage.setItem(`kidmindset_tasks_${today}`, JSON.stringify(mergedTasks));
       } else {
         console.log('[KidMindset] No saved task states for today, using fresh tasks');
         setDailyTasks(tasksToUse);
+        
+        // Initialize localStorage for today
+        localStorage.setItem(`kidmindset_tasks_${today}`, JSON.stringify(tasksToUse));
       }
     } catch (error) {
       console.error('[KidMindset] Error fetching daily tasks:', error);
@@ -506,7 +584,7 @@ export default function Home() {
         saveTaskToSupabase(taskId, true);
         
         toast({
-          title: "Task completed! +10 points",
+          title: "Task completed! +25 points",
           description: "Great job staying consistent!",
         });
         
@@ -561,7 +639,7 @@ export default function Home() {
           
           toast({
             title: "Task reset",
-            description: "10 points removed. Make your choice again!",
+            description: "25 points removed. Make your choice again!",
           });
         }
         
@@ -605,24 +683,34 @@ export default function Home() {
       
       if (existingEntry) {
         // Update existing entry
-        await supabase
+        const { error: updateError } = await supabase
           .from('progress_entries')
           .update({ 
             entry_value: { task_id: taskId, completed },
-            points_earned: completed ? 10 : 0
+            points_earned: completed ? 25 : 0 // Increased to 25 points per task
           })
           .eq('id', existingEntry.id);
+          
+        if (updateError) {
+          console.error('[KidMindset] Error updating task entry:', updateError);
+          return;
+        }
       } else {
         // Create new entry
-        await supabase
+        const { error: insertError } = await supabase
           .from('progress_entries')
           .insert({
             child_id: childIdResult,
             entry_type: 'task',
             entry_value: { task_id: taskId, completed },
             entry_date: todayDate,
-            points_earned: completed ? 10 : 0
+            points_earned: completed ? 25 : 0 // Increased to 25 points per task
           });
+          
+        if (insertError) {
+          console.error('[KidMindset] Error creating task entry:', insertError);
+          return;
+        }
       }
       
       console.log('[KidMindset] Task saved to Supabase:', taskId, completed);

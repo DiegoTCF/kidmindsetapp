@@ -75,72 +75,125 @@ export function PlayerProgressTab() {
     }
   };
 
-  const loadProgressData = (period: "weekly" | "monthly" | "alltime") => {
-    const days = period === "weekly" ? 7 : period === "monthly" ? 30 : 365;
-    
-    // Calculate mood data
-    const moodEntries = [];
-    for (let i = 0; i < days; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toDateString();
+  const loadProgressData = async (period: "weekly" | "monthly" | "alltime") => {
+    try {
+      if (!user?.id) return;
       
-      const dailyMood = localStorage.getItem(`kidmindset_mood_${dateStr}`);
-      if (dailyMood) {
-        moodEntries.push({
-          date: dateStr,
-          mood: Number(dailyMood)
+      const days = period === "weekly" ? 7 : period === "monthly" ? 30 : 365;
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+      const startDateStr = startDate.toISOString().split('T')[0];
+      
+      // Get child ID
+      const { data: childIdResult, error: childIdError } = await supabase
+        .rpc('get_current_user_child_id');
+      
+      if (childIdError || !childIdResult) {
+        console.error('Error getting child ID for progress data:', childIdError);
+        return;
+      }
+      
+      const childId = childIdResult;
+      
+      // Load mood data from Supabase
+      const { data: moodEntries, error: moodError } = await supabase
+        .from('progress_entries')
+        .select('entry_value, entry_date')
+        .eq('child_id', childId)
+        .eq('entry_type', 'mood')
+        .gte('entry_date', startDateStr)
+        .order('entry_date', { ascending: false });
+      
+      if (moodError) {
+        console.error('Error fetching mood entries:', moodError);
+        return;
+      }
+      
+      // Process mood entries
+      const processedMoodEntries = moodEntries?.map(entry => ({
+        date: entry.entry_date,
+        mood: typeof entry.entry_value === 'number' ? entry.entry_value : 3
+      })) || [];
+      
+      // Load task completion data from Supabase
+      const { data: taskEntries, error: taskError } = await supabase
+        .from('progress_entries')
+        .select('entry_value, entry_date')
+        .eq('child_id', childId)
+        .eq('entry_type', 'task')
+        .gte('entry_date', startDateStr)
+        .order('entry_date', { ascending: false });
+      
+      if (taskError) {
+        console.error('Error fetching task entries:', taskError);
+        return;
+      }
+      
+      // Calculate task completion rate
+      let totalTasks = 0;
+      let completedTasks = 0;
+      
+      if (taskEntries && taskEntries.length > 0) {
+        // Group tasks by date
+        const tasksByDate = taskEntries.reduce((acc, entry) => {
+          const date = entry.entry_date;
+          if (!acc[date]) acc[date] = [];
+          acc[date].push(entry);
+          return acc;
+        }, {} as Record<string, any[]>);
+        
+        // Count tasks and completed tasks
+        Object.values(tasksByDate).forEach(tasks => {
+          totalTasks += tasks.length;
+          completedTasks += tasks.filter(t => 
+            t.entry_value && 
+            typeof t.entry_value === 'object' && 
+            t.entry_value.completed === true
+          ).length;
         });
       }
-    }
-    
-    // Calculate completion rate
-    let totalTasks = 0;
-    let completedTasks = 0;
-    
-    for (let i = 0; i < days; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toDateString();
       
-      const taskData = localStorage.getItem(`kidmindset_tasks_${dateStr}`);
-      if (taskData) {
-        const tasks = JSON.parse(taskData);
-        totalTasks += tasks.length;
-        completedTasks += tasks.filter((t: any) => t.completed).length;
-      }
-    }
-    
-    const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-    
-    // Count journal entries
-    let journalCount = 0;
-    for (let i = 0; i < days; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toDateString();
+      const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
       
-      const postGameData = localStorage.getItem(`kidmindset_postgame_${dateStr}`);
-      if (postGameData) {
-        const data = JSON.parse(postGameData);
-        if (data.journalPrompts && Object.values(data.journalPrompts).some((v: any) => v.trim())) {
-          journalCount++;
-        }
+      // Count active days (unique dates with entries)
+      const allEntryDates = new Set([
+        ...(moodEntries?.map(e => e.entry_date) || []),
+        ...(taskEntries?.map(e => e.entry_date) || [])
+      ]);
+      
+      const activeDays = allEntryDates.size;
+      
+      // For journal entries, we can use activity post-game reflections as a proxy
+      const { data: journalEntries, error: journalError } = await supabase
+        .from('activities')
+        .select('id')
+        .eq('child_id', childId)
+        .eq('post_activity_completed', true)
+        .gte('activity_date', startDateStr);
+      
+      if (journalError) {
+        console.error('Error fetching journal entries:', journalError);
+        return;
       }
+      
+      const journalCount = journalEntries?.length || 0;
+      
+      // Calculate mood average
+      const weeklyMoodAvg = processedMoodEntries.length > 0 
+        ? processedMoodEntries.reduce((sum, entry) => sum + entry.mood, 0) / processedMoodEntries.length
+        : 3.5;
+      
+      setChildProgress(prev => ({
+        ...prev,
+        weeklyMoodAvg: Math.round(weeklyMoodAvg * 10) / 10,
+        completionRate,
+        activeDays,
+        recentMoods: processedMoodEntries.slice(0, 10),
+        journalEntries: journalCount
+      }));
+    } catch (error) {
+      console.error('Error loading progress data:', error);
     }
-    
-    const weeklyMoodAvg = moodEntries.length > 0 
-      ? moodEntries.reduce((sum, entry) => sum + entry.mood, 0) / moodEntries.length
-      : 3.5;
-    
-    setChildProgress(prev => ({
-      ...prev,
-      weeklyMoodAvg: Math.round(weeklyMoodAvg * 10) / 10,
-      completionRate,
-      activeDays: moodEntries.length,
-      recentMoods: moodEntries.slice(0, 10),
-      journalEntries: journalCount
-    }));
   };
 
   const getMoodEmoji = (mood: number) => {
