@@ -197,26 +197,26 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
 
   const loadChildData = async () => {
     try {
-      console.log('[Admin Child Fetch] ActivityForm: Getting current user child ID...');
+      // Getting current user child ID
       
       // Use RLS-safe function to get the correct child ID for the current user
       const { data: childIdResult, error: childIdError } = await supabase
         .rpc('get_current_user_child_id');
       
       if (childIdError) {
-        console.error('[Admin Child Fetch] ActivityForm: Error getting child ID:', childIdError);
+        console.error('[ActivityForm] Error getting child ID');
         return;
       }
       
       if (!childIdResult) {
-        console.log('[Admin Child Fetch] ActivityForm: No child found for current user');
+        // No child found for current user
         return;
       }
       
-      console.log('[Admin Child Fetch] ActivityForm: Setting child ID:', childIdResult);
+      // Setting child ID
       setCurrentChildId(childIdResult);
     } catch (error) {
-      console.error('[Admin Child Fetch] ActivityForm: Error loading child data:', error);
+      console.error('[ActivityForm] Error loading child data');
     }
   };
 
@@ -292,18 +292,10 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
     
     const prePoints = calculatePreActivityPoints();
     
-    console.log('[Pre-Log Save] Attempting to save pre-activity data for child:', currentChildId);
-    console.log('[Pre-Log Save] User:', user?.email, 'Session valid:', !!session);
+    // Attempting to save pre-activity data
     const confidenceAverage = calculateConfidenceAverage();
     
-    console.log('[Pre-Log Save] Pre-activity data:', {
-      confidenceRatings,
-      confidenceAverage,
-      intention,
-      items: preActivityItems,
-      activity: activity.name,
-      points: prePoints
-    });
+    // Pre-activity data prepared
     
     try {
       // Create activity record
@@ -337,13 +329,13 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
         .single();
 
       if (activityError) {
-        console.error('[Pre-Log Save] Failed to save pre-activity data:', activityError);
+        console.error('Failed to save pre-activity data');
         console.error('Activity creation error:', activityError);
         await logError('activity_creation_failed', activityError.message, '/stadium');
         throw activityError;
       }
 
-      console.log('[Pre-Log Save] Pre-activity data saved successfully:', activityRecord);
+      // Pre-activity data saved successfully
       
       // Log successful activity creation
       await logActivity(activity.name, activity.type, currentChildId);
@@ -397,8 +389,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
     const postPoints = calculatePostActivityPoints();
     const fullActivityBonus = 20; // Bonus for completing both pre and post
     
-    console.log('[Pre-Log Save] Attempting to save post-activity data for child:', currentChildId);
-    console.log('[Pre-Log Save] User:', user?.email, 'Session valid:', !!session);
+    // Attempting to save post-activity data
     const totalPoints = postPoints + fullActivityBonus;
     
     try {

@@ -92,13 +92,13 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('Content:', htmlContent);
     
     // Simulate email sending
-    console.log('[AdminEmail] ✅ Email notification sent successfully (simulated)');
+    // Email notification sent successfully (simulated)
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         message: 'Admin email notification sent successfully',
-        email_to: 'pagliusodiego@gmail.com',
+        email_to: 'admin@example.com',
         subject: subject
       }),
       {

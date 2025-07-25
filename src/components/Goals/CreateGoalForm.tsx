@@ -37,7 +37,9 @@ export const CreateGoalForm: React.FC<CreateGoalFormProps> = ({ onGoalCreated })
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!outcomeGoal.trim()) {
+    // Input validation and sanitization
+    const sanitizedOutcome = outcomeGoal.trim().slice(0, 500);
+    if (!sanitizedOutcome) {
       toast({
         title: "Error",
         description: "Please enter an outcome goal",
@@ -46,11 +48,23 @@ export const CreateGoalForm: React.FC<CreateGoalFormProps> = ({ onGoalCreated })
       return;
     }
 
-    const validProcessGoals = processGoals.filter(goal => goal.trim());
+    const validProcessGoals = processGoals
+      .filter(goal => goal.trim() !== '')
+      .map(goal => goal.trim().slice(0, 200));
+      
     if (validProcessGoals.length === 0) {
       toast({
         title: "Error",
         description: "Please enter at least one process goal",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (validProcessGoals.length > 10) {
+      toast({
+        title: "Error",
+        description: "Maximum 10 process goals allowed",
         variant: "destructive",
       });
       return;
@@ -66,7 +80,7 @@ export const CreateGoalForm: React.FC<CreateGoalFormProps> = ({ onGoalCreated })
 
       const { error } = await supabase.from('goals').insert({
         user_id: user.id,
-        outcome_goal: outcomeGoal.trim(),
+        outcome_goal: sanitizedOutcome,
         process_goals: validProcessGoals,
         progress: 0,
         completed_process_goals: [],

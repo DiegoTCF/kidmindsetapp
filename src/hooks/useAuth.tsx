@@ -34,18 +34,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('[AuthFix] Auth state changed:', event, session?.user?.email || 'anonymous');
+        // Remove sensitive logging for security
         setSession(session);
         setUser(session?.user ?? null);
         
         // Handle profile creation for anonymous or signed in users
         if (event === 'SIGNED_IN' && session?.user) {
-          console.log('[AuthFix] User signed in, checking for profile setup...');
-          
           // Check if this is a new signup that needs profile creation
           const pendingData = localStorage.getItem('pendingSignupData');
           if (pendingData && !session.user.is_anonymous) {
-            console.log('[AuthFix] Processing pending signup data');
+            // Processing pending signup data
             setTimeout(async () => {
               try {
                 const signupData = JSON.parse(pendingData);

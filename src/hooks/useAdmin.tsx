@@ -27,25 +27,24 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
 
   const checkAdmin = async () => {
     if (!user || !session) {
-      console.log('[useAdmin] No user or session, setting admin to false');
+      // No user or session, setting admin to false
       setIsAdmin(false);
       setLoading(false);
       return;
     }
 
-    console.log('[useAdmin] Checking admin status for user:', user.email);
+    // Checking admin status
     try {
       const { data, error } = await supabase.rpc('is_admin');
       
       if (error) {
-        console.error('[useAdmin] Error checking admin status:', error);
+        console.error('[useAdmin] Error checking admin status');
         setIsAdmin(false);
       } else {
-        console.log('[useAdmin] Admin check result:', data);
         setIsAdmin(data || false);
       }
     } catch (error) {
-      console.error('[useAdmin] Error in admin check:', error);
+      console.error('[useAdmin] Error in admin check');
       setIsAdmin(false);
     } finally {
       setLoading(false);
@@ -53,7 +52,7 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
   };
 
   useEffect(() => {
-    console.log('[useAdmin] useEffect triggered, user:', user?.email, 'session:', !!session);
+    // useAdmin effect triggered
     checkAdmin();
   }, [user, session]);
 
