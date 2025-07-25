@@ -46,13 +46,23 @@ export default function Admin() {
   
   useEffect(() => {
     const checkSuperAdmin = async () => {
-      if (!user) return;
-      try {
-        const { data } = await supabase.rpc('get_superadmin_email');
-        setIsSuperAdmin(user.email === data);
-      } catch (error) {
-        console.error('Error checking superadmin status:', error);
+      if (!user) {
         setIsSuperAdmin(false);
+        return;
+      }
+      try {
+        const { data, error } = await supabase.rpc('get_superadmin_email');
+        if (error) {
+          console.error('Error getting superadmin email:', error);
+          // Fallback to hardcoded check
+          setIsSuperAdmin(user.email === 'pagliusodiego@gmail.com');
+        } else {
+          setIsSuperAdmin(user.email === data);
+        }
+      } catch (error) {
+        console.error('Error in superadmin check:', error);
+        // Fallback to hardcoded check
+        setIsSuperAdmin(user.email === 'pagliusodiego@gmail.com');
       }
     };
     checkSuperAdmin();
