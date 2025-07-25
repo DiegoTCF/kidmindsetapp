@@ -111,7 +111,7 @@ export default function Home() {
       }
       
       const childData = childDataResult[0]; // Get first (and only) result
-      console.log('[Admin Child Fetch] Child data loaded for current user:', childData);
+      // Child data loaded successfully
       
       // Update player data with fresh Supabase data
       const updatedPlayer = {

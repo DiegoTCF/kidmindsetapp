@@ -41,8 +41,22 @@ export default function Admin() {
   const { logAdminAccess } = useUserLogging();
   const { toast } = useToast();
   
-  // Check if current user is the superadmin
-  const isSuperAdmin = user?.email === 'pagliusodiego@gmail.com';
+  // Check if current user is the superadmin using database function
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  
+  useEffect(() => {
+    const checkSuperAdmin = async () => {
+      if (!user) return;
+      try {
+        const { data } = await supabase.rpc('get_superadmin_email');
+        setIsSuperAdmin(user.email === data);
+      } catch (error) {
+        console.error('Error checking superadmin status:', error);
+        setIsSuperAdmin(false);
+      }
+    };
+    checkSuperAdmin();
+  }, [user]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [children, setChildren] = useState<Child[]>([]);
   const [selectedChild, setSelectedChild] = useState<Child | null>(null);
@@ -164,7 +178,7 @@ export default function Admin() {
   };
 
   const loadChildren = async (userId: string) => {
-    console.log('[AdminPanel] Loading children for user:', userId);
+    // Loading children for user
     setLoadingData(true);
     try {
       // CRITICAL: Always verify admin permissions before any data access
@@ -338,7 +352,7 @@ export default function Admin() {
 
   const deleteUser = async (user: UserProfile) => {
     try {
-      console.log('[AdminPanel] Deleting user:', user.email);
+      // Deleting user
       
       const { data, error } = await supabase.rpc('admin_delete_user', {
         target_user_id: user.id
@@ -362,7 +376,7 @@ export default function Admin() {
       // Reload users list
       await loadUsers();
 
-      console.log('[AdminPanel] User deleted successfully:', result.details);
+      // User deleted successfully
     } catch (error) {
       console.error('[AdminPanel] Error in deleteUser:', error);
       toast({
@@ -473,57 +487,57 @@ export default function Admin() {
                   </div>
                 ) : (
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {users.map((user) => (
-                      <Card key={user.id} className="border border-border">
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                              <User className="h-4 w-4 text-muted-foreground" />
-                              <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
-                                {user.role || 'user'}
-                              </Badge>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {user.role !== 'admin' && isSuperAdmin && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => promoteToAdmin(user.id, user.email)}
-                                >
-                                  <UserCog className="h-3 w-3 mr-1" />
-                                  Make Admin
-                                </Button>
-                              )}
-                              {isSuperAdmin && user.email !== 'pagliusodiego@gmail.com' && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => openDeleteDialog(user)}
-                                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <p className="font-medium text-sm">{user.email}</p>
-                            {user.name && <p className="text-sm text-muted-foreground">{user.name}</p>}
-                            {user.phone && <p className="text-xs text-muted-foreground">{user.phone}</p>}
-                            <p className="text-xs text-muted-foreground">
-                              Joined: {new Date(user.created_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                          
-                          <Button
-                            className="w-full mt-3"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => loadChildren(user.id)}
-                          >
-                            View Children
-                          </Button>
+                    {users.map((userProfile) => (
+                       <Card key={userProfile.id} className="border border-border">
+                         <CardContent className="p-4">
+                           <div className="flex items-start justify-between mb-3">
+                             <div className="flex items-center gap-2">
+                               <User className="h-4 w-4 text-muted-foreground" />
+                               <Badge variant={userProfile.role === 'admin' ? 'default' : 'secondary'}>
+                                 {userProfile.role || 'user'}
+                               </Badge>
+                             </div>
+                             <div className="flex items-center gap-2">
+                               {userProfile.role !== 'admin' && isSuperAdmin && (
+                                 <Button
+                                   size="sm"
+                                   variant="outline"
+                                   onClick={() => promoteToAdmin(userProfile.id, userProfile.email)}
+                                 >
+                                   <UserCog className="h-3 w-3 mr-1" />
+                                   Make Admin
+                                 </Button>
+                               )}
+                               {isSuperAdmin && user?.id !== userProfile.id && (
+                                 <Button
+                                   size="sm"
+                                   variant="outline"
+                                   onClick={() => openDeleteDialog(userProfile)}
+                                   className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                 >
+                                   <Trash2 className="h-3 w-3" />
+                                 </Button>
+                               )}
+                             </div>
+                           </div>
+                           
+                           <div className="space-y-2">
+                             <p className="font-medium text-sm">{userProfile.email}</p>
+                             {userProfile.name && <p className="text-sm text-muted-foreground">{userProfile.name}</p>}
+                             {userProfile.phone && <p className="text-xs text-muted-foreground">{userProfile.phone}</p>}
+                             <p className="text-xs text-muted-foreground">
+                               Joined: {new Date(userProfile.created_at).toLocaleDateString()}
+                             </p>
+                           </div>
+                           
+                           <Button
+                             className="w-full mt-3"
+                             variant="outline"
+                             size="sm"
+                             onClick={() => loadChildren(userProfile.id)}
+                           >
+                             View Children
+                           </Button>
                         </CardContent>
                       </Card>
                     ))}

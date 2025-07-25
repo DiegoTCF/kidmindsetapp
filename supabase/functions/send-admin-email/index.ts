@@ -1,4 +1,10 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.52.0';
+
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL') ?? '',
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -85,9 +91,19 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // For demo purposes, we'll log the email instead of actually sending it
+    // Get admin email from config instead of hardcoding
+    const { data: adminEmail, error: emailError } = await supabase.rpc('get_superadmin_email');
+    
+    if (emailError || !adminEmail) {
+      console.error('[AdminEmail] Failed to get admin email:', emailError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to get admin email configuration' }),
+        { status: 500, headers: corsHeaders }
+      );
+    }
+    
     // In production, you would integrate with an email service like Resend
-    console.log('[AdminEmail] Email notification prepared:');
-    console.log('To: pagliusodiego@gmail.com');
+    console.log('[AdminEmail] Email notification prepared for admin');
     console.log('Subject:', subject);
     console.log('Content:', htmlContent);
     

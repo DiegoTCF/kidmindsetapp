@@ -93,7 +93,7 @@ export default function GrownUpZone() {
     }
 
     setLoading(true);
-    console.log('[GrownUpZone] Verifying PIN for user:', user.id);
+    // Verifying PIN for user
 
     try {
       // Fetch the parent's PIN from Supabase

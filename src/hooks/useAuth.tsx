@@ -182,7 +182,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session) {
-          console.log('[AuthFix] Existing session found:', session.user?.email || 'anonymous');
+          // Existing session found
           setSession(session);
           setUser(session.user);
           setLoading(false);
@@ -196,7 +196,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
               console.log('[AuthFix] Anonymous signin error:', anonError.message);
               setLoading(false);
             } else {
-              console.log('[AuthFix] Anonymous user created successfully:', anonData.user?.id);
+              // Anonymous user created successfully
               // The auth state change listener will handle the rest
             }
           } else {

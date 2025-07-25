@@ -33,7 +33,7 @@ export const useUserLogging = () => {
         ...(!pageLocation && { pageLocation: window.location.pathname }),
       };
 
-      console.log(`[UserLogging] Logging action: ${actionType}`, enhancedDetails);
+      // Logging user action
 
       const { data, error } = await supabase.rpc('log_user_action', {
         action_type_param: actionType,
@@ -47,7 +47,7 @@ export const useUserLogging = () => {
         return null;
       }
 
-      console.log(`[UserLogging] Successfully logged action: ${actionType}`, data);
+      // Action logged successfully
       return data;
     } catch (error) {
       console.error('[UserLogging] Error logging action:', error);

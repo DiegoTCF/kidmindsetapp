@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Plus, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { validateTextInput } from '@/lib/validation';
 
 interface CreateGoalFormProps {
   onGoalCreated: () => void;
@@ -37,22 +38,35 @@ export const CreateGoalForm: React.FC<CreateGoalFormProps> = ({ onGoalCreated })
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Input validation and sanitization
-    const sanitizedOutcome = outcomeGoal.trim().slice(0, 500);
-    if (!sanitizedOutcome) {
+    // Validate outcome goal
+    const outcomeValidation = validateTextInput(outcomeGoal, 500);
+    if (!outcomeValidation.isValid) {
       toast({
         title: "Error",
-        description: "Please enter an outcome goal",
+        description: outcomeValidation.error || "Please enter a valid outcome goal",
         variant: "destructive",
       });
       return;
     }
 
-    const validProcessGoals = processGoals
-      .filter(goal => goal.trim() !== '')
-      .map(goal => goal.trim().slice(0, 200));
+    // Validate process goals
+    const validatedProcessGoals: string[] = [];
+    for (const goal of processGoals) {
+      if (goal.trim()) {
+        const goalValidation = validateTextInput(goal, 200);
+        if (!goalValidation.isValid) {
+          toast({
+            title: "Error", 
+            description: goalValidation.error || "Please ensure all process goals are valid",
+            variant: "destructive",
+          });
+          return;
+        }
+        validatedProcessGoals.push(goalValidation.sanitized);
+      }
+    }
       
-    if (validProcessGoals.length === 0) {
+    if (validatedProcessGoals.length === 0) {
       toast({
         title: "Error",
         description: "Please enter at least one process goal",
@@ -61,7 +75,7 @@ export const CreateGoalForm: React.FC<CreateGoalFormProps> = ({ onGoalCreated })
       return;
     }
     
-    if (validProcessGoals.length > 10) {
+    if (validatedProcessGoals.length > 10) {
       toast({
         title: "Error",
         description: "Maximum 10 process goals allowed",
@@ -80,8 +94,8 @@ export const CreateGoalForm: React.FC<CreateGoalFormProps> = ({ onGoalCreated })
 
       const { error } = await supabase.from('goals').insert({
         user_id: user.id,
-        outcome_goal: sanitizedOutcome,
-        process_goals: validProcessGoals,
+        outcome_goal: outcomeValidation.sanitized,
+        process_goals: validatedProcessGoals,
         progress: 0,
         completed_process_goals: [],
       });

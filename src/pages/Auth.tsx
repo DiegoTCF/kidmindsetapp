@@ -71,7 +71,7 @@ const Auth = () => {
           variant: "destructive",
         });
       } else {
-        console.log('[AuthRedirect] Sign in successful, user:', data.user);
+        // Sign in successful
         // Try to log successful login
         try {
           await logLogin();
