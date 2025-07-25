@@ -199,6 +199,39 @@ export type Database = {
         }
         Relationships: []
       }
+      goals: {
+        Row: {
+          completed_process_goals: number[]
+          created_at: string
+          id: string
+          outcome_goal: string
+          process_goals: Json
+          progress: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_process_goals?: number[]
+          created_at?: string
+          id?: string
+          outcome_goal: string
+          process_goals?: Json
+          progress?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_process_goals?: number[]
+          created_at?: string
+          id?: string
+          outcome_goal?: string
+          process_goals?: Json
+          progress?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       parents: {
         Row: {
           created_at: string

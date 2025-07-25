@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import Stadium from "./pages/Stadium";
 import Progress from "./pages/Progress";
 import Profile from "./pages/Profile";
+import Goals from "./pages/Goals";
 import GrownUpZone from "./pages/GrownUpZone";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
@@ -68,6 +69,13 @@ const App = () => {
                 <ProtectedRoute>
                   <AppLayout>
                     <Progress />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/goals" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Goals />
                   </AppLayout>
                 </ProtectedRoute>
               } />
