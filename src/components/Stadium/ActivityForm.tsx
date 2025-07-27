@@ -200,6 +200,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
 
   useEffect(() => {
     loadChildData();
+    loadUserGoals();
   }, []);
 
   const loadChildData = async () => {
@@ -224,6 +225,27 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
       setCurrentChildId(childIdResult);
     } catch (error) {
       console.error('[ActivityForm] Error loading child data');
+    }
+  };
+
+  const loadUserGoals = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const { data: goals, error } = await supabase
+        .from('user_goals')
+        .select('id, goal_text, goal_type')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error loading user goals:', error);
+        return;
+      }
+      
+      setUserGoals(goals || []);
+    } catch (error) {
+      console.error('Error loading user goals:', error);
     }
   };
 
@@ -318,6 +340,7 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
             confidence: confidenceAverage,
             confidenceRatings,
             intention,
+            selectedGoal,
             items: preActivityItems as any,
             completedAt: new Date().toISOString()
           } as any,
@@ -882,6 +905,40 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
               <CardTitle className="text-lg">Set your intention</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Goal Selection */}
+              {userGoals.length > 0 && (
+                <div className="mb-6">
+                  <p className="text-sm font-medium mb-3">Select a goal to focus on:</p>
+                  <Select value={selectedGoal} onValueChange={setSelectedGoal}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose a goal for this session..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {['outcome', 'mindset', 'skill'].map(type => {
+                        const typeGoals = userGoals.filter(g => g.goal_type === type);
+                        if (typeGoals.length === 0) return null;
+                        
+                        const icons = { outcome: '🏆', mindset: '🧠', skill: '⚽' };
+                        const labels = { outcome: 'Outcome Goals', mindset: 'Mindset Goals', skill: 'Skill Goals' };
+                        
+                        return (
+                          <div key={type}>
+                            <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">
+                              {icons[type]} {labels[type]}
+                            </div>
+                            {typeGoals.map((goal) => (
+                              <SelectItem key={goal.id} value={goal.goal_text}>
+                                {goal.goal_text}
+                              </SelectItem>
+                            ))}
+                          </div>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
               {/* Super Behaviour Badges */}
               <div>
                 <p className="text-sm font-medium mb-3">Select your super behaviours:</p>

@@ -94,6 +94,8 @@ export const GoalSettingFlow: React.FC = () => {
   const [selectedSkillGoals, setSelectedSkillGoals] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showANTSuggestion, setShowANTSuggestion] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const [savedGoals, setSavedGoals] = useState<Array<{id: string; goal_type: string; goal_text: string; created_at: string}>>([]);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -145,6 +147,18 @@ export const GoalSettingFlow: React.FC = () => {
       // Show ANT suggestion if mindset goals were selected
       if (selectedMindsetGoals.some(goal => goal.includes('ANT'))) {
         setShowANTSuggestion(true);
+      }
+
+      // Fetch and display created goals
+      const { data: goals } = await supabase
+        .from('user_goals')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      if (goals) {
+        setSavedGoals(goals);
+        setShowResults(true);
       }
 
       // Reset form
@@ -344,7 +358,7 @@ export const GoalSettingFlow: React.FC = () => {
             </p>
             <div className="flex gap-3">
               <Button 
-                onClick={() => navigate('/silly-ant')}
+                onClick={() => setShowANTSuggestion(false)}
                 className="bg-primary hover:bg-primary/90"
               >
                 Meet My ANT! 🐜
@@ -356,6 +370,51 @@ export const GoalSettingFlow: React.FC = () => {
                 Maybe Later
               </Button>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Results Display */}
+      {showResults && savedGoals.length > 0 && (
+        <Card className="border-green-500 bg-green-50 dark:bg-green-950/20">
+          <CardHeader>
+            <CardTitle className="text-green-700 dark:text-green-400">
+              🎉 Your Goals Created Successfully!
+            </CardTitle>
+            <CardDescription>
+              Created on {new Date(savedGoals[0]?.created_at).toLocaleDateString()}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {['outcome', 'mindset', 'skill'].map(type => {
+              const typeGoals = savedGoals.filter(g => g.goal_type === type);
+              if (typeGoals.length === 0) return null;
+              
+              const icons = { outcome: '🏆', mindset: '🧠', skill: '⚽' };
+              const labels = { outcome: 'Outcome Goals', mindset: 'Mindset Goals', skill: 'Skill Goals' };
+              
+              return (
+                <div key={type}>
+                  <h4 className="font-semibold mb-2 text-green-700 dark:text-green-400">
+                    {icons[type]} {labels[type]}
+                  </h4>
+                  <div className="space-y-1">
+                    {typeGoals.map((goal) => (
+                      <Badge key={goal.id} variant="secondary" className="mr-2 mb-1">
+                        {goal.goal_text}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+            <Button 
+              variant="outline" 
+              onClick={() => setShowResults(false)}
+              className="mt-4"
+            >
+              Hide Results
+            </Button>
           </CardContent>
         </Card>
       )}

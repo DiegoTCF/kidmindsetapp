@@ -1,12 +1,27 @@
 import React from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { GoalsManager } from '@/components/Goals/GoalsManager';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { GoalSettingFlow } from '@/components/Goals/GoalSettingFlow';
+import { SillyANTFlow } from '@/components/SillyANT/SillyANTFlow';
 
 const Goals = () => {
   return (
     <AppLayout>
       <div className="container mx-auto px-4 py-6 max-w-4xl">
-        <GoalsManager />
+        <Tabs defaultValue="goals" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="goals">🎯 GOAL SETTING</TabsTrigger>
+            <TabsTrigger value="ant">🐜 MEET MY SILLY ANT</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="goals">
+            <GoalSettingFlow />
+          </TabsContent>
+          
+          <TabsContent value="ant">
+            <SillyANTFlow />
+          </TabsContent>
+        </Tabs>
       </div>
     </AppLayout>
   );

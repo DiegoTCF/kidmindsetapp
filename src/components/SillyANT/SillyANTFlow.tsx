@@ -111,6 +111,8 @@ export const SillyANTFlow: React.FC = () => {
   const [selectedCoping, setSelectedCoping] = useState<string[]>([]);
   const [selectedTriggers, setSelectedTriggers] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const [savedANT, setSavedANT] = useState<any>(null);
   const { toast } = useToast();
 
   const toggleOption = (option: string, type: 'beliefs' | 'thoughts' | 'coping' | 'triggers') => {
@@ -160,6 +162,20 @@ export const SillyANTFlow: React.FC = () => {
         title: "🐜 ANT Squashed!",
         description: "Your Silly ANT profile has been saved successfully!",
       });
+
+      // Fetch and display saved ANT
+      const { data: ant } = await supabase
+        .from('user_ants')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (ant) {
+        setSavedANT(ant);
+        setShowResults(true);
+      }
 
       // Reset form
       setSelectedBeliefs([]);
@@ -327,6 +343,81 @@ export const SillyANTFlow: React.FC = () => {
                 </div>
               </div>
             )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Results Display */}
+      {showResults && savedANT && (
+        <Card className="border-green-500 bg-green-50 dark:bg-green-950/20">
+          <CardHeader>
+            <CardTitle className="text-green-700 dark:text-green-400">
+              🐜 ANT Successfully Squashed!
+            </CardTitle>
+            <CardDescription>
+              Created on {new Date(savedANT.created_at).toLocaleDateString()}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {savedANT.core_beliefs?.length > 0 && (
+              <div>
+                <h4 className="font-semibold mb-2 text-green-700 dark:text-green-400">Core Beliefs:</h4>
+                <div className="flex flex-wrap gap-1">
+                  {savedANT.core_beliefs.map((belief: string, index: number) => (
+                    <Badge key={index} variant="secondary" className="text-xs">
+                      {belief}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {savedANT.automatic_thoughts?.length > 0 && (
+              <div>
+                <h4 className="font-semibold mb-2 text-green-700 dark:text-green-400">Automatic Thoughts:</h4>
+                <div className="flex flex-wrap gap-1">
+                  {savedANT.automatic_thoughts.map((thought: string, index: number) => (
+                    <Badge key={index} variant="secondary" className="text-xs">
+                      {thought}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {savedANT.coping_mechanisms?.length > 0 && (
+              <div>
+                <h4 className="font-semibold mb-2 text-green-700 dark:text-green-400">Coping Mechanisms:</h4>
+                <div className="flex flex-wrap gap-1">
+                  {savedANT.coping_mechanisms.map((coping: string, index: number) => (
+                    <Badge key={index} variant="secondary" className="text-xs">
+                      {coping}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {savedANT.triggers?.length > 0 && (
+              <div>
+                <h4 className="font-semibold mb-2 text-green-700 dark:text-green-400">Triggers:</h4>
+                <div className="flex flex-wrap gap-1">
+                  {savedANT.triggers.map((trigger: string, index: number) => (
+                    <Badge key={index} variant="secondary" className="text-xs">
+                      {trigger}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <Button 
+              variant="outline" 
+              onClick={() => setShowResults(false)}
+              className="mt-4"
+            >
+              Hide Results
+            </Button>
           </CardContent>
         </Card>
       )}
