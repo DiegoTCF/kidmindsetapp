@@ -10,9 +10,6 @@ interface ActivityData {
   name: string;
   type: string;
   date: Date;
-  finalScore?: string;
-  goalsScored?: number;
-  assistsMade?: number;
 }
 
 interface IncompleteActivity {
@@ -94,9 +91,6 @@ export default function Stadium() {
       name: activity.activity_name,
       type: activity.activity_type,
       date: new Date(activity.activity_date),
-      finalScore: activity.final_score,
-      goalsScored: activity.goals_scored,
-      assistsMade: activity.assists_made,
     };
     
     setCurrentActivity(activityData);

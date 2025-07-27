@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -21,9 +22,6 @@ interface Activity {
   name: string;
   type: string;
   date: Date;
-  finalScore?: string;
-  goalsScored?: number;
-  assistsMade?: number;
 }
 
 interface PreActivityItem {
@@ -128,6 +126,12 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
   const [preActivityItems, setPreActivityItems] = useState<PreActivityItem[]>(defaultPreActivityItems);
   const [preActivityCompleted, setPreActivityCompleted] = useState(isResumingActivity);
   const [postActivityCompleted, setPostActivityCompleted] = useState(false);
+  
+  // Match performance fields (for post-activity only)
+  const [finalScore, setFinalScore] = useState("");
+  const [goalsScored, setGoalsScored] = useState<number>(0);
+  const [assistsMade, setAssistsMade] = useState<number>(0);
+  
   // Step-by-step question state for super behaviors
   const [superBehaviorSteps, setSuperBehaviorSteps] = useState<{
     braveOnBall: number;
@@ -306,9 +310,6 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
           activity_name: activity.name,
           activity_type: activity.type,
           activity_date: activity.date.toISOString().split('T')[0],
-          final_score: activity.finalScore,
-          goals_scored: activity.goalsScored,
-          assists_made: activity.assistsMade,
           pre_activity_completed: true,
           pre_activity_data: {
             confidence: confidenceAverage,
@@ -419,16 +420,25 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
           .single();
 
         // Update existing activity
+        const updateData: any = {
+          post_activity_completed: true,
+          post_activity_data: {
+            ...postActivityData,
+            completedAt: new Date().toISOString()
+          },
+          points_awarded: (currentActivity?.points_awarded || 0) + totalPoints
+        };
+
+        // Add match performance fields if this is a Match activity
+        if (activity.type === "Match") {
+          updateData.final_score = finalScore.trim() || null;
+          updateData.goals_scored = goalsScored || null;
+          updateData.assists_made = assistsMade || null;
+        }
+
         const { error: updateError } = await supabase
           .from('activities')
-          .update({
-            post_activity_completed: true,
-            post_activity_data: {
-              ...postActivityData,
-              completedAt: new Date().toISOString()
-            },
-            points_awarded: (currentActivity?.points_awarded || 0) + totalPoints
-          })
+          .update(updateData)
           .eq('id', activityId);
 
         if (updateError) throw updateError;
@@ -627,10 +637,17 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
   };
 
   const isPostActivityComplete = () => {
-    return postActivityData.mood !== null && 
+    const basicRequirements = postActivityData.mood !== null && 
            postActivityData.journalPrompts.wentWell.trim() && 
            postActivityData.journalPrompts.couldImprove.trim() &&
            postActivityData.intentionAchieved !== null;
+    
+    // For match activities, also require score to be filled
+    if (activity.type === "Match") {
+      return basicRequirements && finalScore.trim().length > 0;
+    }
+    
+    return basicRequirements;
   };
 
   if (postActivityCompleted) {
@@ -1043,6 +1060,53 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
               )}
             </CardContent>
           </Card>
+
+          {/* Match Performance Fields - Only for Match activities */}
+          {activity.type === "Match" && (
+            <Card className="shadow-soft">
+              <CardHeader>
+                <CardTitle className="text-lg">Match Performance</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="final-score">What was the final score?</Label>
+                  <Input
+                    id="final-score"
+                    placeholder="e.g. 2-1, 0-3"
+                    value={finalScore}
+                    onChange={(e) => setFinalScore(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="goals-scored">How many goals did you score?</Label>
+                    <Input
+                      id="goals-scored"
+                      type="number"
+                      min="0"
+                      value={goalsScored}
+                      onChange={(e) => setGoalsScored(Number(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="assists-made">How many assists did you make?</Label>
+                    <Input
+                      id="assists-made"
+                      type="number"
+                      min="0"
+                      value={assistsMade}
+                      onChange={(e) => setAssistsMade(Number(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Reflection Sliders */}
           <Card className="shadow-soft">

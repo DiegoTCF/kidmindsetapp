@@ -15,9 +15,6 @@ interface NewActivityProps {
     name: string; 
     type: string; 
     date: Date;
-    finalScore?: string;
-    goalsScored?: number;
-    assistsMade?: number;
   }) => void;
   onCancel: () => void;
 }
@@ -36,11 +33,6 @@ export default function NewActivity({ onSubmit, onCancel }: NewActivityProps) {
   const [activityName, setActivityName] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  
-  // Match-specific fields
-  const [finalScore, setFinalScore] = useState("");
-  const [goalsScored, setGoalsScored] = useState<number>(0);
-  const [assistsMade, setAssistsMade] = useState<number>(0);
 
   const handleSubmit = () => {
     if (!activityName.trim() || !activityType) return;
@@ -49,11 +41,6 @@ export default function NewActivity({ onSubmit, onCancel }: NewActivityProps) {
       name: activityName.trim(),
       type: activityType,
       date: selectedDate,
-      ...(activityType === "Match" && {
-        finalScore: finalScore.trim() || undefined,
-        goalsScored: goalsScored || undefined,
-        assistsMade: assistsMade || undefined,
-      })
     };
     
     onSubmit(activityData);
@@ -101,46 +88,6 @@ export default function NewActivity({ onSubmit, onCancel }: NewActivityProps) {
               </p>
             </div>
 
-            {activityType === "Match" && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="final-score">What was the final score?</Label>
-                  <Input
-                    id="final-score"
-                    placeholder="e.g. 2-1, 0-3"
-                    value={finalScore}
-                    onChange={(e) => setFinalScore(e.target.value)}
-                    className="w-full"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="goals-scored">How many goals did you score?</Label>
-                    <Input
-                      id="goals-scored"
-                      type="number"
-                      min="0"
-                      value={goalsScored}
-                      onChange={(e) => setGoalsScored(Number(e.target.value))}
-                      className="w-full"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="assists-made">How many assists did you make?</Label>
-                    <Input
-                      id="assists-made"
-                      type="number"
-                      min="0"
-                      value={assistsMade}
-                      onChange={(e) => setAssistsMade(Number(e.target.value))}
-                      className="w-full"
-                    />
-                  </div>
-                </div>
-              </>
-            )}
 
             <div className="space-y-2">
               <Label>Date</Label>
