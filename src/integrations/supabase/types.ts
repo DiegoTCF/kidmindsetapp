@@ -531,6 +531,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      is_user_admin: {
+        Args: { check_user_id?: string }
+        Returns: boolean
+      }
       log_user_action: {
         Args: {
           action_type_param: string
@@ -551,6 +555,10 @@ export type Database = {
       update_task_points: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      user_owns_child: {
+        Args: { check_child_id: string; check_user_id?: string }
+        Returns: boolean
       }
     }
     Enums: {
