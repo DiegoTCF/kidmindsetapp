@@ -223,39 +223,6 @@ export type Database = {
         }
         Relationships: []
       }
-      goals: {
-        Row: {
-          completed_process_goals: number[]
-          created_at: string
-          id: string
-          outcome_goal: string
-          process_goals: Json
-          progress: number
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          completed_process_goals?: number[]
-          created_at?: string
-          id?: string
-          outcome_goal: string
-          process_goals?: Json
-          progress?: number
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          completed_process_goals?: number[]
-          created_at?: string
-          id?: string
-          outcome_goal?: string
-          process_goals?: Json
-          progress?: number
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       parents: {
         Row: {
           created_at: string
@@ -443,6 +410,66 @@ export type Database = {
           timestamp?: string
           user_agent?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_ants: {
+        Row: {
+          automatic_thoughts: string[]
+          coping_mechanisms: string[]
+          core_beliefs: string[]
+          created_at: string | null
+          id: string
+          triggers: string[]
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          automatic_thoughts?: string[]
+          coping_mechanisms?: string[]
+          core_beliefs?: string[]
+          created_at?: string | null
+          id?: string
+          triggers?: string[]
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          automatic_thoughts?: string[]
+          coping_mechanisms?: string[]
+          core_beliefs?: string[]
+          created_at?: string | null
+          id?: string
+          triggers?: string[]
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_goals: {
+        Row: {
+          created_at: string | null
+          goal_text: string
+          goal_type: string
+          id: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          goal_text: string
+          goal_type: string
+          id?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          goal_text?: string
+          goal_type?: string
+          id?: string
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
