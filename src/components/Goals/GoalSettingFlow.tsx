@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, ArrowRight, Brain } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Brain, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const OUTCOME_GOALS = [
@@ -96,11 +96,63 @@ export const GoalSettingFlow: React.FC = () => {
   const [showANTSuggestion, setShowANTSuggestion] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [savedGoals, setSavedGoals] = useState<Array<{id: string; goal_type: string; goal_text: string; created_at: string}>>([]);
+  const [existingGoals, setExistingGoals] = useState<Array<{id: string; goal_type: string; goal_text: string; created_at: string}>>([]);
+  const [showExistingGoals, setShowExistingGoals] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const totalSteps = 4;
   const progress = (currentStep / totalSteps) * 100;
+
+  // Fetch existing goals on component mount
+  useEffect(() => {
+    fetchExistingGoals();
+  }, []);
+
+  const fetchExistingGoals = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: goals } = await supabase
+        .from('user_goals')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      if (goals) {
+        setExistingGoals(goals);
+      }
+    } catch (error) {
+      console.error('Error fetching goals:', error);
+    }
+  };
+
+  const deleteGoal = async (goalId: string) => {
+    try {
+      const { error } = await supabase
+        .from('user_goals')
+        .delete()
+        .eq('id', goalId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Goal Deleted",
+        description: "Your goal has been removed successfully.",
+      });
+
+      // Refresh existing goals
+      await fetchExistingGoals();
+    } catch (error) {
+      console.error('Error deleting goal:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete goal. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const toggleGoal = (goal: string, type: 'outcome' | 'mindset' | 'skill') => {
     if (type === 'outcome') {
@@ -160,6 +212,9 @@ export const GoalSettingFlow: React.FC = () => {
         setSavedGoals(goals);
         setShowResults(true);
       }
+
+      // Refresh existing goals
+      await fetchExistingGoals();
 
       // Reset form
       setCurrentStep(1);
@@ -280,6 +335,68 @@ export const GoalSettingFlow: React.FC = () => {
         <Progress value={progress} className="max-w-md mx-auto" />
         <p className="text-sm text-muted-foreground">Step {currentStep} of {totalSteps}</p>
       </div>
+
+      {/* Existing Goals Display */}
+      {showExistingGoals && existingGoals.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Your Current Goals</CardTitle>
+            <CardDescription>
+              Goals you've already set. You can delete them or create new ones below.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {['outcome', 'mindset', 'skill'].map(type => {
+              const typeGoals = existingGoals.filter(g => g.goal_type === type);
+              if (typeGoals.length === 0) return null;
+              
+              const icons = { outcome: '🏆', mindset: '🧠', skill: '⚽' };
+              const labels = { outcome: 'Outcome Goals', mindset: 'Mindset Goals', skill: 'Skill Goals' };
+              
+              return (
+                <div key={type}>
+                  <h4 className="font-semibold mb-2 text-primary">
+                    {icons[type]} {labels[type]}
+                  </h4>
+                  <div className="space-y-2">
+                    {typeGoals.map((goal) => (
+                      <div key={goal.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                        <span className="text-sm">{goal.goal_text}</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteGoal(goal.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+            <Button 
+              variant="outline" 
+              onClick={() => setShowExistingGoals(false)}
+              className="mt-4"
+            >
+              Hide Current Goals
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {!showExistingGoals && existingGoals.length > 0 && (
+        <div className="text-center">
+          <Button 
+            variant="outline" 
+            onClick={() => setShowExistingGoals(true)}
+          >
+            Show My Current Goals ({existingGoals.length})
+          </Button>
+        </div>
+      )}
 
       <Card>
         <CardHeader>

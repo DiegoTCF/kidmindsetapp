@@ -914,12 +914,12 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                       <SelectValue placeholder="Choose a goal for this session..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {['outcome', 'mindset', 'skill'].map(type => {
+                      {['mindset', 'skill'].map(type => {
                         const typeGoals = userGoals.filter(g => g.goal_type === type);
                         if (typeGoals.length === 0) return null;
                         
-                        const icons = { outcome: '🏆', mindset: '🧠', skill: '⚽' };
-                        const labels = { outcome: 'Outcome Goals', mindset: 'Mindset Goals', skill: 'Skill Goals' };
+                        const icons = { mindset: '🧠', skill: '⚽' };
+                        const labels = { mindset: 'Mindset Goals', skill: 'Skill Goals' };
                         
                         return (
                           <div key={type}>
@@ -1007,9 +1007,24 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
           {/* Intention Achievement */}
           <Card className="shadow-soft">
             <CardHeader>
-              <CardTitle className="text-lg">Did you achieve your intention?</CardTitle>
+              <CardTitle className="text-lg">
+                {selectedGoal ? "Did you work on your goal?" : "Did you achieve your intention?"}
+              </CardTitle>
             </CardHeader>
             <CardContent>
+              {/* Display selected goal */}
+              {selectedGoal && (
+                <div className="mb-4 p-3 bg-primary/10 rounded-xl border border-primary/20">
+                  <p className="text-sm font-medium mb-2 text-primary">Your goal for this session:</p>
+                  <div className="text-sm flex items-center gap-2">
+                    <span className="font-medium">{userGoals.find(g => g.id === selectedGoal)?.goal_text}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Did you manage to work on or improve in this area?
+                  </p>
+                </div>
+              )}
+
               {/* Display selected behaviours from pre-activity */}
               {selectedBehaviours.some(b => b.selected) && (
                 <div className="mb-4 p-3 bg-muted/50 rounded-xl">
