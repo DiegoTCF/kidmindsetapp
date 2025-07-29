@@ -7,13 +7,15 @@ import { useUserLogging } from '@/hooks/useUserLogging';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, UserCog, ArrowLeft, User, Trophy, TrendingUp, Shield, Trash2 } from 'lucide-react';
+import { Users, UserCog, ArrowLeft, User, Trophy, TrendingUp, Shield, Trash2, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ActivityLog from '@/components/Progress/ActivityLog';
 import Charts from '@/components/Progress/Charts';
 import BehaviourCharts from '@/components/Progress/BehaviourCharts';
 import AdminNotifications from '@/components/Admin/AdminNotifications';
+import SessionNotes from '@/components/Admin/SessionNotes';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface UserProfile {
   id: string;
@@ -652,35 +654,55 @@ export default function Admin() {
               </CardContent>
             </Card>
 
-            {/* Progress Components - reusing existing components */}
-            <div className="grid gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Activity Log</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ActivityLog selectedFilter="All" childId={selectedChild.id} />
-                </CardContent>
-              </Card>
+            {/* Progress Tabs */}
+            <Tabs defaultValue="activity" className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="activity">Activity Log</TabsTrigger>
+                <TabsTrigger value="behaviour">Behaviour</TabsTrigger>
+                <TabsTrigger value="charts">Statistics</TabsTrigger>
+                <TabsTrigger value="sessions" className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Session Notes
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="activity" className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Activity Log</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ActivityLog selectedFilter="All" childId={selectedChild.id} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Behaviour Analysis</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <BehaviourCharts selectedFilter="All" childId={selectedChild.id} />
-                </CardContent>
-              </Card>
+              <TabsContent value="behaviour" className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Behaviour Analysis</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <BehaviourCharts selectedFilter="All" childId={selectedChild.id} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Statistics & Charts</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Charts selectedFilter="All" childId={selectedChild.id} />
-                </CardContent>
-              </Card>
-            </div>
+              <TabsContent value="charts" className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Statistics & Charts</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Charts selectedFilter="All" childId={selectedChild.id} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="sessions" className="mt-6">
+                <SessionNotes child={selectedChild} />
+              </TabsContent>
+            </Tabs>
           </div>
         )}
       </div>

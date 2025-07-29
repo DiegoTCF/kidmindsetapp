@@ -321,6 +321,48 @@ export type Database = {
           },
         ]
       }
+      session_notes: {
+        Row: {
+          admin_id: string
+          alternative_thought: string | null
+          automatic_thought: string | null
+          child_id: string
+          cognitive_distortion: string | null
+          created_at: string
+          free_notes: string | null
+          id: string
+          session_date: string
+          trigger_situation: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_id: string
+          alternative_thought?: string | null
+          automatic_thought?: string | null
+          child_id: string
+          cognitive_distortion?: string | null
+          created_at?: string
+          free_notes?: string | null
+          id?: string
+          session_date?: string
+          trigger_situation?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_id?: string
+          alternative_thought?: string | null
+          automatic_thought?: string | null
+          child_id?: string
+          cognitive_distortion?: string | null
+          created_at?: string
+          free_notes?: string | null
+          id?: string
+          session_date?: string
+          trigger_situation?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       super_behaviour_ratings: {
         Row: {
           activity_id: string | null
