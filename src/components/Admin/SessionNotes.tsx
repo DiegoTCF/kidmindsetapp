@@ -9,7 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { Plus, Save, FileText } from 'lucide-react';
+import { Plus, Save, FileText, Trash2, X } from 'lucide-react';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 interface Child {
   id: string;
@@ -20,16 +21,25 @@ interface Child {
   parent_id: string;
 }
 
+interface ThoughtLog {
+  id: string;
+  trigger_situation: string;
+  automatic_thought: string;
+  thinking_trap: string;
+  better_thought: string;
+}
+
 interface SessionNote {
   id: string;
   admin_id: string;
   child_id: string;
   session_date: string;
   free_notes: string | null;
-  trigger_situation: string | null;
-  automatic_thought: string | null;
-  cognitive_distortion: string | null;
-  alternative_thought: string | null;
+  thought_logs: ThoughtLog[];
+  thoughts: string[];
+  emotions: string[];
+  body_responses: string[];
+  actions: string[];
   created_at: string;
   updated_at: string;
 }
@@ -38,19 +48,69 @@ interface SessionNotesProps {
   child: Child;
 }
 
-const COGNITIVE_DISTORTIONS = [
-  'All-or-Nothing Thinking',
-  'Overgeneralization',
-  'Mental Filter',
-  'Disqualifying the Positive',
-  'Jumping to Conclusions',
-  'Mind Reading',
-  'Fortune Telling',
-  'Magnification/Minimization',
-  'Emotional Reasoning',
-  'Should Statements',
-  'Labeling',
-  'Personalization'
+const THINKING_TRAPS = [
+  'Black & White Thinking (All good or all bad)',
+  'Mind Reading (Thinking you know what others think)',
+  'Fortune Telling (Predicting bad things will happen)',
+  'Emotional Reasoning (If I feel it, it must be true)',
+  'Should Statements (I should, I must, I have to)',
+  'Labeling (I am stupid, I am worthless)',
+  'Magnifying (Making problems bigger than they are)',
+  'Mental Filter (Only focusing on negative things)',
+  'Blaming Yourself (Everything is my fault)',
+  'Blaming Others (It\'s all their fault)'
+];
+
+const EXAMPLE_THOUGHTS = [
+  'Everyone is watching me',
+  'I\'m going to mess up',
+  'They think I\'m weird',
+  'I can\'t do anything right',
+  'This is too hard',
+  'Nobody likes me',
+  'I\'m not good enough',
+  'Something bad will happen'
+];
+
+const EXAMPLE_EMOTIONS = [
+  'Angry',
+  'Sad',
+  'Worried',
+  'Scared',
+  'Embarrassed',
+  'Frustrated',
+  'Lonely',
+  'Confused',
+  'Excited',
+  'Happy',
+  'Proud',
+  'Calm'
+];
+
+const EXAMPLE_BODY_RESPONSES = [
+  'Heart beating fast',
+  'Sweaty hands',
+  'Butterflies in stomach',
+  'Tight chest',
+  'Shaky hands',
+  'Hot face',
+  'Tense muscles',
+  'Headache',
+  'Feeling sick',
+  'Can\'t sit still'
+];
+
+const EXAMPLE_ACTIONS = [
+  'Avoided the situation',
+  'Asked for help',
+  'Took deep breaths',
+  'Talked to someone',
+  'Walked away',
+  'Tried anyway',
+  'Made a plan',
+  'Practiced first',
+  'Used coping skills',
+  'Got extra support'
 ];
 
 export default function SessionNotes({ child }: SessionNotesProps) {
@@ -60,14 +120,25 @@ export default function SessionNotes({ child }: SessionNotesProps) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showNewForm, setShowNewForm] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    noteId: string | null;
+  }>({ open: false, noteId: null });
   
   const [formData, setFormData] = useState({
     session_date: format(new Date(), 'yyyy-MM-dd'),
     free_notes: '',
-    trigger_situation: '',
-    automatic_thought: '',
-    cognitive_distortion: '',
-    alternative_thought: ''
+    thought_logs: [{
+      id: crypto.randomUUID(),
+      trigger_situation: '',
+      automatic_thought: '',
+      thinking_trap: '',
+      better_thought: ''
+    }],
+    thoughts: [] as string[],
+    emotions: [] as string[],
+    body_responses: [] as string[],
+    actions: [] as string[]
   });
 
   useEffect(() => {
@@ -83,7 +154,24 @@ export default function SessionNotes({ child }: SessionNotesProps) {
         .order('session_date', { ascending: false });
 
       if (error) throw error;
-      setSessionNotes(data || []);
+      
+      // Parse the JSON fields and convert to our expected format
+      const parsedNotes = (data || []).map(note => ({
+        ...note,
+        thought_logs: note.trigger_situation ? [{
+          id: crypto.randomUUID(),
+          trigger_situation: note.trigger_situation || '',
+          automatic_thought: note.automatic_thought || '',
+          thinking_trap: note.cognitive_distortion || '',
+          better_thought: note.alternative_thought || ''
+        }] : [],
+        thoughts: [],
+        emotions: [],
+        body_responses: [],
+        actions: []
+      }));
+      
+      setSessionNotes(parsedNotes);
     } catch (error) {
       console.error('Error loading session notes:', error);
       toast({
@@ -102,6 +190,14 @@ export default function SessionNotes({ child }: SessionNotesProps) {
 
     setSaving(true);
     try {
+      // For now, save the first thought log in the original format
+      const firstLog = formData.thought_logs[0] || {
+        trigger_situation: '',
+        automatic_thought: '',
+        thinking_trap: '',
+        better_thought: ''
+      };
+      
       const { error } = await supabase
         .from('session_notes')
         .insert({
@@ -109,10 +205,10 @@ export default function SessionNotes({ child }: SessionNotesProps) {
           child_id: child.id,
           session_date: formData.session_date,
           free_notes: formData.free_notes || null,
-          trigger_situation: formData.trigger_situation || null,
-          automatic_thought: formData.automatic_thought || null,
-          cognitive_distortion: formData.cognitive_distortion || null,
-          alternative_thought: formData.alternative_thought || null
+          trigger_situation: firstLog.trigger_situation || null,
+          automatic_thought: firstLog.automatic_thought || null,
+          cognitive_distortion: firstLog.thinking_trap || null,
+          alternative_thought: firstLog.better_thought || null
         });
 
       if (error) throw error;
@@ -126,10 +222,17 @@ export default function SessionNotes({ child }: SessionNotesProps) {
       setFormData({
         session_date: format(new Date(), 'yyyy-MM-dd'),
         free_notes: '',
-        trigger_situation: '',
-        automatic_thought: '',
-        cognitive_distortion: '',
-        alternative_thought: ''
+        thought_logs: [{
+          id: crypto.randomUUID(),
+          trigger_situation: '',
+          automatic_thought: '',
+          thinking_trap: '',
+          better_thought: ''
+        }],
+        thoughts: [],
+        emotions: [],
+        body_responses: [],
+        actions: []
       });
       setShowNewForm(false);
       await loadSessionNotes();
@@ -145,8 +248,67 @@ export default function SessionNotes({ child }: SessionNotesProps) {
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleDeleteNote = async (noteId: string) => {
+    try {
+      const { error } = await supabase
+        .from('session_notes')
+        .delete()
+        .eq('id', noteId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Session note deleted successfully'
+      });
+
+      await loadSessionNotes();
+    } catch (error) {
+      console.error('Error deleting session note:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete session note',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const addThoughtLog = () => {
+    setFormData(prev => ({
+      ...prev,
+      thought_logs: [...prev.thought_logs, {
+        id: crypto.randomUUID(),
+        trigger_situation: '',
+        automatic_thought: '',
+        thinking_trap: '',
+        better_thought: ''
+      }]
+    }));
+  };
+
+  const removeThoughtLog = (logId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      thought_logs: prev.thought_logs.filter(log => log.id !== logId)
+    }));
+  };
+
+  const updateThoughtLog = (logId: string, field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      thought_logs: prev.thought_logs.map(log =>
+        log.id === logId ? { ...log, [field]: value } : log
+      )
+    }));
+  };
+
+  const toggleArrayValue = (arrayName: 'thoughts' | 'emotions' | 'body_responses' | 'actions', value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [arrayName]: prev[arrayName].includes(value)
+        ? prev[arrayName].filter(item => item !== value)
+        : [...prev[arrayName], value]
+    }));
   };
 
   if (loading) {
@@ -164,7 +326,7 @@ export default function SessionNotes({ child }: SessionNotesProps) {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-foreground">Session Notes</h2>
-          <p className="text-muted-foreground">CBT notes for {child.name}</p>
+          <p className="text-muted-foreground">Notes and thinking skills for {child.name}</p>
         </div>
         <Button
           onClick={() => setShowNewForm(!showNewForm)}
@@ -190,7 +352,7 @@ export default function SessionNotes({ child }: SessionNotesProps) {
                   id="session_date"
                   type="date"
                   value={formData.session_date}
-                  onChange={(e) => handleInputChange('session_date', e.target.value)}
+                  onChange={(e) => setFormData(prev => ({ ...prev, session_date: e.target.value }))}
                   required
                 />
               </div>
@@ -200,68 +362,175 @@ export default function SessionNotes({ child }: SessionNotesProps) {
                 <Label htmlFor="free_notes">Session Notes</Label>
                 <Textarea
                   id="free_notes"
-                  placeholder="General observations, progress notes, session summary..."
+                  placeholder="What happened in today's session? How did they do? Any progress or concerns..."
                   value={formData.free_notes}
-                  onChange={(e) => handleInputChange('free_notes', e.target.value)}
+                  onChange={(e) => setFormData(prev => ({ ...prev, free_notes: e.target.value }))}
                   rows={4}
                 />
               </div>
 
-              {/* CBT Thought Log Section */}
+              {/* Thinking Skills Section */}
               <div className="space-y-4 border-t pt-6">
-                <h3 className="text-lg font-semibold">CBT Thought Log</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold">Thinking Skills Practice</h3>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addThoughtLog}
+                    className="flex items-center gap-2"
+                  >
+                    <Plus className="h-3 w-3" />
+                    Add Another
+                  </Button>
+                </div>
                 
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="trigger_situation">Trigger or Situation</Label>
-                    <Textarea
-                      id="trigger_situation"
-                      placeholder="What happened? What was the situation?"
-                      value={formData.trigger_situation}
-                      onChange={(e) => handleInputChange('trigger_situation', e.target.value)}
-                      rows={3}
-                    />
+                {formData.thought_logs.map((log, index) => (
+                  <Card key={log.id} className="bg-muted/30">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-medium">Thinking Practice #{index + 1}</h4>
+                        {formData.thought_logs.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeThoughtLog(log.id)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </CardHeader>
+                    <CardContent className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label>What happened? (The situation)</Label>
+                        <Textarea
+                          placeholder="What was going on when they had these thoughts?"
+                          value={log.trigger_situation}
+                          onChange={(e) => updateThoughtLog(log.id, 'trigger_situation', e.target.value)}
+                          rows={3}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>What thought popped into their head?</Label>
+                        <Textarea
+                          placeholder="What were they thinking in that moment?"
+                          value={log.automatic_thought}
+                          onChange={(e) => updateThoughtLog(log.id, 'automatic_thought', e.target.value)}
+                          rows={3}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Thinking Trap (if any)</Label>
+                        <Select
+                          value={log.thinking_trap}
+                          onValueChange={(value) => updateThoughtLog(log.id, 'thinking_trap', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Did they fall into a thinking trap?" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {THINKING_TRAPS.map((trap) => (
+                              <SelectItem key={trap} value={trap}>
+                                {trap}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Better way to think about it</Label>
+                        <Textarea
+                          placeholder="What's a more helpful or balanced way to think about this?"
+                          value={log.better_thought}
+                          onChange={(e) => updateThoughtLog(log.id, 'better_thought', e.target.value)}
+                          rows={3}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Mind & Body Check-in */}
+              <div className="space-y-6 border-t pt-6">
+                <h3 className="text-lg font-semibold">Mind & Body Check-in</h3>
+                
+                <div className="grid gap-6 md:grid-cols-2">
+                  {/* Thoughts */}
+                  <div className="space-y-3">
+                    <Label>Common Thoughts</Label>
+                    <div className="grid grid-cols-1 gap-2 text-sm">
+                      {EXAMPLE_THOUGHTS.map((thought) => (
+                        <label key={thought} className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.thoughts.includes(thought)}
+                            onChange={() => toggleArrayValue('thoughts', thought)}
+                            className="rounded border-gray-300"
+                          />
+                          <span>{thought}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="automatic_thought">Automatic Thought</Label>
-                    <Textarea
-                      id="automatic_thought"
-                      placeholder="What thoughts went through their mind?"
-                      value={formData.automatic_thought}
-                      onChange={(e) => handleInputChange('automatic_thought', e.target.value)}
-                      rows={3}
-                    />
+                  {/* Emotions */}
+                  <div className="space-y-3">
+                    <Label>Emotions They Felt</Label>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      {EXAMPLE_EMOTIONS.map((emotion) => (
+                        <label key={emotion} className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.emotions.includes(emotion)}
+                            onChange={() => toggleArrayValue('emotions', emotion)}
+                            className="rounded border-gray-300"
+                          />
+                          <span>{emotion}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="cognitive_distortion">Cognitive Distortion</Label>
-                    <Select
-                      value={formData.cognitive_distortion}
-                      onValueChange={(value) => handleInputChange('cognitive_distortion', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select cognitive distortion" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {COGNITIVE_DISTORTIONS.map((distortion) => (
-                          <SelectItem key={distortion} value={distortion}>
-                            {distortion}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  {/* Body Responses */}
+                  <div className="space-y-3">
+                    <Label>What Their Body Did</Label>
+                    <div className="grid grid-cols-1 gap-2 text-sm">
+                      {EXAMPLE_BODY_RESPONSES.map((response) => (
+                        <label key={response} className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.body_responses.includes(response)}
+                            onChange={() => toggleArrayValue('body_responses', response)}
+                            className="rounded border-gray-300"
+                          />
+                          <span>{response}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="alternative_thought">Alternative Thought</Label>
-                    <Textarea
-                      id="alternative_thought"
-                      placeholder="What's a more balanced/realistic thought?"
-                      value={formData.alternative_thought}
-                      onChange={(e) => handleInputChange('alternative_thought', e.target.value)}
-                      rows={3}
-                    />
+                  {/* Actions */}
+                  <div className="space-y-3">
+                    <Label>What They Did</Label>
+                    <div className="grid grid-cols-1 gap-2 text-sm">
+                      {EXAMPLE_ACTIONS.map((action) => (
+                        <label key={action} className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.actions.includes(action)}
+                            onChange={() => toggleArrayValue('actions', action)}
+                            className="rounded border-gray-300"
+                          />
+                          <span>{action}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -309,12 +578,24 @@ export default function SessionNotes({ child }: SessionNotesProps) {
             {sessionNotes.map((note) => (
               <Card key={note.id}>
                 <CardHeader>
-                  <CardTitle className="text-base">
-                    Session - {format(new Date(note.session_date), 'MMMM d, yyyy')}
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    Created {format(new Date(note.created_at), 'MMM d, yyyy at h:mm a')}
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-base">
+                        Session - {format(new Date(note.session_date), 'MMMM d, yyyy')}
+                      </CardTitle>
+                      <p className="text-sm text-muted-foreground">
+                        Created {format(new Date(note.created_at), 'MMM d, yyyy at h:mm a')}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setDeleteDialog({ open: true, noteId: note.id })}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {note.free_notes && (
@@ -326,35 +607,37 @@ export default function SessionNotes({ child }: SessionNotesProps) {
                     </div>
                   )}
                   
-                  {(note.trigger_situation || note.automatic_thought || note.cognitive_distortion || note.alternative_thought) && (
+                  {note.thought_logs.length > 0 && note.thought_logs[0].trigger_situation && (
                     <div className="border-t pt-4">
-                      <h4 className="font-medium text-sm mb-3">CBT Thought Log</h4>
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        {note.trigger_situation && (
-                          <div>
-                            <p className="text-xs font-medium text-muted-foreground mb-1">Trigger/Situation</p>
-                            <p className="text-sm">{note.trigger_situation}</p>
-                          </div>
-                        )}
-                        {note.automatic_thought && (
-                          <div>
-                            <p className="text-xs font-medium text-muted-foreground mb-1">Automatic Thought</p>
-                            <p className="text-sm">{note.automatic_thought}</p>
-                          </div>
-                        )}
-                        {note.cognitive_distortion && (
-                          <div>
-                            <p className="text-xs font-medium text-muted-foreground mb-1">Cognitive Distortion</p>
-                            <p className="text-sm">{note.cognitive_distortion}</p>
-                          </div>
-                        )}
-                        {note.alternative_thought && (
-                          <div>
-                            <p className="text-xs font-medium text-muted-foreground mb-1">Alternative Thought</p>
-                            <p className="text-sm">{note.alternative_thought}</p>
-                          </div>
-                        )}
-                      </div>
+                      <h4 className="font-medium text-sm mb-3">Thinking Skills Practice</h4>
+                      {note.thought_logs.map((log, index) => (
+                        <div key={index} className="grid gap-3 sm:grid-cols-2 mb-4 last:mb-0">
+                          {log.trigger_situation && (
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground mb-1">What happened?</p>
+                              <p className="text-sm">{log.trigger_situation}</p>
+                            </div>
+                          )}
+                          {log.automatic_thought && (
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground mb-1">Thought</p>
+                              <p className="text-sm">{log.automatic_thought}</p>
+                            </div>
+                          )}
+                          {log.thinking_trap && (
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground mb-1">Thinking Trap</p>
+                              <p className="text-sm">{log.thinking_trap}</p>
+                            </div>
+                          )}
+                          {log.better_thought && (
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground mb-1">Better Way to Think</p>
+                              <p className="text-sm">{log.better_thought}</p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   )}
                 </CardContent>
@@ -363,6 +646,22 @@ export default function SessionNotes({ child }: SessionNotesProps) {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => setDeleteDialog({ open, noteId: null })}
+        title="Delete Session Note"
+        description="Are you sure you want to delete this session note? This action cannot be undone."
+        onConfirm={() => {
+          if (deleteDialog.noteId) {
+            handleDeleteNote(deleteDialog.noteId);
+            setDeleteDialog({ open: false, noteId: null });
+          }
+        }}
+        confirmText="Delete"
+        variant="destructive"
+      />
     </div>
   );
 }
