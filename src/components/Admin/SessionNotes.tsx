@@ -23,6 +23,7 @@ interface Child {
 
 interface ThoughtLog {
   id: string;
+  feeling: string;
   trigger_situation: string;
   automatic_thought: string;
   thinking_trap: string;
@@ -72,19 +73,20 @@ const EXAMPLE_THOUGHTS = [
   'Something bad will happen'
 ];
 
-const EXAMPLE_EMOTIONS = [
+const FEELING_OPTIONS = [
+  'Fear',
+  'Frozen', 
   'Angry',
+  'Upset',
   'Sad',
-  'Worried',
-  'Scared',
-  'Embarrassed',
-  'Frustrated',
-  'Lonely',
-  'Confused',
+  'Low energy',
   'Excited',
   'Happy',
   'Proud',
-  'Calm'
+  'Disappointed',
+  'Scared',
+  'Confused',
+  'Doubt'
 ];
 
 const EXAMPLE_BODY_RESPONSES = [
@@ -127,9 +129,11 @@ export default function SessionNotes({ child }: SessionNotesProps) {
   
   const [formData, setFormData] = useState({
     session_date: format(new Date(), 'yyyy-MM-dd'),
+    session_number: '',
     free_notes: '',
     thought_logs: [{
       id: crypto.randomUUID(),
+      feeling: '',
       trigger_situation: '',
       automatic_thought: '',
       thinking_trap: '',
@@ -160,6 +164,7 @@ export default function SessionNotes({ child }: SessionNotesProps) {
         ...note,
         thought_logs: note.trigger_situation ? [{
           id: crypto.randomUUID(),
+          feeling: '',
           trigger_situation: note.trigger_situation || '',
           automatic_thought: note.automatic_thought || '',
           thinking_trap: note.cognitive_distortion || '',
@@ -221,9 +226,11 @@ export default function SessionNotes({ child }: SessionNotesProps) {
       // Reset form and reload data
       setFormData({
         session_date: format(new Date(), 'yyyy-MM-dd'),
+        session_number: '',
         free_notes: '',
         thought_logs: [{
           id: crypto.randomUUID(),
+          feeling: '',
           trigger_situation: '',
           automatic_thought: '',
           thinking_trap: '',
@@ -278,6 +285,7 @@ export default function SessionNotes({ child }: SessionNotesProps) {
       ...prev,
       thought_logs: [...prev.thought_logs, {
         id: crypto.randomUUID(),
+        feeling: '',
         trigger_situation: '',
         automatic_thought: '',
         thinking_trap: '',
@@ -345,16 +353,28 @@ export default function SessionNotes({ child }: SessionNotesProps) {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Session Date */}
-              <div className="space-y-2">
-                <Label htmlFor="session_date">Session Date</Label>
-                <Input
-                  id="session_date"
-                  type="date"
-                  value={formData.session_date}
-                  onChange={(e) => setFormData(prev => ({ ...prev, session_date: e.target.value }))}
-                  required
-                />
+              {/* Session Date and Number */}
+              <div className="flex gap-4">
+                <div className="flex-1 space-y-2">
+                  <Label htmlFor="session_date">Session Date</Label>
+                  <Input
+                    id="session_date"
+                    type="date"
+                    value={formData.session_date}
+                    onChange={(e) => setFormData(prev => ({ ...prev, session_date: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="w-32 space-y-2">
+                  <Label htmlFor="session_number">Session #</Label>
+                  <Input
+                    id="session_number"
+                    type="number"
+                    placeholder="1"
+                    value={formData.session_number || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, session_number: e.target.value }))}
+                  />
+                </div>
               </div>
 
               {/* Free Notes */}
@@ -362,7 +382,6 @@ export default function SessionNotes({ child }: SessionNotesProps) {
                 <Label htmlFor="free_notes">Session Notes</Label>
                 <Textarea
                   id="free_notes"
-                  placeholder="What happened in today's session? How did they do? Any progress or concerns..."
                   value={formData.free_notes}
                   onChange={(e) => setFormData(prev => ({ ...prev, free_notes: e.target.value }))}
                   rows={4}
@@ -403,6 +422,25 @@ export default function SessionNotes({ child }: SessionNotesProps) {
                       </div>
                     </CardHeader>
                     <CardContent className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label>What were you feeling?</Label>
+                        <Select
+                          value={log.feeling}
+                          onValueChange={(value) => updateThoughtLog(log.id, 'feeling', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Pick a feeling..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {FEELING_OPTIONS.map((feeling) => (
+                              <SelectItem key={feeling} value={feeling}>
+                                {feeling}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
                       <div className="space-y-2">
                         <Label>What happened? (The situation)</Label>
                         <Textarea
@@ -456,84 +494,6 @@ export default function SessionNotes({ child }: SessionNotesProps) {
                 ))}
               </div>
 
-              {/* Mind & Body Check-in */}
-              <div className="space-y-6 border-t pt-6">
-                <h3 className="text-lg font-semibold">Mind & Body Check-in</h3>
-                
-                <div className="grid gap-6 md:grid-cols-2">
-                  {/* Thoughts */}
-                  <div className="space-y-3">
-                    <Label>Common Thoughts</Label>
-                    <div className="grid grid-cols-1 gap-2 text-sm">
-                      {EXAMPLE_THOUGHTS.map((thought) => (
-                        <label key={thought} className="flex items-center space-x-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={formData.thoughts.includes(thought)}
-                            onChange={() => toggleArrayValue('thoughts', thought)}
-                            className="rounded border-gray-300"
-                          />
-                          <span>{thought}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Emotions */}
-                  <div className="space-y-3">
-                    <Label>Emotions They Felt</Label>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      {EXAMPLE_EMOTIONS.map((emotion) => (
-                        <label key={emotion} className="flex items-center space-x-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={formData.emotions.includes(emotion)}
-                            onChange={() => toggleArrayValue('emotions', emotion)}
-                            className="rounded border-gray-300"
-                          />
-                          <span>{emotion}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Body Responses */}
-                  <div className="space-y-3">
-                    <Label>What Their Body Did</Label>
-                    <div className="grid grid-cols-1 gap-2 text-sm">
-                      {EXAMPLE_BODY_RESPONSES.map((response) => (
-                        <label key={response} className="flex items-center space-x-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={formData.body_responses.includes(response)}
-                            onChange={() => toggleArrayValue('body_responses', response)}
-                            className="rounded border-gray-300"
-                          />
-                          <span>{response}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="space-y-3">
-                    <Label>What They Did</Label>
-                    <div className="grid grid-cols-1 gap-2 text-sm">
-                      {EXAMPLE_ACTIONS.map((action) => (
-                        <label key={action} className="flex items-center space-x-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={formData.actions.includes(action)}
-                            onChange={() => toggleArrayValue('actions', action)}
-                            className="rounded border-gray-300"
-                          />
-                          <span>{action}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
 
               {/* Submit Buttons */}
               <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
