@@ -68,6 +68,11 @@ export default {
 					bg: 'hsl(var(--level-bg))',
 					foreground: 'hsl(var(--level-foreground))'
 				},
+				gold: {
+					400: 'hsl(43, 85%, 60%)',
+					500: 'hsl(43, 85%, 55%)',
+					600: 'hsl(43, 85%, 50%)',
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',

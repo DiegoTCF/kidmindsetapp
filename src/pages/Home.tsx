@@ -8,6 +8,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { TopNavigation } from "@/components/nav/TopNavigation";
 import { CustomIcon } from "@/components/ui/custom-emoji";
+import { LevelProgressCard } from "@/components/Progress/LevelProgressCard";
+import { LevelUpNotification } from "@/components/Progress/LevelUpNotification";
 
 interface MoodOption {
   iconType: 'sad' | 'not-great' | 'okay' | 'good' | 'amazing';
@@ -69,6 +71,10 @@ export default function Home() {
   const [newTaskName, setNewTaskName] = useState("");
   const [showAddTask, setShowAddTask] = useState(false);
 
+  // Level up tracking
+  const [previousLevel, setPreviousLevel] = useState<number>(1);
+  const [showLevelUpNotification, setShowLevelUpNotification] = useState(false);
+
   // Load saved data on mount
   useEffect(() => {
     console.log('[KidMindset] Loading player data...');
@@ -121,7 +127,14 @@ export default function Home() {
         weeklyMoodAvg: Number(childData.weekly_mood_avg) || 3.5
       };
       
-      setPlayerData(updatedPlayer);
+      setPlayerData(prevData => {
+        // Check for level up
+        if (updatedPlayer.level > prevData.level) {
+          setPreviousLevel(prevData.level);
+          setShowLevelUpNotification(true);
+        }
+        return updatedPlayer;
+      });
       
       // Also save to localStorage for offline use
       localStorage.setItem('kidmindset_player', JSON.stringify(updatedPlayer));
@@ -780,14 +793,6 @@ export default function Home() {
   };
 
 
-  const getProgressToNextLevel = () => {
-    const pointsForCurrentLevel = (playerData.level - 1) * 100;
-    const pointsForNextLevel = playerData.level * 100;
-    const currentProgress = playerData.points - pointsForCurrentLevel;
-    const totalNeeded = pointsForNextLevel - pointsForCurrentLevel;
-    
-    return (currentProgress / totalNeeded) * 100;
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -795,41 +800,13 @@ export default function Home() {
         {/* Top Navigation */}
         <TopNavigation />
 
-        {/* Header */}
+        {/* Level Progress Card */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-                Welcome back, {playerData.name}! 
-                <CustomIcon type="brain" size="md" />
-              </h1>
-              <div className="flex items-center gap-4 mt-2">
-                <div className="flex items-center gap-1 px-3 py-1 bg-level-bg rounded-full">
-                  <Star className="w-4 h-4 text-level-foreground" />
-                  <span className="text-sm font-semibold text-level-foreground">
-                    Level {playerData.level}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1 px-3 py-1 bg-primary/10 rounded-full">
-                  <Trophy className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-semibold text-primary">
-                    {playerData.points} pts
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="w-full max-w-full bg-muted rounded-full h-3 mb-2 overflow-hidden">
-            <div 
-              className="bg-gradient-to-r from-primary to-accent h-3 rounded-full transition-all duration-500 shadow-sm"
-              style={{ width: `${getProgressToNextLevel()}%` }}
-            />
-          </div>
-          <p className="text-xs text-muted-foreground text-center">
-            {100 - Math.floor(getProgressToNextLevel())}% to level {playerData.level + 1}
-          </p>
+          <LevelProgressCard
+            currentLevel={playerData.level}
+            totalPoints={playerData.points}
+            playerName={playerData.name}
+          />
         </div>
 
         {/* Mood Check */}
@@ -1069,6 +1046,13 @@ export default function Home() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Level Up Notification */}
+      <LevelUpNotification
+        isVisible={showLevelUpNotification}
+        newLevel={playerData.level}
+        onClose={() => setShowLevelUpNotification(false)}
+      />
     </div>
   );
 }

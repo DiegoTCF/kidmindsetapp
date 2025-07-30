@@ -617,6 +617,10 @@ export type Database = {
         }
         Returns: string
       }
+      reset_user_progress: {
+        Args: { target_user_id?: string }
+        Returns: Json
+      }
       sync_child_points: {
         Args: { target_child_id?: string }
         Returns: undefined
