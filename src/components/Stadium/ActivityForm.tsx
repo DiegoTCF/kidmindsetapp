@@ -98,10 +98,10 @@ const moodOptions = [
 ];
 
 const defaultPreActivityItems: PreActivityItem[] = [
-  { id: "kit-ready", name: "Kit Ready", completed: false, points: 5, skipped: false },
-  { id: "yoga-stretch", name: "Yoga / Stretch", completed: false, points: 25, skipped: false },
-  { id: "visualisation", name: "Visualisation", completed: false, points: 25, skipped: false },
-  { id: "breathing", name: "Breathing", completed: false, points: 5, skipped: false },
+  { id: "kit-ready", name: "Kit Ready", completed: false, points: 10, skipped: false },
+  { id: "yoga-stretch", name: "Yoga / Stretch", completed: false, points: 10, skipped: false },
+  { id: "visualisation", name: "Visualisation", completed: false, points: 10, skipped: false },
+  { id: "breathing", name: "Breathing", completed: false, points: 10, skipped: false },
 ];
 
 const superBehaviours: SuperBehaviour[] = [
@@ -367,17 +367,31 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
       // Log successful activity creation
       await logActivity(activity.name, activity.type, currentChildId);
 
-      // Update child points
-      const { error: pointsError } = await supabase
-        .from('children')
-        .update({ 
-          points: currentChildId ? 
-            (await supabase.from('children').select('points').eq('id', currentChildId).single()).data?.points + prePoints || prePoints
-            : prePoints
-        })
-        .eq('id', currentChildId);
+      // Points will be automatically synced via trigger - no manual update needed
 
-      if (pointsError) throw pointsError;
+      // Create progress entry for pre-activity points to sync with home page
+      const { error: progressError } = await supabase
+        .from('progress_entries')
+        .insert({
+          child_id: currentChildId,
+          entry_type: 'activity',
+          entry_value: {
+            activity_id: activityRecord.id,
+            phase: 'pre_activity',
+            confidence_points: 5,
+            checklist_points: preActivityItems.filter(item => item.completed).length * 10,
+            intention_points: intention.trim() ? intention.trim().split(/\s+/).length * 2 : 0,
+            completion_bonus: 10
+          },
+          entry_date: activity.date.toISOString().split('T')[0],
+          points_earned: prePoints,
+          activity_id: activityRecord.id
+        });
+
+      if (progressError) {
+        console.error('Error saving pre-activity progress entry:', progressError);
+        // Don't throw - activity is already saved, just log the error
+      }
 
       // Log pre-activity completion
       await logActivityCompletion(activity.name, 'pre', currentChildId);
@@ -521,19 +535,38 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
           // Don't throw - we want the main activity to still complete
         }
 
-        // Update child points
-        const { error: pointsError } = await supabase
-          .from('children')
-          .update({ 
-            points: currentChildId ? 
-              (await supabase.from('children').select('points').eq('id', currentChildId).single()).data?.points + totalPoints || totalPoints
-              : totalPoints
-          })
-          .eq('id', currentChildId);
+        // Points will be automatically synced via trigger - no manual update needed
 
-        if (pointsError) throw pointsError;
+         // Create progress entry for post-activity points to sync with home page
+         const { error: postProgressError } = await supabase
+           .from('progress_entries')
+           .insert({
+             child_id: currentChildId,
+             entry_type: 'activity',
+             entry_value: {
+               activity_id: activityId,
+               phase: 'post_activity',
+               mood_points: postActivityData.mood !== null ? 5 : 0,
+               reflection_points: 25, // 5 points each for 5 sliders
+               super_behaviour_points: Math.round(
+                 Object.values(postActivityData.superBehaviours).reduce((total, behaviour) => {
+                   return total + (behaviour.question1 + behaviour.question2 + behaviour.question3 + behaviour.question4) / 4;
+                 }, 0)
+               ),
+               journal_points: Object.values(postActivityData.journalPrompts).join(' ').trim() ? Object.values(postActivityData.journalPrompts).join(' ').trim().split(/\s+/).filter(word => word.length > 0).length * 2 : 0,
+               completion_bonus: 10
+             },
+             entry_date: activity.date.toISOString().split('T')[0],
+             points_earned: totalPoints,
+             activity_id: activityId
+           });
 
-        // Log post-activity completion
+         if (postProgressError) {
+           console.error('Error saving post-activity progress entry:', postProgressError);
+           // Don't throw - activity is already saved, just log the error
+         }
+
+         // Log post-activity completion
         await logActivityCompletion(activity.name, 'post', currentChildId);
 
         setPostActivityCompleted(true);
