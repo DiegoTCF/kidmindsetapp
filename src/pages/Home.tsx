@@ -597,7 +597,7 @@ export default function Home() {
         saveTaskToSupabase(taskId, true);
         
         toast({
-          title: "Task completed! +25 points",
+          title: "Task completed! +10 points",
           description: "Great job staying consistent!",
         });
         
@@ -652,7 +652,7 @@ export default function Home() {
           
           toast({
             title: "Task reset",
-            description: "25 points removed. Make your choice again!",
+            description: "10 points removed. Make your choice again!",
           });
         }
         
@@ -700,7 +700,7 @@ export default function Home() {
           .from('progress_entries')
           .update({ 
             entry_value: { task_id: taskId, completed },
-            points_earned: completed ? 25 : 0 // Increased to 25 points per task
+            points_earned: completed ? 10 : 0 // 10 points per daily task
           })
           .eq('id', existingEntry.id);
           
@@ -717,7 +717,7 @@ export default function Home() {
             entry_type: 'task',
             entry_value: { task_id: taskId, completed },
             entry_date: todayDate,
-            points_earned: completed ? 25 : 0 // Increased to 25 points per task
+            points_earned: completed ? 10 : 0 // 10 points per daily task
           });
           
         if (insertError) {
