@@ -593,14 +593,6 @@ export default function Home() {
     
     const updatedTasks = dailyTasks.map(task => {
       if (task.id === taskId) {
-        // Save task completion to Supabase (points will be automatically synced via trigger)
-        saveTaskToSupabase(taskId, true);
-        
-        toast({
-          title: "Task completed! +10 points",
-          description: "Great job staying consistent!",
-        });
-        
         return { ...task, completed: true, notDone: false, streak: task.streak + 1 };
       }
       return task;
@@ -609,10 +601,28 @@ export default function Home() {
     setDailyTasks(updatedTasks);
     localStorage.setItem(`kidmindset_tasks_${today}`, JSON.stringify(updatedTasks));
     
-    // Reload player data to get updated points and level from Supabase
-    setTimeout(() => {
-      loadPlayerData();
-    }, 1000);
+    // Save task completion to Supabase and then reload player data
+    try {
+      await saveTaskToSupabase(taskId, true);
+      
+      toast({
+        title: "Task completed! +10 points",
+        description: "Great job staying consistent!",
+      });
+      
+      // Reload player data to get updated points and level from Supabase
+      // Wait a bit longer to ensure the trigger has processed
+      setTimeout(async () => {
+        await loadPlayerData();
+      }, 1500);
+      
+    } catch (error) {
+      console.error('[KidMindset] Error completing task:', error);
+      toast({
+        title: "Error saving task",
+        description: "Task completion may not be saved. Please try again.",
+      });
+    }
     
     console.log('[KidMindset] Task completed:', taskId);
   };
@@ -646,16 +656,6 @@ export default function Home() {
     
     const updatedTasks = dailyTasks.map(task => {
       if (task.id === taskId) {
-        if (task.completed) {
-          // Delete the task entry from Supabase (points will be automatically recalculated via trigger)
-          deleteTaskFromSupabase(taskId);
-          
-          toast({
-            title: "Task reset",
-            description: "10 points removed. Make your choice again!",
-          });
-        }
-        
         return { ...task, completed: false, notDone: false, streak: task.completed ? Math.max(0, task.streak - 1) : task.streak };
       }
       return task;
@@ -664,10 +664,32 @@ export default function Home() {
     setDailyTasks(updatedTasks);
     localStorage.setItem(`kidmindset_tasks_${today}`, JSON.stringify(updatedTasks));
     
-    // Reload player data to get updated points from Supabase
-    setTimeout(() => {
-      loadPlayerData();
-    }, 1000);
+    // Check if task was previously completed
+    const taskWasCompleted = dailyTasks.find(t => t.id === taskId)?.completed;
+    
+    if (taskWasCompleted) {
+      try {
+        // Delete the task entry from Supabase (points will be automatically recalculated via trigger)
+        await deleteTaskFromSupabase(taskId);
+        
+        toast({
+          title: "Task reset",
+          description: "10 points removed. Make your choice again!",
+        });
+        
+        // Reload player data to get updated points from Supabase
+        setTimeout(async () => {
+          await loadPlayerData();
+        }, 1500);
+        
+      } catch (error) {
+        console.error('[KidMindset] Error resetting task:', error);
+        toast({
+          title: "Error resetting task",
+          description: "Task reset may not be saved. Please try again.",
+        });
+      }
+    }
     
     console.log('[KidMindset] Task reset:', taskId);
   };
@@ -679,7 +701,7 @@ export default function Home() {
       
       if (childIdError || !childIdResult) {
         console.error('[KidMindset] Error getting child ID for task save:', childIdError);
-        return;
+        throw new Error('Failed to get child ID');
       }
       
       const todayDate = new Date().toISOString().split('T')[0];
@@ -706,7 +728,7 @@ export default function Home() {
           
         if (updateError) {
           console.error('[KidMindset] Error updating task entry:', updateError);
-          return;
+          throw updateError;
         }
       } else {
         // Create new entry
@@ -722,13 +744,14 @@ export default function Home() {
           
         if (insertError) {
           console.error('[KidMindset] Error creating task entry:', insertError);
-          return;
+          throw insertError;
         }
       }
       
       console.log('[KidMindset] Task saved to Supabase:', taskId, completed);
     } catch (error) {
       console.error('[KidMindset] Error saving task to Supabase:', error);
+      throw error;
     }
   };
 
@@ -739,7 +762,7 @@ export default function Home() {
       
       if (childIdError || !childIdResult) {
         console.error('[KidMindset] Error getting child ID for task delete:', childIdError);
-        return;
+        throw new Error('Failed to get child ID for task deletion');
       }
       
       const todayDate = new Date().toISOString().split('T')[0];
@@ -755,12 +778,13 @@ export default function Home() {
       
       if (deleteError) {
         console.error('[KidMindset] Error deleting task from Supabase:', deleteError);
-        return;
+        throw deleteError;
       }
       
       console.log('[KidMindset] Task deleted from Supabase:', taskId);
     } catch (error) {
       console.error('[KidMindset] Error deleting task from Supabase:', error);
+      throw error;
     }
   };
 
