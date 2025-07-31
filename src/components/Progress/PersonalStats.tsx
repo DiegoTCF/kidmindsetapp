@@ -284,7 +284,7 @@ export default function PersonalStats() {
               <div className="mt-4 pt-4 border-t border-border/50">
                 <div className="flex flex-wrap gap-2 justify-center">
                   {weeklyMoodDetails.map((mood, index) => (
-                    <div key={index} className="flex items-center gap-1 text-sm bg-muted/50 rounded-full px-2 py-1">
+                    <div key={`${mood.date}-${index}`} className="flex items-center gap-1 text-sm bg-muted/50 rounded-full px-2 py-1">
                       <span className="text-lg">{getMoodEmoji(mood.value)}</span>
                       <span className="text-xs text-muted-foreground">
                         {new Date(mood.date).toLocaleDateString('en-US', { weekday: 'short' })}
