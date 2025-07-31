@@ -19,6 +19,22 @@ interface WorryStats {
   percentage: number;
 }
 
+interface ConfidenceTrend {
+  date: string;
+  preConfidence: number;
+  postMood: number;
+}
+
+interface SuperBehaviourStats {
+  behaviour_type: string;
+  average_score: number;
+  count: number;
+  question_1_avg: number;
+  question_2_avg: number;
+  question_3_avg: number;
+  question_4_avg: number;
+}
+
 // Color mapping for specific activity types
 const ACTIVITY_COLORS: {
   [key: string]: string;
@@ -66,6 +82,8 @@ export default function Charts({
   const [totalGoals, setTotalGoals] = useState(0);
   const [totalAssists, setTotalAssists] = useState(0);
   const [totalMatches, setTotalMatches] = useState(0);
+  const [confidenceTrends, setConfidenceTrends] = useState<ConfidenceTrend[]>([]);
+  const [superBehaviourStats, setSuperBehaviourStats] = useState<SuperBehaviourStats[]>([]);
   useEffect(() => {
     loadChartData();
   }, [selectedFilter, childId]);
@@ -212,6 +230,74 @@ export default function Charts({
           const avgConfidenceValue = preConfidenceSum / preConfidenceCount;
           setAvgConfidence(Math.round(avgConfidenceValue * 10) / 10);
         }
+
+        // Build confidence trends for the last 7 days
+        const confidenceTrendData: ConfidenceTrend[] = [];
+        filteredActivities.slice(0, 7).forEach(activity => {
+          if (activity.pre_confidence_excited && activity.pre_confidence_nervous && 
+              activity.pre_confidence_body_ready && activity.pre_confidence_believe_well) {
+            const preConfidence = (
+              activity.pre_confidence_excited + 
+              activity.pre_confidence_nervous + 
+              activity.pre_confidence_body_ready + 
+              activity.pre_confidence_believe_well
+            ) / 4;
+            
+            let postMood = 0;
+            if (activity.post_activity_data) {
+              const data = activity.post_activity_data as any;
+              postMood = data.mood || 0;
+            }
+            
+            confidenceTrendData.push({
+              date: activity.activity_date,
+              preConfidence: Math.round(preConfidence * 10) / 10,
+              postMood: postMood
+            });
+          }
+        });
+        setConfidenceTrends(confidenceTrendData.reverse());
+      }
+
+      // Load Super Behaviour Statistics
+      const { data: behaviourData, error: behaviourError } = await supabase
+        .from('super_behaviour_ratings')
+        .select('behaviour_type, average_score, question_1_rating, question_2_rating, question_3_rating, question_4_rating, created_at')
+        .eq('child_id', targetChildId)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (behaviourError) {
+        console.error('Error loading behaviour data:', behaviourError);
+      } else if (behaviourData && behaviourData.length > 0) {
+        // Group by behaviour type and calculate averages
+        const behaviourGroups: {[key: string]: any[]} = {};
+        behaviourData.forEach(rating => {
+          if (!behaviourGroups[rating.behaviour_type]) {
+            behaviourGroups[rating.behaviour_type] = [];
+          }
+          behaviourGroups[rating.behaviour_type].push(rating);
+        });
+
+        const behaviourStats: SuperBehaviourStats[] = Object.entries(behaviourGroups).map(([type, ratings]) => {
+          const avgScore = ratings.reduce((sum, r) => sum + r.average_score, 0) / ratings.length;
+          const q1Avg = ratings.reduce((sum, r) => sum + r.question_1_rating, 0) / ratings.length;
+          const q2Avg = ratings.reduce((sum, r) => sum + r.question_2_rating, 0) / ratings.length;
+          const q3Avg = ratings.reduce((sum, r) => sum + r.question_3_rating, 0) / ratings.length;
+          const q4Avg = ratings.reduce((sum, r) => sum + r.question_4_rating, 0) / ratings.length;
+          
+          return {
+            behaviour_type: type,
+            average_score: Math.round(avgScore * 10) / 10,
+            count: ratings.length,
+            question_1_avg: Math.round(q1Avg * 10) / 10,
+            question_2_avg: Math.round(q2Avg * 10) / 10,
+            question_3_avg: Math.round(q3Avg * 10) / 10,
+            question_4_avg: Math.round(q4Avg * 10) / 10
+          };
+        });
+        
+        setSuperBehaviourStats(behaviourStats);
       }
     } catch (error) {
       console.error('Error loading chart data:', error);
@@ -222,6 +308,31 @@ export default function Charts({
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  const getBehaviourDisplayName = (type: string) => {
+    const names: {[key: string]: string} = {
+      'brave_on_ball': 'Brave on Ball',
+      'brave_off_ball': 'Brave off Ball',
+      'aggressive': 'Aggressive',
+      'electric': 'Electric'
+    };
+    return names[type] || type;
+  };
+
+  const generatePsychologicalInsight = () => {
+    if (confidenceTrends.length === 0) return "Ainda sem dados suficientes para insights";
+    
+    const avgPreConfidence = confidenceTrends.reduce((sum, t) => sum + t.preConfidence, 0) / confidenceTrends.length;
+    const avgPostMood = confidenceTrends.reduce((sum, t) => sum + t.postMood, 0) / confidenceTrends.length;
+    
+    if (avgPostMood > avgPreConfidence) {
+      return "Você se sente mais confiante após as atividades! Continue assim! 🚀";
+    } else if (avgPostMood === avgPreConfidence) {
+      return "Sua confiança se mantém estável durante as atividades. Ótima consistência! 💪";
+    } else {
+      return "Use mais técnicas de visualização antes das atividades para aumentar sua confiança! 🧠";
+    }
   };
   return <div className="space-y-6">
       {/* Personal Stats Section - New personalized metrics */}
@@ -298,6 +409,148 @@ export default function Charts({
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Performance Meets Psychology Section */}
+      <div className="border-t pt-6">
+        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+          🧠 Performance Meets Psychology
+        </h3>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Confidence Trends */}
+          <Card className="shadow-soft">
+            <CardHeader>
+              <CardTitle className="text-base">Confidence Trends (Last 7 days)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {confidenceTrends.length > 0 ? (
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={confidenceTrends}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis 
+                      dataKey="date" 
+                      tickFormatter={formatDate}
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                    />
+                    <YAxis 
+                      domain={[0, 10]}
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                    />
+                    <Tooltip 
+                      formatter={(value, name) => [
+                        `${value}/10`, 
+                        name === 'preConfidence' ? 'Pre-Activity Confidence' : 'Post-Activity Mood'
+                      ]}
+                      labelFormatter={(label) => formatDate(label)}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="preConfidence" 
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={2}
+                      dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="postMood" 
+                      stroke="hsl(var(--accent))" 
+                      strokeWidth={2}
+                      dot={{ fill: 'hsl(var(--accent))', strokeWidth: 2, r: 4 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="text-center text-muted-foreground py-8">
+                  Complete more activities with confidence ratings to see trends
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Psychological Insight */}
+          <Card className="shadow-soft">
+            <CardHeader>
+              <CardTitle className="text-base">💡 Psychological Insight</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+                  <p className="text-sm text-foreground font-medium mb-2">
+                    {generatePsychologicalInsight()}
+                  </p>
+                </div>
+                
+                {confidenceTrends.length > 0 && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-primary">
+                        {(confidenceTrends.reduce((sum, t) => sum + t.preConfidence, 0) / confidenceTrends.length).toFixed(1)}/10
+                      </p>
+                      <p className="text-xs text-muted-foreground">Avg Pre-Confidence</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-accent">
+                        {(confidenceTrends.reduce((sum, t) => sum + t.postMood, 0) / confidenceTrends.length).toFixed(1)}/5
+                      </p>
+                      <p className="text-xs text-muted-foreground">Avg Post-Mood</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Super Behaviours */}
+        {superBehaviourStats.length > 0 && (
+          <Card className="shadow-soft mb-6">
+            <CardHeader>
+              <CardTitle className="text-base">🌟 Super Behaviours Weekly Averages</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {superBehaviourStats.map((behaviour, index) => (
+                  <div key={behaviour.behaviour_type} className="space-y-3">
+                    <div className="text-center">
+                      <h4 className="font-medium text-sm">{getBehaviourDisplayName(behaviour.behaviour_type)}</h4>
+                      <p className="text-2xl font-bold text-primary">{behaviour.average_score}/10</p>
+                      <p className="text-xs text-muted-foreground">{behaviour.count} ratings</p>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <span>Q1:</span>
+                        <span className="font-medium">{behaviour.question_1_avg}/10</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span>Q2:</span>
+                        <span className="font-medium">{behaviour.question_2_avg}/10</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span>Q3:</span>
+                        <span className="font-medium">{behaviour.question_3_avg}/10</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span>Q4:</span>
+                        <span className="font-medium">{behaviour.question_4_avg}/10</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-4 p-3 bg-accent/5 border border-accent/20 rounded-lg">
+                <p className="text-xs text-accent font-medium mb-1">📊 Breakdown Info</p>
+                <p className="text-xs text-muted-foreground">
+                  Each behavior shows average scores for 4 key questions that make up your super behaviour rating.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Charts */}

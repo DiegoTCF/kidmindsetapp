@@ -11,6 +11,11 @@ interface PersonalStats {
   totalDays: number;
 }
 
+interface MoodDetail {
+  date: string;
+  value: number;
+}
+
 interface TaskCompletion {
   taskName: string;
   completedDays: number;
@@ -25,6 +30,8 @@ export default function PersonalStats() {
   });
   const [loading, setLoading] = useState(true);
   const [taskStats, setTaskStats] = useState<TaskCompletion[]>([]);
+  const [showMoodDetails, setShowMoodDetails] = useState(false);
+  const [weeklyMoodDetails, setWeeklyMoodDetails] = useState<MoodDetail[]>([]);
 
   useEffect(() => {
     loadPersonalStats();
@@ -71,6 +78,7 @@ export default function PersonalStats() {
       }
 
       let weeklyMoodAvg = 0;
+      const moodDetails: MoodDetail[] = [];
       if (moodEntries && moodEntries.length > 0) {
         // Get unique dates (latest mood per day)
         const uniqueDailyMoods = moodEntries.reduce((acc, entry) => {
@@ -83,8 +91,16 @@ export default function PersonalStats() {
 
         const moodValues = Object.values(uniqueDailyMoods);
         weeklyMoodAvg = moodValues.reduce((sum, val) => sum + val, 0) / moodValues.length;
+        
+        // Store mood details for display
+        Object.entries(uniqueDailyMoods).forEach(([date, value]) => {
+          moodDetails.push({ date, value });
+        });
+        moodDetails.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        
         console.log('[ProgressStats] Weekly mood average calculated:', weeklyMoodAvg);
       }
+      setWeeklyMoodDetails(moodDetails);
 
       // 2. Load Days Active in the App
       console.log('[ProgressStats] Loading active days count...');
@@ -210,6 +226,14 @@ export default function PersonalStats() {
     return stats.totalDays > 0 ? Math.round((stats.daysActive / stats.totalDays) * 100) : 0;
   };
 
+  const getMoodEmoji = (mood: number) => {
+    if (mood >= 5) return '😄';
+    if (mood >= 4) return '😊';
+    if (mood >= 3) return '😐';
+    if (mood >= 2) return '😕';
+    return '😞';
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -224,61 +248,43 @@ export default function PersonalStats() {
   return (
     <div className="space-y-6">
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="shadow-soft">
+      <div className="grid grid-cols-1 gap-4">
+        <Card className="shadow-soft cursor-pointer group hover:shadow-md transition-all duration-200" onClick={() => setShowMoodDetails(!showMoodDetails)}>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-primary" />
               Weekly Mood Average
+              <span className="text-xs text-muted-foreground ml-auto">
+                Click to see details
+              </span>
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             <div className="text-center">
-              <p className={`text-3xl font-bold ${getMoodColor(stats.weeklyMoodAvg)}`}>
+              <p className={`text-3xl font-bold ${getMoodColor(stats.weeklyMoodAvg)} group-hover:scale-105 transition-transform duration-200`}>
                 {stats.weeklyMoodAvg > 0 ? `${stats.weeklyMoodAvg}/5` : 'No data'}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 Past 7 days
               </p>
             </div>
+            {showMoodDetails && weeklyMoodDetails.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-border/50">
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {weeklyMoodDetails.map((mood, index) => (
+                    <div key={index} className="flex items-center gap-1 text-sm bg-muted/50 rounded-full px-2 py-1">
+                      <span className="text-lg">{getMoodEmoji(mood.value)}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(mood.date).toLocaleDateString('en-US', { weekday: 'short' })}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        <Card className="shadow-soft">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-primary" />
-              Days Active
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-primary">{stats.daysActive}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Since you joined ({getActivityRate()}% activity rate)
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-soft">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Activity className="h-4 w-4 text-primary" />
-              Task Completions
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-accent">
-                {Object.values(stats.taskCompletions).reduce((sum, count) => sum + count, 0)}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Total tasks completed
-              </p>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Daily Activities Pie Chart */}
