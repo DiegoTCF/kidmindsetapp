@@ -90,7 +90,7 @@ export default function PersonalStats() {
         // Get unique dates (latest mood per day) - only for days that actually have mood logs
         const uniqueDailyMoods = moodEntries.reduce((acc, entry) => {
           const date = entry.entry_date;
-          // Only include if it's from Monday onwards and actually has a mood value
+          // Include all entries since Monday, but also check if the date is valid
           const entryDate = new Date(date);
           if (entryDate >= mondayOfThisWeek && !acc[date]) {
             acc[date] = entry.entry_value as number;
@@ -110,6 +110,11 @@ export default function PersonalStats() {
           moodDetails.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
           
           console.log('[ProgressStats] Weekly mood average calculated:', weeklyMoodAvg, 'from', moodDetails.length, 'days');
+          console.log('[ProgressStats] Monday of this week:', mondayOfThisWeek.toISOString());
+          console.log('[ProgressStats] Mood entries found:', moodEntries.length);
+        } else {
+          console.log('[ProgressStats] No mood entries found since Monday:', mondayOfThisWeek.toISOString());
+          console.log('[ProgressStats] Available mood entries:', moodEntries);
         }
       }
       setWeeklyMoodDetails(moodDetails);
