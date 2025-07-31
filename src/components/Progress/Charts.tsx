@@ -23,7 +23,6 @@ interface ConfidenceTrend {
   date: string;
   preConfidence: number;
   postMood: number;
-  postConfidence?: number;
 }
 
 interface SuperBehaviourStats {
@@ -34,14 +33,6 @@ interface SuperBehaviourStats {
   question_2_avg: number;
   question_3_avg: number;
   question_4_avg: number;
-}
-
-interface ActivityRatingStats {
-  workRate: number;
-  confidence: number;
-  mistakes: number;
-  focus: number;
-  performance: number;
 }
 
 // Color mapping for specific activity types
@@ -93,7 +84,6 @@ export default function Charts({
   const [totalMatches, setTotalMatches] = useState(0);
   const [confidenceTrends, setConfidenceTrends] = useState<ConfidenceTrend[]>([]);
   const [superBehaviourStats, setSuperBehaviourStats] = useState<SuperBehaviourStats[]>([]);
-  const [activityRatingStats, setActivityRatingStats] = useState<ActivityRatingStats | null>(null);
   useEffect(() => {
     loadChartData();
   }, [selectedFilter, childId]);
@@ -254,53 +244,19 @@ export default function Charts({
             ) / 4;
             
             let postMood = 0;
-            let postConfidence = undefined;
             if (activity.post_activity_data) {
               const data = activity.post_activity_data as any;
               postMood = data.mood || 0;
-              // Check for confidence in post-activity data
-              if (data.confidence) {
-                postConfidence = data.confidence;
-              }
             }
             
             confidenceTrendData.push({
               date: activity.activity_date,
               preConfidence: Math.round(preConfidence * 10) / 10,
-              postMood: postMood,
-              postConfidence: postConfidence
+              postMood: postMood
             });
           }
         });
         setConfidenceTrends(confidenceTrendData.reverse());
-
-        // Calculate activity rating averages from post-activity data
-        let workRateSum = 0, confidenceSum = 0, mistakesSum = 0, focusSum = 0, performanceSum = 0;
-        let ratingsCount = 0;
-        
-        filteredActivities.forEach(activity => {
-          if (activity.post_activity_data) {
-            const data = activity.post_activity_data as any;
-            if (data.workRate && data.confidence && data.mistakes && data.focus && data.performance) {
-              workRateSum += data.workRate;
-              confidenceSum += data.confidence;
-              mistakesSum += data.mistakes;
-              focusSum += data.focus;
-              performanceSum += data.performance;
-              ratingsCount++;
-            }
-          }
-        });
-
-        if (ratingsCount > 0) {
-          setActivityRatingStats({
-            workRate: Math.round((workRateSum / ratingsCount) * 10) / 10,
-            confidence: Math.round((confidenceSum / ratingsCount) * 10) / 10,
-            mistakes: Math.round((mistakesSum / ratingsCount) * 10) / 10,
-            focus: Math.round((focusSum / ratingsCount) * 10) / 10,
-            performance: Math.round((performanceSum / ratingsCount) * 10) / 10,
-          });
-        }
       }
 
       // Load Super Behaviour Statistics
@@ -364,48 +320,18 @@ export default function Charts({
     return names[type] || type;
   };
 
-  const getBehaviourQuestions = (type: string) => {
-    const questions: {[key: string]: string[]} = {
-      'brave_on_ball': [
-        'How confident did you feel with the ball?',
-        'Did you take risks when attacking?', 
-        'How well did you handle pressure?',
-        'Did you stay composed under challenge?'
-      ],
-      'brave_off_ball': [
-        'How well did you support teammates?',
-        'Did you make clever runs?',
-        'How was your positioning?', 
-        'Did you communicate effectively?'
-      ],
-      'aggressive': [
-        'How intense was your play?',
-        'Did you compete for every ball?',
-        'How was your tackling/pressing?',
-        'Did you show determination?'
-      ],
-      'electric': [
-        'How exciting was your play?',
-        'Did you create magic moments?',
-        'How was your flair/creativity?',
-        'Did you entertain and inspire?'
-      ]
-    };
-    return questions[type] || ['Q1', 'Q2', 'Q3', 'Q4'];
-  };
-
   const generatePsychologicalInsight = () => {
-    if (confidenceTrends.length === 0) return "Complete more activities to see insights about your confidence patterns";
+    if (confidenceTrends.length === 0) return "Ainda sem dados suficientes para insights";
     
     const avgPreConfidence = confidenceTrends.reduce((sum, t) => sum + t.preConfidence, 0) / confidenceTrends.length;
     const avgPostMood = confidenceTrends.reduce((sum, t) => sum + t.postMood, 0) / confidenceTrends.length;
     
     if (avgPostMood > avgPreConfidence) {
-      return "You feel more confident after activities! Keep up the great work! 🚀";
+      return "Você se sente mais confiante após as atividades! Continue assim! 🚀";
     } else if (avgPostMood === avgPreConfidence) {
-      return "Your confidence stays consistent during activities. Great stability! 💪";
+      return "Sua confiança se mantém estável durante as atividades. Ótima consistência! 💪";
     } else {
-      return "Use more visualization techniques before activities to boost your confidence! 🧠";
+      return "Use mais técnicas de visualização antes das atividades para aumentar sua confiança! 🧠";
     }
   };
   return <div className="space-y-6">
@@ -487,12 +413,67 @@ export default function Charts({
 
       {/* Performance Meets Psychology Section */}
       <div className="border-t pt-6">
+        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+          🧠 Performance Meets Psychology
+        </h3>
         
-        <div className="grid grid-cols-1 gap-6 mb-6">
-          {/* Confidence Insights */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Confidence Trends */}
           <Card className="shadow-soft">
             <CardHeader>
-              <CardTitle className="text-base">💡 Confidence Insights</CardTitle>
+              <CardTitle className="text-base">Confidence Trends (Last 7 days)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {confidenceTrends.length > 0 ? (
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={confidenceTrends}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis 
+                      dataKey="date" 
+                      tickFormatter={formatDate}
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                    />
+                    <YAxis 
+                      domain={[0, 10]}
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                    />
+                    <Tooltip 
+                      formatter={(value, name) => [
+                        `${value}/10`, 
+                        name === 'preConfidence' ? 'Pre-Activity Confidence' : 'Post-Activity Mood'
+                      ]}
+                      labelFormatter={(label) => formatDate(label)}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="preConfidence" 
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={2}
+                      dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="postMood" 
+                      stroke="hsl(var(--accent))" 
+                      strokeWidth={2}
+                      dot={{ fill: 'hsl(var(--accent))', strokeWidth: 2, r: 4 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="text-center text-muted-foreground py-8">
+                  Complete more activities with confidence ratings to see trends
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Psychological Insight */}
+          <Card className="shadow-soft">
+            <CardHeader>
+              <CardTitle className="text-base">💡 Psychological Insight</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -503,20 +484,12 @@ export default function Charts({
                 </div>
                 
                 {confidenceTrends.length > 0 && (
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="text-center">
                       <p className="text-lg font-bold text-primary">
                         {(confidenceTrends.reduce((sum, t) => sum + t.preConfidence, 0) / confidenceTrends.length).toFixed(1)}/10
                       </p>
                       <p className="text-xs text-muted-foreground">Avg Pre-Confidence</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-lg font-bold text-warning">
-                        {confidenceTrends.some(t => t.postConfidence) ? 
-                          (confidenceTrends.filter(t => t.postConfidence).reduce((sum, t) => sum + (t.postConfidence || 0), 0) / 
-                           confidenceTrends.filter(t => t.postConfidence).length).toFixed(1) : '0.0'}/10
-                      </p>
-                      <p className="text-xs text-muted-foreground">Avg During-Activity Confidence</p>
                     </div>
                     <div className="text-center">
                       <p className="text-lg font-bold text-accent">
@@ -531,6 +504,53 @@ export default function Charts({
           </Card>
         </div>
 
+        {/* Super Behaviours */}
+        {superBehaviourStats.length > 0 && (
+          <Card className="shadow-soft mb-6">
+            <CardHeader>
+              <CardTitle className="text-base">🌟 Super Behaviours Weekly Averages</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {superBehaviourStats.map((behaviour, index) => (
+                  <div key={behaviour.behaviour_type} className="space-y-3">
+                    <div className="text-center">
+                      <h4 className="font-medium text-sm">{getBehaviourDisplayName(behaviour.behaviour_type)}</h4>
+                      <p className="text-2xl font-bold text-primary">{behaviour.average_score}/10</p>
+                      <p className="text-xs text-muted-foreground">{behaviour.count} ratings</p>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <span>Q1:</span>
+                        <span className="font-medium">{behaviour.question_1_avg}/10</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span>Q2:</span>
+                        <span className="font-medium">{behaviour.question_2_avg}/10</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span>Q3:</span>
+                        <span className="font-medium">{behaviour.question_3_avg}/10</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span>Q4:</span>
+                        <span className="font-medium">{behaviour.question_4_avg}/10</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-4 p-3 bg-accent/5 border border-accent/20 rounded-lg">
+                <p className="text-xs text-accent font-medium mb-1">📊 Breakdown Info</p>
+                <p className="text-xs text-muted-foreground">
+                  Each behavior shows average scores for 4 key questions that make up your super behaviour rating.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Charts */}
@@ -563,50 +583,7 @@ export default function Charts({
               </div>}
           </CardContent>
         </Card>
-        </div>
-
-        {/* Activity Ratings Progress */}
-        {activityRatingStats && (
-          <Card className="shadow-soft mb-6">
-            <CardHeader>
-              <CardTitle className="text-base">📊 Activity Performance Averages</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {[
-                  { key: "workRate", label: "Work Rate", icon: "⚡", value: activityRatingStats.workRate },
-                  { key: "confidence", label: "Confidence", icon: "🧠", value: activityRatingStats.confidence },
-                  { key: "mistakes", label: "Mistakes & Recovery", icon: "🎯", value: activityRatingStats.mistakes },
-                  { key: "focus", label: "Focus", icon: "🎯", value: activityRatingStats.focus },
-                  { key: "performance", label: "Performance", icon: "⚡", value: activityRatingStats.performance },
-                ].map(({ key, label, icon, value }) => (
-                  <div key={key} className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">{icon}</span>
-                        <span className="text-sm font-medium">{label}</span>
-                      </div>
-                      <span className="text-sm font-bold text-primary">{value}/10</span>
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div 
-                        className="h-2 rounded-full bg-primary transition-all duration-500" 
-                        style={{ width: `${(value / 10) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="mt-4 p-3 bg-primary/5 border border-primary/20 rounded-lg">
-                <p className="text-xs text-primary font-medium mb-1">📈 Performance Insight</p>
-                <p className="text-xs text-muted-foreground">
-                  These averages show how you rate yourself during activities across key performance areas.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+      </div>
 
       {/* Mindset Insights */}
       {worryStats.length > 0 && <Card className="shadow-soft">

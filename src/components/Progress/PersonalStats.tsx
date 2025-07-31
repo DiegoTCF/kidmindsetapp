@@ -87,19 +87,20 @@ export default function PersonalStats() {
       let weeklyMoodAvg = 0;
       const moodDetails: MoodDetail[] = [];
       if (moodEntries && moodEntries.length > 0) {
-        // Get unique dates (latest mood per day) - only from Monday onwards
+        // Get unique dates (latest mood per day) - only for days that actually have mood logs
         const uniqueDailyMoods = moodEntries.reduce((acc, entry) => {
           const date = entry.entry_date;
+          // Only include if it's from Monday onwards and actually has a mood value
           const entryDate = new Date(date);
-          // Only include entries from Monday of this week onwards
           if (entryDate >= mondayOfThisWeek && !acc[date]) {
             acc[date] = entry.entry_value as number;
           }
           return acc;
         }, {} as Record<string, number>);
 
-        const moodValues = Object.values(uniqueDailyMoods);
-        if (moodValues.length > 0) {
+        // Only calculate average if we have actual mood entries
+        if (Object.keys(uniqueDailyMoods).length > 0) {
+          const moodValues = Object.values(uniqueDailyMoods);
           weeklyMoodAvg = moodValues.reduce((sum, val) => sum + val, 0) / moodValues.length;
           
           // Store mood details for display - only days with actual logs
@@ -107,6 +108,8 @@ export default function PersonalStats() {
             moodDetails.push({ date, value });
           });
           moodDetails.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+          
+          console.log('[ProgressStats] Weekly mood average calculated:', weeklyMoodAvg, 'from', moodDetails.length, 'days');
         }
       }
       setWeeklyMoodDetails(moodDetails);
@@ -281,7 +284,7 @@ export default function PersonalStats() {
               <div className="mt-4 pt-4 border-t border-border/50">
                 <div className="flex flex-wrap gap-2 justify-center">
                   {weeklyMoodDetails.map((mood, index) => (
-                    <div key={`${mood.date}-${index}`} className="flex items-center gap-1 text-sm bg-muted/50 rounded-full px-2 py-1">
+                    <div key={index} className="flex items-center gap-1 text-sm bg-muted/50 rounded-full px-2 py-1">
                       <span className="text-lg">{getMoodEmoji(mood.value)}</span>
                       <span className="text-xs text-muted-foreground">
                         {new Date(mood.date).toLocaleDateString('en-US', { weekday: 'short' })}
