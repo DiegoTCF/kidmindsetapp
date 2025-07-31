@@ -59,16 +59,9 @@ export default function PersonalStats() {
       }
 
       const childId = childIdResult;
-      
-      // Calculate Monday of current week
-      const today = new Date();
-      const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
-      const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // If Sunday, go back 6 days to Monday
-      const mondayOfThisWeek = new Date(today);
-      mondayOfThisWeek.setDate(today.getDate() - daysToMonday);
-      mondayOfThisWeek.setHours(0, 0, 0, 0);
-      
-      const mondayStr = mondayOfThisWeek.toISOString().split('T')[0];
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
 
       // 1. Load Average Daily Mood (Weekly)
       console.log('[ProgressStats] Loading weekly mood average...');
@@ -77,7 +70,7 @@ export default function PersonalStats() {
         .select('entry_value, entry_date')
         .eq('child_id', childId)
         .eq('entry_type', 'mood')
-        .gte('entry_date', mondayStr)
+        .gte('entry_date', sevenDaysAgoStr)
         .order('entry_date', { ascending: false });
 
       if (moodError) {
@@ -87,34 +80,26 @@ export default function PersonalStats() {
       let weeklyMoodAvg = 0;
       const moodDetails: MoodDetail[] = [];
       if (moodEntries && moodEntries.length > 0) {
-        // Get unique dates (latest mood per day) - only for days that actually have mood logs
+        // Get unique dates (latest mood per day)
         const uniqueDailyMoods = moodEntries.reduce((acc, entry) => {
           const date = entry.entry_date;
-          // Include all entries since Monday, but also check if the date is valid
-          const entryDate = new Date(date);
-          if (entryDate >= mondayOfThisWeek && !acc[date]) {
+          if (!acc[date]) {
             acc[date] = entry.entry_value as number;
           }
           return acc;
         }, {} as Record<string, number>);
 
-        // Only calculate average if we have actual mood entries
-        if (Object.keys(uniqueDailyMoods).length > 0) {
-          const moodValues = Object.values(uniqueDailyMoods);
+        const moodValues = Object.values(uniqueDailyMoods);
+        if (moodValues.length > 0) {
           weeklyMoodAvg = moodValues.reduce((sum, val) => sum + val, 0) / moodValues.length;
           
-          // Store mood details for display - only days with actual logs
+          // Store mood details for display
           Object.entries(uniqueDailyMoods).forEach(([date, value]) => {
             moodDetails.push({ date, value });
           });
           moodDetails.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
           
           console.log('[ProgressStats] Weekly mood average calculated:', weeklyMoodAvg, 'from', moodDetails.length, 'days');
-          console.log('[ProgressStats] Monday of this week:', mondayOfThisWeek.toISOString());
-          console.log('[ProgressStats] Mood entries found:', moodEntries.length);
-        } else {
-          console.log('[ProgressStats] No mood entries found since Monday:', mondayOfThisWeek.toISOString());
-          console.log('[ProgressStats] Available mood entries:', moodEntries);
         }
       }
       setWeeklyMoodDetails(moodDetails);
