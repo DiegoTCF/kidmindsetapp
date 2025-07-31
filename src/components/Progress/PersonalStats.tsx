@@ -59,9 +59,16 @@ export default function PersonalStats() {
       }
 
       const childId = childIdResult;
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
+      
+      // Calculate Monday of current week
+      const today = new Date();
+      const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // If Sunday, go back 6 days to Monday
+      const mondayOfThisWeek = new Date(today);
+      mondayOfThisWeek.setDate(today.getDate() - daysToMonday);
+      mondayOfThisWeek.setHours(0, 0, 0, 0);
+      
+      const mondayStr = mondayOfThisWeek.toISOString().split('T')[0];
 
       // 1. Load Average Daily Mood (Weekly)
       console.log('[ProgressStats] Loading weekly mood average...');
@@ -70,7 +77,7 @@ export default function PersonalStats() {
         .select('entry_value, entry_date')
         .eq('child_id', childId)
         .eq('entry_type', 'mood')
-        .gte('entry_date', sevenDaysAgoStr)
+        .gte('entry_date', mondayStr)
         .order('entry_date', { ascending: false });
 
       if (moodError) {
@@ -80,25 +87,30 @@ export default function PersonalStats() {
       let weeklyMoodAvg = 0;
       const moodDetails: MoodDetail[] = [];
       if (moodEntries && moodEntries.length > 0) {
-        // Get unique dates (latest mood per day)
+        // Get unique dates (latest mood per day) - only for days that actually have mood logs
         const uniqueDailyMoods = moodEntries.reduce((acc, entry) => {
           const date = entry.entry_date;
-          if (!acc[date]) {
+          // Only include if it's from Monday onwards and actually has a mood value
+          const entryDate = new Date(date);
+          if (entryDate >= mondayOfThisWeek && !acc[date]) {
             acc[date] = entry.entry_value as number;
           }
           return acc;
         }, {} as Record<string, number>);
 
-        const moodValues = Object.values(uniqueDailyMoods);
-        weeklyMoodAvg = moodValues.reduce((sum, val) => sum + val, 0) / moodValues.length;
-        
-        // Store mood details for display
-        Object.entries(uniqueDailyMoods).forEach(([date, value]) => {
-          moodDetails.push({ date, value });
-        });
-        moodDetails.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        
-        console.log('[ProgressStats] Weekly mood average calculated:', weeklyMoodAvg);
+        // Only calculate average if we have actual mood entries
+        if (Object.keys(uniqueDailyMoods).length > 0) {
+          const moodValues = Object.values(uniqueDailyMoods);
+          weeklyMoodAvg = moodValues.reduce((sum, val) => sum + val, 0) / moodValues.length;
+          
+          // Store mood details for display - only days with actual logs
+          Object.entries(uniqueDailyMoods).forEach(([date, value]) => {
+            moodDetails.push({ date, value });
+          });
+          moodDetails.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+          
+          console.log('[ProgressStats] Weekly mood average calculated:', weeklyMoodAvg, 'from', moodDetails.length, 'days');
+        }
       }
       setWeeklyMoodDetails(moodDetails);
 
@@ -265,7 +277,7 @@ export default function PersonalStats() {
                 {stats.weeklyMoodAvg > 0 ? `${stats.weeklyMoodAvg}/5` : 'No data'}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Past 7 days
+                {weeklyMoodDetails.length > 0 ? `From ${weeklyMoodDetails.length} logged days this week` : 'Past 7 days'}
               </p>
             </div>
             {showMoodDetails && weeklyMoodDetails.length > 0 && (
