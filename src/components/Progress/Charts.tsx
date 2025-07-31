@@ -494,50 +494,6 @@ export default function Charts({
           </Card>
         </div>
 
-        {/* Super Behaviours */}
-        {superBehaviourStats.length > 0 && (
-          <Card className="shadow-soft mb-6">
-            <CardHeader>
-              <CardTitle className="text-base">🌟 Super Behaviours Weekly Averages</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {superBehaviourStats.map((behaviour, index) => (
-                  <div key={behaviour.behaviour_type} className="space-y-3">
-                    <div className="text-center">
-                      <h4 className="font-medium text-sm">{getBehaviourDisplayName(behaviour.behaviour_type)}</h4>
-                      <p className="text-2xl font-bold text-primary">{behaviour.average_score}/10</p>
-                      <p className="text-xs text-muted-foreground">{behaviour.count} ratings</p>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      {getBehaviourQuestions(behaviour.behaviour_type).map((question, qIndex) => (
-                        <div key={qIndex} className="flex justify-between text-xs">
-                          <span className="truncate mr-2" title={question}>
-                            {question.length > 25 ? question.substring(0, 25) + '...' : question}
-                          </span>
-                          <span className="font-medium">
-                            {qIndex === 0 && `${behaviour.question_1_avg}/10`}
-                            {qIndex === 1 && `${behaviour.question_2_avg}/10`}
-                            {qIndex === 2 && `${behaviour.question_3_avg}/10`}
-                            {qIndex === 3 && `${behaviour.question_4_avg}/10`}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="mt-4 p-3 bg-accent/5 border border-accent/20 rounded-lg">
-                <p className="text-xs text-accent font-medium mb-1">📊 Breakdown Info</p>
-                <p className="text-xs text-muted-foreground">
-                  Each behavior shows average scores for 4 key questions that make up your super behaviour rating.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
 
       {/* Charts */}
