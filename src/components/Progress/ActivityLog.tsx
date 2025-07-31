@@ -463,67 +463,174 @@ export default function ActivityLog({ selectedFilter, childId }: ActivityLogProp
 
                   {/* Super Behaviour Ratings */}
                   {selectedActivity.post_activity_data.superBehaviours && (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <h5 className="font-medium text-primary">Super Behaviour Ratings</h5>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-4">
                         {selectedActivity.post_activity_data.superBehaviours.braveOnBall && (
-                          <div className="text-center p-3 bg-background rounded-lg">
-                            <p className="text-sm font-medium">Brave on Ball</p>
-                            <p className="text-xl font-bold text-primary">
-                              {(() => {
-                                const ratings = selectedActivity.post_activity_data.superBehaviours.braveOnBall;
-                                if (typeof ratings === 'object' && ratings.question1 !== undefined) {
-                                  const avg = (ratings.question1 + ratings.question2 + ratings.question3 + ratings.question4) / 4;
-                                  return `${avg.toFixed(1)}/10`;
-                                }
-                                return `${ratings}/10`;
-                              })()}
-                            </p>
+                          <div className="p-4 bg-background rounded-lg border border-border">
+                            <div className="text-center mb-3">
+                              <p className="text-sm font-medium">🔥 Brave on Ball</p>
+                              <p className="text-2xl font-bold text-primary">
+                                {(() => {
+                                  const ratings = selectedActivity.post_activity_data.superBehaviours.braveOnBall;
+                                  if (typeof ratings === 'object' && ratings.question1 !== undefined) {
+                                    const avg = (ratings.question1 + ratings.question2 + ratings.question3 + ratings.question4) / 4;
+                                    return `${avg.toFixed(1)}/10`;
+                                  }
+                                  return `${ratings}/10`;
+                                })()}
+                              </p>
+                            </div>
+                            {(() => {
+                              const ratings = selectedActivity.post_activity_data.superBehaviours.braveOnBall;
+                              if (typeof ratings === 'object' && ratings.question1 !== undefined) {
+                                const questions = [
+                                  'How often did you try to take players on or play forward?',
+                                  'How much intent did you show when doing it — did you really go for it?',
+                                  'Did you take risks even when you made mistakes or lost the ball?',
+                                  'How much did you play to win your 1v1s, not just avoid losing the ball?'
+                                ];
+                                return (
+                                  <div className="space-y-2">
+                                    {questions.map((question, index) => (
+                                      <div key={index} className="flex justify-between items-start text-xs">
+                                        <span className="flex-1 mr-2">{question}</span>
+                                        <span className="font-medium text-primary">
+                                          {ratings[`question${index + 1}`]}/10
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                );
+                              }
+                              return null;
+                            })()}
                           </div>
                         )}
+                        
                         {selectedActivity.post_activity_data.superBehaviours.braveOffBall && (
-                          <div className="text-center p-3 bg-background rounded-lg">
-                            <p className="text-sm font-medium">Brave off Ball</p>
-                            <p className="text-xl font-bold text-primary">
-                              {(() => {
-                                const ratings = selectedActivity.post_activity_data.superBehaviours.braveOffBall;
-                                if (typeof ratings === 'object' && ratings.question1 !== undefined) {
-                                  const avg = (ratings.question1 + ratings.question2 + ratings.question3 + ratings.question4) / 4;
-                                  return `${avg.toFixed(1)}/10`;
-                                }
-                                return `${ratings}/10`;
-                              })()}
-                            </p>
+                          <div className="p-4 bg-background rounded-lg border border-border">
+                            <div className="text-center mb-3">
+                              <p className="text-sm font-medium">🧱 Brave off Ball</p>
+                              <p className="text-2xl font-bold text-primary">
+                                {(() => {
+                                  const ratings = selectedActivity.post_activity_data.superBehaviours.braveOffBall;
+                                  if (typeof ratings === 'object' && ratings.question1 !== undefined) {
+                                    const avg = (ratings.question1 + ratings.question2 + ratings.question3 + ratings.question4) / 4;
+                                    return `${avg.toFixed(1)}/10`;
+                                  }
+                                  return `${ratings}/10`;
+                                })()}
+                              </p>
+                            </div>
+                            {(() => {
+                              const ratings = selectedActivity.post_activity_data.superBehaviours.braveOffBall;
+                              if (typeof ratings === 'object' && ratings.question1 !== undefined) {
+                                const questions = [
+                                  'How often did you show for the ball or move into space?',
+                                  'How much intent did you show when trying to get involved?',
+                                  'Did you keep moving even when things weren\'t going well?',
+                                  'Did you create good angles and options for your teammates?'
+                                ];
+                                return (
+                                  <div className="space-y-2">
+                                    {questions.map((question, index) => (
+                                      <div key={index} className="flex justify-between items-start text-xs">
+                                        <span className="flex-1 mr-2">{question}</span>
+                                        <span className="font-medium text-primary">
+                                          {ratings[`question${index + 1}`]}/10
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                );
+                              }
+                              return null;
+                            })()}
                           </div>
                         )}
+                        
                         {selectedActivity.post_activity_data.superBehaviours.electric && (
-                          <div className="text-center p-3 bg-background rounded-lg">
-                            <p className="text-sm font-medium">Electric</p>
-                            <p className="text-xl font-bold text-primary">
-                              {(() => {
-                                const ratings = selectedActivity.post_activity_data.superBehaviours.electric;
-                                if (typeof ratings === 'object' && ratings.question1 !== undefined) {
-                                  const avg = (ratings.question1 + ratings.question2 + ratings.question3 + ratings.question4) / 4;
-                                  return `${avg.toFixed(1)}/10`;
-                                }
-                                return `${ratings}/10`;
-                              })()}
-                            </p>
+                          <div className="p-4 bg-background rounded-lg border border-border">
+                            <div className="text-center mb-3">
+                              <p className="text-sm font-medium">⚡ Electric</p>
+                              <p className="text-2xl font-bold text-primary">
+                                {(() => {
+                                  const ratings = selectedActivity.post_activity_data.superBehaviours.electric;
+                                  if (typeof ratings === 'object' && ratings.question1 !== undefined) {
+                                    const avg = (ratings.question1 + ratings.question2 + ratings.question3 + ratings.question4) / 4;
+                                    return `${avg.toFixed(1)}/10`;
+                                  }
+                                  return `${ratings}/10`;
+                                })()}
+                              </p>
+                            </div>
+                            {(() => {
+                              const ratings = selectedActivity.post_activity_data.superBehaviours.electric;
+                              if (typeof ratings === 'object' && ratings.question1 !== undefined) {
+                                const questions = [
+                                  'How much energy did you bring to the game today?',
+                                  'How quick were your reactions during the game?',
+                                  'How fast and sharp were your decisions?',
+                                  'Did you move with speed and urgency when the team needed it?'
+                                ];
+                                return (
+                                  <div className="space-y-2">
+                                    {questions.map((question, index) => (
+                                      <div key={index} className="flex justify-between items-start text-xs">
+                                        <span className="flex-1 mr-2">{question}</span>
+                                        <span className="font-medium text-primary">
+                                          {ratings[`question${index + 1}`]}/10
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                );
+                              }
+                              return null;
+                            })()}
                           </div>
                         )}
+                        
                         {selectedActivity.post_activity_data.superBehaviours.aggressive && (
-                          <div className="text-center p-3 bg-background rounded-lg">
-                            <p className="text-sm font-medium">Aggressive</p>
-                            <p className="text-xl font-bold text-primary">
-                              {(() => {
-                                const ratings = selectedActivity.post_activity_data.superBehaviours.aggressive;
-                                if (typeof ratings === 'object' && ratings.question1 !== undefined) {
-                                  const avg = (ratings.question1 + ratings.question2 + ratings.question3 + ratings.question4) / 4;
-                                  return `${avg.toFixed(1)}/10`;
-                                }
-                                return `${ratings}/10`;
-                              })()}
-                            </p>
+                          <div className="p-4 bg-background rounded-lg border border-border">
+                            <div className="text-center mb-3">
+                              <p className="text-sm font-medium">💢 Aggressive</p>
+                              <p className="text-2xl font-bold text-primary">
+                                {(() => {
+                                  const ratings = selectedActivity.post_activity_data.superBehaviours.aggressive;
+                                  if (typeof ratings === 'object' && ratings.question1 !== undefined) {
+                                    const avg = (ratings.question1 + ratings.question2 + ratings.question3 + ratings.question4) / 4;
+                                    return `${avg.toFixed(1)}/10`;
+                                  }
+                                  return `${ratings}/10`;
+                                })()}
+                              </p>
+                            </div>
+                            {(() => {
+                              const ratings = selectedActivity.post_activity_data.superBehaviours.aggressive;
+                              if (typeof ratings === 'object' && ratings.question1 !== undefined) {
+                                const questions = [
+                                  'How often did you go into 1v1 duels or physical challenges?',
+                                  'When you pressed or challenged, how committed were you?',
+                                  'How often did you win your battles or at least make it difficult?',
+                                  'How much did you enjoy competing and fighting for the ball?'
+                                ];
+                                return (
+                                  <div className="space-y-2">
+                                    {questions.map((question, index) => (
+                                      <div key={index} className="flex justify-between items-start text-xs">
+                                        <span className="flex-1 mr-2">{question}</span>
+                                        <span className="font-medium text-primary">
+                                          {ratings[`question${index + 1}`]}/10
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                );
+                              }
+                              return null;
+                            })()}
                           </div>
                         )}
                       </div>
