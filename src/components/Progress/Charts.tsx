@@ -36,6 +36,14 @@ interface SuperBehaviourStats {
   question_4_avg: number;
 }
 
+interface ActivityRatingStats {
+  workRate: number;
+  confidence: number;
+  mistakes: number;
+  focus: number;
+  performance: number;
+}
+
 // Color mapping for specific activity types
 const ACTIVITY_COLORS: {
   [key: string]: string;
@@ -85,6 +93,7 @@ export default function Charts({
   const [totalMatches, setTotalMatches] = useState(0);
   const [confidenceTrends, setConfidenceTrends] = useState<ConfidenceTrend[]>([]);
   const [superBehaviourStats, setSuperBehaviourStats] = useState<SuperBehaviourStats[]>([]);
+  const [activityRatingStats, setActivityRatingStats] = useState<ActivityRatingStats | null>(null);
   useEffect(() => {
     loadChartData();
   }, [selectedFilter, childId]);
@@ -264,6 +273,34 @@ export default function Charts({
           }
         });
         setConfidenceTrends(confidenceTrendData.reverse());
+
+        // Calculate activity rating averages from post-activity data
+        let workRateSum = 0, confidenceSum = 0, mistakesSum = 0, focusSum = 0, performanceSum = 0;
+        let ratingsCount = 0;
+        
+        filteredActivities.forEach(activity => {
+          if (activity.post_activity_data) {
+            const data = activity.post_activity_data as any;
+            if (data.workRate && data.confidence && data.mistakes && data.focus && data.performance) {
+              workRateSum += data.workRate;
+              confidenceSum += data.confidence;
+              mistakesSum += data.mistakes;
+              focusSum += data.focus;
+              performanceSum += data.performance;
+              ratingsCount++;
+            }
+          }
+        });
+
+        if (ratingsCount > 0) {
+          setActivityRatingStats({
+            workRate: Math.round((workRateSum / ratingsCount) * 10) / 10,
+            confidence: Math.round((confidenceSum / ratingsCount) * 10) / 10,
+            mistakes: Math.round((mistakesSum / ratingsCount) * 10) / 10,
+            focus: Math.round((focusSum / ratingsCount) * 10) / 10,
+            performance: Math.round((performanceSum / ratingsCount) * 10) / 10,
+          });
+        }
       }
 
       // Load Super Behaviour Statistics
@@ -526,7 +563,50 @@ export default function Charts({
               </div>}
           </CardContent>
         </Card>
-      </div>
+        </div>
+
+        {/* Activity Ratings Progress */}
+        {activityRatingStats && (
+          <Card className="shadow-soft mb-6">
+            <CardHeader>
+              <CardTitle className="text-base">📊 Activity Performance Averages</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {[
+                  { key: "workRate", label: "Work Rate", icon: "⚡", value: activityRatingStats.workRate },
+                  { key: "confidence", label: "Confidence", icon: "🧠", value: activityRatingStats.confidence },
+                  { key: "mistakes", label: "Mistakes & Recovery", icon: "🎯", value: activityRatingStats.mistakes },
+                  { key: "focus", label: "Focus", icon: "🎯", value: activityRatingStats.focus },
+                  { key: "performance", label: "Performance", icon: "⚡", value: activityRatingStats.performance },
+                ].map(({ key, label, icon, value }) => (
+                  <div key={key} className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{icon}</span>
+                        <span className="text-sm font-medium">{label}</span>
+                      </div>
+                      <span className="text-sm font-bold text-primary">{value}/10</span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div 
+                        className="h-2 rounded-full bg-primary transition-all duration-500" 
+                        style={{ width: `${(value / 10) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-4 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                <p className="text-xs text-primary font-medium mb-1">📈 Performance Insight</p>
+                <p className="text-xs text-muted-foreground">
+                  These averages show how you rate yourself during activities across key performance areas.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
       {/* Mindset Insights */}
       {worryStats.length > 0 && <Card className="shadow-soft">

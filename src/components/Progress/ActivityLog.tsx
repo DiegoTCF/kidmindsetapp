@@ -548,9 +548,9 @@ export default function ActivityLog({ selectedFilter, childId }: ActivityLogProp
                               return null;
                             })()}
                           </div>
-                        )}
+                         )}
                         
-                        {selectedActivity.post_activity_data.superBehaviours.electric && (
+                         {selectedActivity.post_activity_data.superBehaviours.electric && (
                           <div className="p-4 bg-background rounded-lg border border-border">
                             <div className="text-center mb-3">
                               <p className="text-sm font-medium">⚡ Electric</p>
@@ -633,6 +633,34 @@ export default function ActivityLog({ selectedFilter, childId }: ActivityLogProp
                             })()}
                           </div>
                         )}
+                       </div>
+                     </div>
+                   )}
+
+                  {/* During Activity Ratings */}
+                  {selectedActivity.post_activity_data && (
+                    <div className="space-y-3">
+                      <h5 className="font-medium text-primary">During the Activity Ratings</h5>
+                      <div className="grid grid-cols-1 gap-3">
+                        {[
+                          { key: "workRate", label: "Work rate", icon: "⚡" },
+                          { key: "confidence", label: "Confidence", icon: "🧠" },
+                          { key: "mistakes", label: "Mistakes & recovery", icon: "🎯" },
+                          { key: "focus", label: "Focus", icon: "🎯" },
+                          { key: "performance", label: "Performance", icon: "⚡" },
+                        ].map(({ key, label, icon }) => (
+                          selectedActivity.post_activity_data[key] && (
+                            <div key={key} className="flex items-center justify-between p-3 bg-background rounded-lg border border-border">
+                              <div className="flex items-center gap-2">
+                                <span className="text-lg">{icon}</span>
+                                <span className="text-sm font-medium">{label}</span>
+                              </div>
+                              <span className="text-lg font-bold text-primary">
+                                {selectedActivity.post_activity_data[key]}/10
+                              </span>
+                            </div>
+                          )
+                        ))}
                       </div>
                     </div>
                   )}
