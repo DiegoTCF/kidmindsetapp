@@ -72,7 +72,7 @@ export default function Home() {
   const [showAddTask, setShowAddTask] = useState(false);
 
   // Level up tracking
-  const [previousLevel, setPreviousLevel] = useState<number>(1);
+  const [previousLevel, setPreviousLevel] = useState<number | null>(null);
   const [showLevelUpNotification, setShowLevelUpNotification] = useState(false);
 
   // Load saved data on mount
@@ -128,11 +128,16 @@ export default function Home() {
       };
       
       setPlayerData(prevData => {
-        // Check for level up
-        if (updatedPlayer.level > prevData.level) {
-          setPreviousLevel(prevData.level);
+        // Check for level up only if we have a previous level recorded
+        if (previousLevel !== null && updatedPlayer.level > previousLevel) {
           setShowLevelUpNotification(true);
         }
+        
+        // Set the previous level for future comparisons
+        if (previousLevel === null) {
+          setPreviousLevel(updatedPlayer.level);
+        }
+        
         return updatedPlayer;
       });
       
