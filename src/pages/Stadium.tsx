@@ -63,26 +63,21 @@ export default function Stadium() {
 
   const loadIncompleteActivities = async () => {
     try {
-      const { data: childId, error: childError } = await supabase
-        .rpc('get_current_user_child_id');
+      // For admin users, get activities directly since RPC may not work for them
+      const { data: activities, error: activitiesError } = await supabase
+        .from('activities')
+        .select('*')
+        .eq('pre_activity_completed', true)
+        .eq('post_activity_completed', false)
+        .order('created_at', { ascending: false });
       
-      if (childError) {
-        console.error('Error getting child ID:', childError);
+      if (activitiesError) {
+        console.error('Error loading incomplete activities:', activitiesError);
         return;
       }
       
-      if (childId) {
-        const { data: activities } = await supabase
-          .from('activities')
-          .select('*')
-          .eq('child_id', childId)
-          .eq('pre_activity_completed', true)
-          .eq('post_activity_completed', false)
-          .order('created_at', { ascending: false });
-        
-        if (activities) {
-          setIncompleteActivities(activities);
-        }
+      if (activities) {
+        setIncompleteActivities(activities);
       }
     } catch (error) {
       console.error('Error loading incomplete activities:', error);
