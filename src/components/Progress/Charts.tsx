@@ -358,17 +358,17 @@ export default function Charts({
   };
 
   const generatePsychologicalInsight = () => {
-    if (confidenceTrends.length === 0) return "Ainda sem dados suficientes para insights";
+    if (confidenceTrends.length === 0) return "Complete more activities to see insights about your confidence patterns";
     
     const avgPreConfidence = confidenceTrends.reduce((sum, t) => sum + t.preConfidence, 0) / confidenceTrends.length;
     const avgPostMood = confidenceTrends.reduce((sum, t) => sum + t.postMood, 0) / confidenceTrends.length;
     
     if (avgPostMood > avgPreConfidence) {
-      return "Você se sente mais confiante após as atividades! Continue assim! 🚀";
+      return "You feel more confident after activities! Keep up the great work! 🚀";
     } else if (avgPostMood === avgPreConfidence) {
-      return "Sua confiança se mantém estável durante as atividades. Ótima consistência! 💪";
+      return "Your confidence stays consistent during activities. Great stability! 💪";
     } else {
-      return "Use mais técnicas de visualização antes das atividades para aumentar sua confiança! 🧠";
+      return "Use more visualization techniques before activities to boost your confidence! 🧠";
     }
   };
   return <div className="space-y-6">
@@ -455,10 +455,10 @@ export default function Charts({
         </h3>
         
         <div className="grid grid-cols-1 gap-6 mb-6">
-          {/* Insights */}
+          {/* Confidence Insights */}
           <Card className="shadow-soft">
             <CardHeader>
-              <CardTitle className="text-base">💡 Insights</CardTitle>
+              <CardTitle className="text-base">💡 Confidence Insights</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
