@@ -201,7 +201,10 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
   useEffect(() => {
     loadChildData();
     loadUserGoals();
-  }, []);
+    if (existingActivityId && isResumingActivity) {
+      loadExistingActivityData();
+    }
+  }, [existingActivityId, isResumingActivity]);
 
   const loadChildData = async () => {
     try {
@@ -246,6 +249,70 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
       setUserGoals(goals || []);
     } catch (error) {
       console.error('Error loading user goals:', error);
+    }
+  };
+
+  const loadExistingActivityData = async () => {
+    if (!existingActivityId) return;
+    
+    try {
+      const { data: activity, error } = await supabase
+        .from('activities')
+        .select('*')
+        .eq('id', existingActivityId)
+        .single();
+      
+      if (error) {
+        console.error('Error loading existing activity data:', error);
+        return;
+      }
+      
+      if (activity && activity.pre_activity_data) {
+        const preData = activity.pre_activity_data as any;
+        
+        // Load confidence ratings
+        if (preData.confidenceRatings) {
+          setConfidenceRatings(preData.confidenceRatings);
+        }
+        
+        // Load intention
+        if (preData.intention) {
+          setIntention(preData.intention);
+        }
+        
+        // Load selected goal
+        if (preData.selectedGoal) {
+          setSelectedGoal(preData.selectedGoal);
+        }
+        
+        // Load checklist items
+        if (preData.items) {
+          setPreActivityItems(preData.items);
+        }
+      }
+      
+      // Load match performance data if it exists
+      if (activity.final_score) {
+        setFinalScore(activity.final_score);
+      }
+      if (activity.goals_scored !== null) {
+        setGoalsScored(activity.goals_scored || 0);
+      }
+      if (activity.assists_made !== null) {
+        setAssistsMade(activity.assists_made || 0);
+      }
+      
+      // Load post-activity data if it exists
+      if (activity.post_activity_data) {
+        const postData = activity.post_activity_data as any;
+        setPostActivityData(prevData => ({
+          ...prevData,
+          ...postData
+        }));
+      }
+      
+    } catch (error) {
+      console.error('Error loading existing activity data:', error);
     }
   };
 
