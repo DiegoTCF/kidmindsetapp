@@ -23,6 +23,7 @@ interface ConfidenceTrend {
   date: string;
   preConfidence: number;
   postMood: number;
+  postConfidence?: number;
 }
 
 interface SuperBehaviourStats {
@@ -244,15 +245,21 @@ export default function Charts({
             ) / 4;
             
             let postMood = 0;
+            let postConfidence = undefined;
             if (activity.post_activity_data) {
               const data = activity.post_activity_data as any;
               postMood = data.mood || 0;
+              // Check for confidence in post-activity data
+              if (data.confidence) {
+                postConfidence = data.confidence;
+              }
             }
             
             confidenceTrendData.push({
               date: activity.activity_date,
               preConfidence: Math.round(preConfidence * 10) / 10,
-              postMood: postMood
+              postMood: postMood,
+              postConfidence: postConfidence
             });
           }
         });
@@ -318,6 +325,36 @@ export default function Charts({
       'electric': 'Electric'
     };
     return names[type] || type;
+  };
+
+  const getBehaviourQuestions = (type: string) => {
+    const questions: {[key: string]: string[]} = {
+      'brave_on_ball': [
+        'How confident did you feel with the ball?',
+        'Did you take risks when attacking?', 
+        'How well did you handle pressure?',
+        'Did you stay composed under challenge?'
+      ],
+      'brave_off_ball': [
+        'How well did you support teammates?',
+        'Did you make clever runs?',
+        'How was your positioning?', 
+        'Did you communicate effectively?'
+      ],
+      'aggressive': [
+        'How intense was your play?',
+        'Did you compete for every ball?',
+        'How was your tackling/pressing?',
+        'Did you show determination?'
+      ],
+      'electric': [
+        'How exciting was your play?',
+        'Did you create magic moments?',
+        'How was your flair/creativity?',
+        'Did you entertain and inspire?'
+      ]
+    };
+    return questions[type] || ['Q1', 'Q2', 'Q3', 'Q4'];
   };
 
   const generatePsychologicalInsight = () => {
@@ -417,63 +454,11 @@ export default function Charts({
           🧠 Performance Meets Psychology
         </h3>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* Confidence Trends */}
+        <div className="grid grid-cols-1 gap-6 mb-6">
+          {/* Insights */}
           <Card className="shadow-soft">
             <CardHeader>
-              <CardTitle className="text-base">Confidence Trends (Last 7 days)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {confidenceTrends.length > 0 ? (
-                <ResponsiveContainer width="100%" height={200}>
-                  <LineChart data={confidenceTrends}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="date" 
-                      tickFormatter={formatDate}
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
-                    />
-                    <YAxis 
-                      domain={[0, 10]}
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
-                    />
-                    <Tooltip 
-                      formatter={(value, name) => [
-                        `${value}/10`, 
-                        name === 'preConfidence' ? 'Pre-Activity Confidence' : 'Post-Activity Mood'
-                      ]}
-                      labelFormatter={(label) => formatDate(label)}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="preConfidence" 
-                      stroke="hsl(var(--primary))" 
-                      strokeWidth={2}
-                      dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="postMood" 
-                      stroke="hsl(var(--accent))" 
-                      strokeWidth={2}
-                      dot={{ fill: 'hsl(var(--accent))', strokeWidth: 2, r: 4 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="text-center text-muted-foreground py-8">
-                  Complete more activities with confidence ratings to see trends
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Psychological Insight */}
-          <Card className="shadow-soft">
-            <CardHeader>
-              <CardTitle className="text-base">💡 Psychological Insight</CardTitle>
+              <CardTitle className="text-base">💡 Insights</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -484,12 +469,20 @@ export default function Charts({
                 </div>
                 
                 {confidenceTrends.length > 0 && (
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-4">
                     <div className="text-center">
                       <p className="text-lg font-bold text-primary">
                         {(confidenceTrends.reduce((sum, t) => sum + t.preConfidence, 0) / confidenceTrends.length).toFixed(1)}/10
                       </p>
                       <p className="text-xs text-muted-foreground">Avg Pre-Confidence</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-warning">
+                        {confidenceTrends.some(t => t.postConfidence) ? 
+                          (confidenceTrends.filter(t => t.postConfidence).reduce((sum, t) => sum + (t.postConfidence || 0), 0) / 
+                           confidenceTrends.filter(t => t.postConfidence).length).toFixed(1) : '0.0'}/10
+                      </p>
+                      <p className="text-xs text-muted-foreground">Avg During-Activity Confidence</p>
                     </div>
                     <div className="text-center">
                       <p className="text-lg font-bold text-accent">
@@ -521,22 +514,19 @@ export default function Charts({
                     </div>
                     
                     <div className="space-y-1">
-                      <div className="flex justify-between text-xs">
-                        <span>Q1:</span>
-                        <span className="font-medium">{behaviour.question_1_avg}/10</span>
-                      </div>
-                      <div className="flex justify-between text-xs">
-                        <span>Q2:</span>
-                        <span className="font-medium">{behaviour.question_2_avg}/10</span>
-                      </div>
-                      <div className="flex justify-between text-xs">
-                        <span>Q3:</span>
-                        <span className="font-medium">{behaviour.question_3_avg}/10</span>
-                      </div>
-                      <div className="flex justify-between text-xs">
-                        <span>Q4:</span>
-                        <span className="font-medium">{behaviour.question_4_avg}/10</span>
-                      </div>
+                      {getBehaviourQuestions(behaviour.behaviour_type).map((question, qIndex) => (
+                        <div key={qIndex} className="flex justify-between text-xs">
+                          <span className="truncate mr-2" title={question}>
+                            {question.length > 25 ? question.substring(0, 25) + '...' : question}
+                          </span>
+                          <span className="font-medium">
+                            {qIndex === 0 && `${behaviour.question_1_avg}/10`}
+                            {qIndex === 1 && `${behaviour.question_2_avg}/10`}
+                            {qIndex === 2 && `${behaviour.question_3_avg}/10`}
+                            {qIndex === 3 && `${behaviour.question_4_avg}/10`}
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))}
