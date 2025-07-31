@@ -60,7 +60,7 @@ export default function PersonalStats() {
 
       const childId = childIdResult;
       
-      // Calculate Monday of current week for display purposes
+      // Calculate Monday of current week
       const today = new Date();
       const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
       const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // If Sunday, go back 6 days to Monday
@@ -68,20 +68,18 @@ export default function PersonalStats() {
       mondayOfThisWeek.setDate(today.getDate() - daysToMonday);
       mondayOfThisWeek.setHours(0, 0, 0, 0);
       
-      // Get data from past 7 days (including weekend)
-      const sevenDaysAgo = new Date(today);
-      sevenDaysAgo.setDate(today.getDate() - 6); // 7 days including today
-      sevenDaysAgo.setHours(0, 0, 0, 0);
-      const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
+      const mondayStr = mondayOfThisWeek.toISOString().split('T')[0];
+      const todayStr = today.toISOString().split('T')[0];
 
-      // 1. Load Average Daily Mood (Weekly)
-      console.log('[ProgressStats] Loading weekly mood average from:', sevenDaysAgoStr);
+      // 1. Load Average Daily Mood (Monday through today only)
+      console.log('[ProgressStats] Loading weekly mood average from Monday:', mondayStr, 'to today:', todayStr);
       const { data: moodEntries, error: moodError } = await supabase
         .from('progress_entries')
         .select('entry_value, entry_date')
         .eq('child_id', childId)
         .eq('entry_type', 'mood')
-        .gte('entry_date', sevenDaysAgoStr)
+        .gte('entry_date', mondayStr)
+        .lte('entry_date', todayStr)
         .order('entry_date', { ascending: false });
 
       if (moodError) {
@@ -91,12 +89,12 @@ export default function PersonalStats() {
       let weeklyMoodAvg = 0;
       const moodDetails: MoodDetail[] = [];
       if (moodEntries && moodEntries.length > 0) {
-        // Get unique dates (latest mood per day) from past 7 days
+        // Get unique dates (latest mood per day) from Monday through today only
         const uniqueDailyMoods = moodEntries.reduce((acc, entry) => {
           const date = entry.entry_date;
           const entryDate = new Date(date);
-          // Include all entries from past 7 days
-          if (entryDate >= sevenDaysAgo && !acc[date]) {
+          // Only include entries from Monday through today
+          if (entryDate >= mondayOfThisWeek && entryDate <= today && !acc[date]) {
             acc[date] = entry.entry_value as number;
           }
           return acc;
