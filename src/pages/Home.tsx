@@ -163,6 +163,89 @@ export default function Home() {
     }
   };
 
+  // Function to calculate consecutive day streaks for each task
+  const calculateTaskStreaks = async (childId: string, tasks: DailyTask[]): Promise<DailyTask[]> => {
+    try {
+      console.log('[KidMindset] Calculating task streaks...');
+      
+      // Get task completion history for the last 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const { data: taskHistory, error: historyError } = await supabase
+        .from('progress_entries')
+        .select('entry_value, entry_date')
+        .eq('child_id', childId)
+        .eq('entry_type', 'task')
+        .gte('entry_date', thirtyDaysAgo.toISOString().split('T')[0])
+        .order('entry_date', { ascending: false });
+      
+      if (historyError) {
+        console.error('[KidMindset] Error fetching task history:', historyError);
+        return tasks;
+      }
+      
+      if (!taskHistory || taskHistory.length === 0) {
+        console.log('[KidMindset] No task history found');
+        return tasks;
+      }
+      
+      // Calculate streaks for each task
+      const tasksWithStreaks = tasks.map(task => {
+        // Get completion history for this specific task
+        const taskCompletions = taskHistory
+          .filter(entry => 
+            entry.entry_value && 
+            typeof entry.entry_value === 'object' &&
+            'task_id' in entry.entry_value &&
+            entry.entry_value.task_id === task.id &&
+            'completed' in entry.entry_value &&
+            entry.entry_value.completed === true
+          )
+          .map(entry => entry.entry_date)
+          .sort((a, b) => new Date(b).getTime() - new Date(a).getTime()); // Sort most recent first
+        
+        if (taskCompletions.length === 0) {
+          return { ...task, streak: 0 };
+        }
+        
+        // Calculate consecutive days from today backwards
+        let streak = 0;
+        const today = new Date();
+        let currentDate = new Date(today);
+        
+        // Check if today is completed
+        const todayString = today.toISOString().split('T')[0];
+        if (taskCompletions.includes(todayString)) {
+          streak = 1;
+          currentDate.setDate(currentDate.getDate() - 1);
+        } else {
+          // If not completed today, streak is 0
+          return { ...task, streak: 0 };
+        }
+        
+        // Continue checking backwards for consecutive days
+        while (true) {
+          const dateString = currentDate.toISOString().split('T')[0];
+          if (taskCompletions.includes(dateString)) {
+            streak++;
+            currentDate.setDate(currentDate.getDate() - 1);
+          } else {
+            break;
+          }
+        }
+        
+        console.log(`[KidMindset] Task ${task.name} streak: ${streak} days`);
+        return { ...task, streak };
+      });
+      
+      return tasksWithStreaks;
+    } catch (error) {
+      console.error('[KidMindset] Error calculating task streaks:', error);
+      return tasks;
+    }
+  };
+
   const loadDailyTasks = async () => {
     try {
       console.log('[KidMindset] Loading daily tasks from Supabase...');
@@ -270,6 +353,9 @@ export default function Home() {
             return task;
           });
         }
+        
+        // Calculate actual streaks for each task based on history
+        tasksToUse = await calculateTaskStreaks(childIdResult, tasksToUse);
       }
 
       // Now check if there's saved completion state for today in localStorage as backup
@@ -283,12 +369,12 @@ export default function Home() {
         const mergedTasks = tasksToUse.map(task => {
           const savedTask = savedTasksData.find(saved => saved.id === task.id);
           if (savedTask) {
-            // Keep the completion state and streak from saved data
+            // Keep the completion state from saved data but prioritize streak from database calculation
             return {
               ...task,
               completed: task.completed || savedTask.completed, // Prioritize Supabase data
               notDone: task.notDone || savedTask.notDone,      // Prioritize Supabase data
-              streak: savedTask.streak
+              // Use the database-calculated streak, not localStorage
             };
           }
           return task;
@@ -596,9 +682,10 @@ export default function Home() {
   const handleTaskComplete = async (taskId: string) => {
     const today = new Date().toDateString();
     
+    // Optimistically update UI (streak will be recalculated from database)
     const updatedTasks = dailyTasks.map(task => {
       if (task.id === taskId) {
-        return { ...task, completed: true, notDone: false, streak: task.streak + 1 };
+        return { ...task, completed: true, notDone: false };
       }
       return task;
     });
@@ -606,7 +693,7 @@ export default function Home() {
     setDailyTasks(updatedTasks);
     localStorage.setItem(`kidmindset_tasks_${today}`, JSON.stringify(updatedTasks));
     
-    // Save task completion to Supabase and then reload player data
+    // Save task completion to Supabase and then reload tasks with updated streaks
     try {
       await saveTaskToSupabase(taskId, true);
       
@@ -615,10 +702,10 @@ export default function Home() {
         description: "Great job staying consistent!",
       });
       
-      // Reload player data to get updated points and level from Supabase
-      // Wait a bit longer to ensure the trigger has processed
+      // Reload tasks and player data to get updated streaks and points
       setTimeout(async () => {
         await loadPlayerData();
+        await loadDailyTasks(); // Reload to recalculate streaks
       }, 1500);
       
     } catch (error) {
@@ -659,9 +746,10 @@ export default function Home() {
   const handleTaskReset = async (taskId: string) => {
     const today = new Date().toDateString();
     
+    // Optimistically update UI
     const updatedTasks = dailyTasks.map(task => {
       if (task.id === taskId) {
-        return { ...task, completed: false, notDone: false, streak: task.completed ? Math.max(0, task.streak - 1) : task.streak };
+        return { ...task, completed: false, notDone: false };
       }
       return task;
     });
@@ -682,9 +770,10 @@ export default function Home() {
           description: "10 points removed. Make your choice again!",
         });
         
-        // Reload player data to get updated points from Supabase
+        // Reload tasks and player data to get updated streaks and points
         setTimeout(async () => {
           await loadPlayerData();
+          await loadDailyTasks(); // Reload to recalculate streaks
         }, 1500);
         
       } catch (error) {
