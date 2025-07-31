@@ -63,16 +63,19 @@ export default function Stadium() {
 
   const loadIncompleteActivities = async () => {
     try {
-      const { data: children } = await supabase
-        .from('children')
-        .select('id')
-        .limit(1);
+      const { data: childId, error: childError } = await supabase
+        .rpc('get_current_user_child_id');
       
-      if (children && children.length > 0) {
+      if (childError) {
+        console.error('Error getting child ID:', childError);
+        return;
+      }
+      
+      if (childId) {
         const { data: activities } = await supabase
           .from('activities')
           .select('*')
-          .eq('child_id', children[0].id)
+          .eq('child_id', childId)
           .eq('pre_activity_completed', true)
           .eq('post_activity_completed', false)
           .order('created_at', { ascending: false });
