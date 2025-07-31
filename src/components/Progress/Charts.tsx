@@ -450,9 +450,6 @@ export default function Charts({
 
       {/* Performance Meets Psychology Section */}
       <div className="border-t pt-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-          🧠 Performance Meets Psychology
-        </h3>
         
         <div className="grid grid-cols-1 gap-6 mb-6">
           {/* Confidence Insights */}
