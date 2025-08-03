@@ -104,72 +104,88 @@ export default function Admin() {
         return;
       }
 
-      // Get profiles with auth users data via RPC - RLS will enforce admin-only access
-      const { data: profilesData, error: profilesError } = await supabase
+      // Get all auth users first, then supplement with profile/parent data
+      const { data: authUsersData, error: authError } = await supabase
+        .from('profiles')
+        .select('user_id, email, created_at');
+
+      if (authError && authError.code === 'PGRST001') {
+        console.error('[AdminPanel] RLS violation - access denied:', authError);
+        toast({
+          title: 'Access Denied',
+          description: 'Insufficient permissions to view user data.',
+          variant: 'destructive'
+        });
+        window.location.href = '/grown-up';
+        return;
+      }
+
+      // Get ALL auth users using a custom query that admins can access
+      const { data: allUsersData, error: allUsersError } = await supabase.rpc('test_admin_access');
+
+      if (allUsersError) {
+        console.error('[AdminPanel] Failed to get users:', allUsersError);
+        toast({
+          title: 'Error',
+          description: 'Failed to load user data.',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      // If that doesn't work, fall back to using auth metadata
+      let allUsers = [];
+      
+      // Get profiles
+      const { data: profilesData } = await supabase
         .from('profiles')
         .select('*');
 
-      if (profilesError) {
-        if (profilesError.code === 'PGRST001') {
-          console.error('[AdminPanel] RLS violation - access denied:', profilesError);
-          toast({
-            title: 'Access Denied',
-            description: 'Insufficient permissions to view profiles.',
-            variant: 'destructive'
-          });
-          window.location.href = '/grown-up';
-          return;
-        }
-        throw profilesError;
-      }
-
-      // Get parents data - RLS will enforce admin-only access
-      const { data: parentsData, error: parentsError } = await supabase
+      // Get parents data
+      const { data: parentsData } = await supabase
         .from('parents')
         .select('*');
 
-      if (parentsError) {
-        if (parentsError.code === 'PGRST001') {
-          console.error('[AdminPanel] RLS violation - access denied:', parentsError);
-          toast({
-            title: 'Access Denied',
-            description: 'Insufficient permissions to view parent data.',
-            variant: 'destructive'
-          });
-          window.location.href = '/grown-up';
-          return;
-        }
-        throw parentsError;
-      }
-
-      // Get user roles - RLS will enforce admin-only access
-      const { data: rolesData, error: rolesError } = await supabase
+      // Get user roles
+      const { data: rolesData } = await supabase
         .from('user_roles')
         .select('*');
 
-      if (rolesError) {
-        if (rolesError.code === 'PGRST001') {
-          console.error('[AdminPanel] RLS violation - access denied:', rolesError);
-          toast({
-            title: 'Access Denied',
-            description: 'Insufficient permissions to view user roles.',
-            variant: 'destructive'
-          });
-          window.location.href = '/grown-up';
-          return;
-        }
-        throw rolesError;
+      // For admin users, we need a way to see ALL users
+      // We'll create a custom RPC function that returns user data
+      const { data: completeUserData, error: userDataError } = await supabase.rpc('admin_get_all_users');
+
+      if (userDataError) {
+        // Fallback to profile-based data if RPC fails
+        console.warn('Failed to get complete user data, falling back to profiles only:', userDataError);
+        
+        const combinedUsers = (profilesData || []).map(profile => {
+          const parent = parentsData?.find(p => p.user_id === profile.user_id);
+          const role = rolesData?.find(r => r.user_id === profile.user_id);
+          
+          return {
+            id: profile.user_id,
+            email: profile.email,
+            created_at: profile.created_at,
+            name: parent?.name,
+            phone: parent?.phone,
+            role: role?.role || 'user'
+          };
+        });
+        
+        setUsers(combinedUsers);
+        return;
       }
 
-      // Combine the data
-      const combinedUsers = profilesData.map(profile => {
-        const parent = parentsData.find(p => p.user_id === profile.user_id);
-        const role = rolesData.find(r => r.user_id === profile.user_id);
+      // Use the complete user data from RPC
+      const combinedUsers = (completeUserData || []).map(user => {
+        const parent = parentsData?.find(p => p.user_id === user.id);
+        const role = rolesData?.find(r => r.user_id === user.id);
         
         return {
-          id: profile.user_id,
-          email: profile.email,
-          created_at: profile.created_at,
+          id: user.id,
+          email: user.email,
+          created_at: user.created_at,
           name: parent?.name,
           phone: parent?.phone,
           role: role?.role || 'user'
