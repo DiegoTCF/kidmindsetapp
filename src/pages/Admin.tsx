@@ -104,62 +104,29 @@ export default function Admin() {
         return;
       }
 
-      // Get all auth users first, then supplement with profile/parent data
-      const { data: authUsersData, error: authError } = await supabase
-        .from('profiles')
-        .select('user_id, email, created_at');
-
-      if (authError && authError.code === 'PGRST001') {
-        console.error('[AdminPanel] RLS violation - access denied:', authError);
-        toast({
-          title: 'Access Denied',
-          description: 'Insufficient permissions to view user data.',
-          variant: 'destructive'
-        });
-        window.location.href = '/grown-up';
-        return;
-      }
-
-      // Get ALL auth users using a custom query that admins can access
-      const { data: allUsersData, error: allUsersError } = await supabase.rpc('test_admin_access');
+      // Get ALL users including those without profiles
+      // This will show users who signed up but haven't completed profile setup
+      const { data: allUsersData, error: allUsersError } = await supabase.rpc('admin_get_all_users');
 
       if (allUsersError) {
-        console.error('[AdminPanel] Failed to get users:', allUsersError);
-        toast({
-          title: 'Error',
-          description: 'Failed to load user data.',
-          variant: 'destructive'
-        });
-        return;
-      }
-
-      // If that doesn't work, fall back to using auth metadata
-      let allUsers = [];
-      
-      // Get profiles
-      const { data: profilesData } = await supabase
-        .from('profiles')
-        .select('*');
-
-      // Get parents data
-      const { data: parentsData } = await supabase
-        .from('parents')
-        .select('*');
-
-      // Get user roles
-      const { data: rolesData } = await supabase
-        .from('user_roles')
-        .select('*');
-
-      // For admin users, we need a way to see ALL users
-      // We'll create a custom RPC function that returns user data
-      const { data: completeUserData, error: userDataError } = await supabase.rpc('admin_get_all_users');
-
-      if (userDataError) {
-        // Fallback to profile-based data if RPC fails
-        console.warn('Failed to get complete user data, falling back to profiles only:', userDataError);
+        console.error('[AdminPanel] Failed to get all users:', allUsersError);
+        // Fall back to profiles-only view
+        const { data: profilesData } = await supabase.from('profiles').select('*');
         
-        const combinedUsers = (profilesData || []).map(profile => {
+        if (!profilesData) {
+          toast({
+            title: 'Error',
+            description: 'Failed to load user data.',
+            variant: 'destructive'
+          });
+          return;
+        }
+        
+        // Continue with profiles only
+        const { data: parentsData } = await supabase.from('parents').select('*');
+        const { data: rolesData } = await supabase.from('user_roles').select('*');
+        
+        const combinedUsers = profilesData.map(profile => {
           const parent = parentsData?.find(p => p.user_id === profile.user_id);
           const role = rolesData?.find(r => r.user_id === profile.user_id);
           
@@ -177,10 +144,18 @@ export default function Admin() {
         return;
       }
 
-      // Use the complete user data from RPC
-      const combinedUsers = (completeUserData || []).map(user => {
+      // Get supplementary data for all users
+      const { data: parentsData } = await supabase.from('parents').select('*');
+      const { data: rolesData } = await supabase.from('user_roles').select('*');
+      const { data: profilesData } = await supabase.from('profiles').select('*');
+
+      // Process all users data
+      const usersArray = Array.isArray(allUsersData) ? allUsersData : [];
+      
+      const combinedUsers = usersArray.map((user: any) => {
         const parent = parentsData?.find(p => p.user_id === user.id);
         const role = rolesData?.find(r => r.user_id === user.id);
+        const profile = profilesData?.find(p => p.user_id === user.id);
         
         return {
           id: user.id,
@@ -188,7 +163,8 @@ export default function Admin() {
           created_at: user.created_at,
           name: parent?.name,
           phone: parent?.phone,
-          role: role?.role || 'user'
+          role: role?.role || 'user',
+          has_profile: !!profile
         };
       });
 

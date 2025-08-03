@@ -564,6 +564,14 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: Json
       }
+      admin_get_all_users: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          email: string
+          created_at: string
+        }[]
+      }
       auth_or_anon: {
         Args: Record<PropertyKey, never>
         Returns: boolean
