@@ -391,7 +391,7 @@ export default function SessionNotes({ child }: SessionNotesProps) {
               {/* Thinking Skills Section */}
               <div className="space-y-4 border-t pt-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold font-canard text-purple">Beating your Mind</h3>
+                  <h3 className="text-2xl font-bold font-canard gradient-text">Beating your Mind</h3>
                   <Button
                     type="button"
                     variant="outline"
