@@ -560,7 +560,11 @@ const Auth = () => {
       <Card className="w-full max-w-md">
         <CardHeader>
           <Link to="/" className="flex justify-center mb-4">
-            <div className="text-2xl font-bold text-primary">🧠 KidMindset</div>
+            <img 
+              src="/lovable-uploads/7875a8b0-c49e-43fa-8f7e-5165582b29da.png" 
+              alt="Logo" 
+              className="h-16 w-auto"
+            />
           </Link>
           <CardTitle className="text-center">Welcome Back</CardTitle>
           <CardDescription className="text-center">
