@@ -563,7 +563,7 @@ const Auth = () => {
             <img 
               src="/lovable-uploads/7875a8b0-c49e-43fa-8f7e-5165582b29da.png" 
               alt="Logo" 
-              className="h-24 w-auto"
+              className="h-48 w-auto"
             />
           </Link>
           <CardTitle className="text-center">Welcome Back</CardTitle>
