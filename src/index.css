@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Canard&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -10,64 +10,83 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
+    /* Football Mindset App Theme - Dark Stadium Background */
+    --background: 0 0% 8%;
+    --foreground: 0 0% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 340 100% 50%;
+    /* Neon Pink - Primary Actions & Headings */
+    --primary: 330 100% 52%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 9%;
+    /* Card Surfaces */
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 90%;
 
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 65%;
 
-    --accent: 340 100% 50%;
+    --accent: 330 100% 52%;
     --accent-foreground: 0 0% 100%;
 
-    /* Kid-friendly theme colors */
-    --success: 145 60% 50%;
-    --success-foreground: 0 0% 100%;
+    /* Football Mindset Color System */
+    --neon-pink: 330 100% 52%;          /* #FF008C - Headings, Main Buttons */
+    --bright-blue: 195 100% 50%;        /* #00C4FF - Mindset Tools, Highlights */
+    --electric-yellow: 54 100% 50%;     /* #FFE600 - ANTs, Thinking, Impact Phrases */
+    --deep-green: 150 100% 50%;         /* #00FF80 - Progress, Super Behaviours */
+    --danger-red: 1 86% 59%;            /* #FF3B30 - Errors, Challenges */
     
-    --warning: 35 85% 60%;
-    --warning-foreground: 0 0% 100%;
+    --success: 150 100% 50%;
+    --success-foreground: 0 0% 0%;
     
-    --achievement: 280 65% 65%;
+    --warning: 54 100% 50%;
+    --warning-foreground: 0 0% 0%;
+    
+    --achievement: 330 100% 52%;
     --achievement-foreground: 0 0% 100%;
     
-    --level-bg: 210 85% 95%;
-    --level-foreground: 210 85% 30%;
+    --level-bg: 195 100% 50%;
+    --level-foreground: 0 0% 0%;
     
     --purple: 280 80% 60%;
     --purple-foreground: 0 0% 100%;
     
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(340, 100%, 50%), hsl(340, 100%, 60%));
-    --gradient-success: linear-gradient(135deg, hsl(145, 60%, 50%), hsl(160, 60%, 55%));
-    --gradient-achievement: linear-gradient(135deg, hsl(340, 100%, 50%), hsl(340, 100%, 60%));
+    /* Stadium-Inspired Gradients */
+    --gradient-stadium: linear-gradient(135deg, hsl(0, 0%, 5%) 0%, hsl(0, 0%, 15%) 100%);
+    --gradient-neon-pink: linear-gradient(135deg, hsl(330, 100%, 52%) 0%, hsl(340, 100%, 60%) 100%);
+    --gradient-bright-blue: linear-gradient(135deg, hsl(195, 100%, 50%) 0%, hsl(205, 100%, 60%) 100%);
+    --gradient-electric-yellow: linear-gradient(135deg, hsl(54, 100%, 50%) 0%, hsl(60, 100%, 60%) 100%);
+    --gradient-deep-green: linear-gradient(135deg, hsl(150, 100%, 50%) 0%, hsl(160, 100%, 60%) 100%);
+    --gradient-primary: var(--gradient-neon-pink);
+    --gradient-success: var(--gradient-deep-green);
+    --gradient-achievement: var(--gradient-neon-pink);
     
-    /* Shadows */
-    --shadow-soft: 0 2px 10px hsl(340, 100%, 50% / 0.1);
-    --shadow-achievement: 0 4px 20px hsl(340, 100%, 50% / 0.3);
+    /* Stadium Lighting Shadows */
+    --shadow-neon: 0 0 20px hsl(330, 100%, 52% / 0.3);
+    --shadow-blue: 0 0 20px hsl(195, 100%, 50% / 0.3);
+    --shadow-green: 0 0 20px hsl(150, 100%, 50% / 0.3);
+    --shadow-yellow: 0 0 20px hsl(54, 100%, 50% / 0.3);
+    --shadow-soft: 0 4px 20px hsl(0, 0%, 0% / 0.3);
+    --shadow-achievement: 0 4px 30px hsl(330, 100%, 52% / 0.4);
     
-    /* Animations */
+    /* Smooth Athletic Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-elastic: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 1 86% 59%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 340 100% 50%;
+    --border: 0 0% 20%;
+    --input: 0 0% 18%;
+    --ring: 330 100% 52%;
 
-    --radius: 0.5rem;
+    --radius: 1rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -131,6 +150,53 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-inter;
+    background-image: 
+      radial-gradient(circle at 20% 80%, hsl(330, 100%, 52% / 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, hsl(195, 100%, 50% / 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, hsl(0, 0%, 0% / 0.8) 0%, transparent 50%);
+  }
+  
+  /* Football Mindset Typography */
+  .title-stadium {
+    @apply font-bebas text-5xl md:text-7xl uppercase tracking-wider;
+    background: var(--gradient-neon-pink);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 30px hsl(330, 100%, 52% / 0.3);
+  }
+  
+  .heading-coach {
+    @apply font-bebas text-2xl md:text-4xl uppercase tracking-wide;
+    background: var(--gradient-bright-blue);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .text-impact {
+    @apply font-inter font-black text-lg md:text-xl uppercase;
+    color: hsl(var(--electric-yellow));
+    text-shadow: 0 0 15px hsl(54, 100%, 50% / 0.5);
+  }
+  
+  /* Stadium Card Effects */
+  .card-stadium {
+    @apply bg-card/80 backdrop-blur-sm border border-white/10 rounded-2xl p-6;
+    background-image: linear-gradient(135deg, hsl(0, 0%, 12% / 0.8) 0%, hsl(0, 0%, 8% / 0.9) 100%);
+    box-shadow: var(--shadow-soft), inset 0 1px 0 hsl(0, 0%, 100% / 0.1);
+  }
+  
+  .card-glow-pink {
+    box-shadow: var(--shadow-soft), 0 0 0 1px hsl(330, 100%, 52% / 0.2), var(--shadow-neon);
+  }
+  
+  .card-glow-blue {
+    box-shadow: var(--shadow-soft), 0 0 0 1px hsl(195, 100%, 50% / 0.2), var(--shadow-blue);
+  }
+  
+  .card-glow-green {
+    box-shadow: var(--shadow-soft), 0 0 0 1px hsl(150, 100%, 50% / 0.2), var(--shadow-green);
   }
 }
