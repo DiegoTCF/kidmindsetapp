@@ -55,13 +55,7 @@ export const ProcessedAvatar: React.FC<ProcessedAvatarProps> = ({
         backgroundImage: 'url(/lovable-uploads/ab97cd74-12bb-45a8-82f9-cbe90ce67c5e.png)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-      }}>
-        {fallbackIcon && !processedImageUrl && (
-          <div className="w-full h-full flex items-center justify-center">
-            {fallbackIcon}
-          </div>
-        )}
-      </div>
+      }} />
     );
   }
 

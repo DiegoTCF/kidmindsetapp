@@ -54,8 +54,7 @@ export const LevelProgressCard: React.FC<LevelProgressCardProps> = ({
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <ProcessedAvatar 
-              className={`w-12 h-12 rounded-full shadow-lg border-2 border-gradient-to-r ${getLevelColor(currentLevel)}`}
-              fallbackIcon={getLevelIcon(currentLevel)}
+              className="w-16 h-16 rounded-full shadow-lg"
             />
             <div>
               <h3 className="text-lg font-bold text-foreground">{playerName}</h3>
