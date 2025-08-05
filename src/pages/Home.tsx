@@ -1163,6 +1163,53 @@ export default function Home() {
             )}
           </CardContent>
         </Card>
+
+        {/* MINDSET TOOLS Section */}
+        <Card className="card-stadium">
+          <CardHeader>
+            <CardTitle className="heading-coach text-center">
+              MINDSET TOOLS
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card 
+                className="card-stadium card-glow-blue hover:card-glow-blue cursor-pointer"
+                onClick={() => window.location.href = '/breathing'}
+              >
+                <CardContent className="p-4 text-center">
+                  <CustomIcon type="home" size="lg" className="mx-auto mb-2" />
+                  <h3 className="font-bebas text-sm uppercase tracking-wide mb-1">BREATHING</h3>
+                  <p className="text-xs text-muted-foreground">4-4-4 Technique</p>
+                </CardContent>
+              </Card>
+
+              <Card className="card-stadium card-glow-yellow hover:card-glow-yellow cursor-pointer">
+                <CardContent className="p-4 text-center">
+                  <CustomIcon type="goals" size="lg" className="mx-auto mb-2" />
+                  <h3 className="font-bebas text-sm uppercase tracking-wide mb-1">VISUALIZATION</h3>
+                  <p className="text-xs text-muted-foreground">Mental Rehearsal</p>
+                </CardContent>
+              </Card>
+
+              <Card className="card-stadium card-glow-pink hover:card-glow-pink cursor-pointer">
+                <CardContent className="p-4 text-center">
+                  <CustomIcon type="stadium" size="lg" className="mx-auto mb-2" />
+                  <h3 className="font-bebas text-sm uppercase tracking-wide mb-1">SELF-TALK</h3>
+                  <p className="text-xs text-muted-foreground">Positive Commands</p>
+                </CardContent>
+              </Card>
+
+              <Card className="card-stadium card-glow-green hover:card-glow-green cursor-pointer">
+                <CardContent className="p-4 text-center">
+                  <CustomIcon type="progress" size="lg" className="mx-auto mb-2" />
+                  <h3 className="font-bebas text-sm uppercase tracking-wide mb-1">TEAM FOCUS</h3>
+                  <p className="text-xs text-muted-foreground">Leadership Skills</p>
+                </CardContent>
+              </Card>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Level Up Notification */}
