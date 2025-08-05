@@ -193,6 +193,51 @@ export type Database = {
           },
         ]
       }
+      course_content: {
+        Row: {
+          bucket_name: string
+          category: string | null
+          created_at: string
+          description: string | null
+          file_path: string
+          file_size: number | null
+          file_type: string
+          id: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bucket_name: string
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          file_path: string
+          file_size?: number | null
+          file_type: string
+          id?: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bucket_name?: string
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          file_path?: string
+          file_size?: number | null
+          file_type?: string
+          id?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_tasks: {
         Row: {
           active: boolean
