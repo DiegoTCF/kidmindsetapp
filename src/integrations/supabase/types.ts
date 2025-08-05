@@ -301,6 +301,48 @@ export type Database = {
         }
         Relationships: []
       }
+      player_identity: {
+        Row: {
+          core_values: string[] | null
+          created_at: string
+          id: string
+          interests_hobbies: string | null
+          life_goals: string | null
+          personality_traits: string[] | null
+          playing_characteristics: string | null
+          playing_style: string | null
+          primary_position: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          core_values?: string[] | null
+          created_at?: string
+          id?: string
+          interests_hobbies?: string | null
+          life_goals?: string | null
+          personality_traits?: string[] | null
+          playing_characteristics?: string | null
+          playing_style?: string | null
+          primary_position?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          core_values?: string[] | null
+          created_at?: string
+          id?: string
+          interests_hobbies?: string | null
+          life_goals?: string | null
+          personality_traits?: string[] | null
+          playing_characteristics?: string | null
+          playing_style?: string | null
+          primary_position?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
