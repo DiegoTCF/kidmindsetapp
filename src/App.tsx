@@ -14,6 +14,7 @@ import GrownUpZone from "./pages/GrownUpZone";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import Breathing from "./pages/Breathing";
+import MindsetHub from "./pages/MindsetHub";
 import Auth from "./pages/Auth";
 import { useAuth } from "./hooks/useAuth";
 import { AdminProvider } from "./hooks/useAdmin";
@@ -94,6 +95,15 @@ const App = () => {
                 <ProtectedRoute>
                   <AppLayout hideNavigation>
                     <Breathing />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Mindset Hub - no navigation */}
+              <Route path="/mindset-hub" element={
+                <ProtectedRoute>
+                  <AppLayout hideNavigation>
+                    <MindsetHub />
                   </AppLayout>
                 </ProtectedRoute>
               } />

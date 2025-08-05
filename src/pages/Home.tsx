@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Plus, Star, Trophy, Edit2, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -1164,49 +1164,71 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* MINDSET TOOLS Section */}
+        {/* Mindset Hub Section */}
         <Card className="card-stadium">
           <CardHeader>
             <CardTitle className="heading-coach text-center">
-              MINDSET TOOLS
+              MINDSET HUB
             </CardTitle>
+            <CardDescription className="text-center text-muted-foreground">
+              Tools to strengthen your mental game
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <Card 
-                className="card-stadium card-glow-blue hover:card-glow-blue cursor-pointer"
-                onClick={() => window.location.href = '/breathing'}
+                className="card-stadium card-glow-blue hover:card-glow-blue cursor-pointer transition-all duration-300 hover:scale-105"
+                onClick={() => window.location.href = '/mindset-hub'}
               >
                 <CardContent className="p-4 text-center">
                   <CustomIcon type="home" size="lg" className="mx-auto mb-2" />
-                  <h3 className="font-bebas text-sm uppercase tracking-wide mb-1">BREATHING</h3>
+                  <h3 className="font-bebas text-xs uppercase tracking-wide mb-1">BREATHING</h3>
                   <p className="text-xs text-muted-foreground">4-4-4 Technique</p>
                 </CardContent>
               </Card>
 
-              <Card className="card-stadium card-glow-yellow hover:card-glow-yellow cursor-pointer">
+              <Card 
+                className="card-stadium card-glow-yellow hover:card-glow-yellow cursor-pointer transition-all duration-300 hover:scale-105"
+                onClick={() => window.location.href = '/mindset-hub'}
+              >
                 <CardContent className="p-4 text-center">
                   <CustomIcon type="goals" size="lg" className="mx-auto mb-2" />
-                  <h3 className="font-bebas text-sm uppercase tracking-wide mb-1">VISUALIZATION</h3>
+                  <h3 className="font-bebas text-xs uppercase tracking-wide mb-1">VISUALIZATION</h3>
                   <p className="text-xs text-muted-foreground">Mental Rehearsal</p>
                 </CardContent>
               </Card>
 
-              <Card className="card-stadium card-glow-pink hover:card-glow-pink cursor-pointer">
+              <Card 
+                className="card-stadium card-glow-pink hover:card-glow-pink cursor-pointer transition-all duration-300 hover:scale-105"
+                onClick={() => window.location.href = '/mindset-hub'}
+              >
                 <CardContent className="p-4 text-center">
                   <CustomIcon type="stadium" size="lg" className="mx-auto mb-2" />
-                  <h3 className="font-bebas text-sm uppercase tracking-wide mb-1">SELF-TALK</h3>
+                  <h3 className="font-bebas text-xs uppercase tracking-wide mb-1">SELF-TALK</h3>
                   <p className="text-xs text-muted-foreground">Positive Commands</p>
                 </CardContent>
               </Card>
 
-              <Card className="card-stadium card-glow-green hover:card-glow-green cursor-pointer">
+              <Card 
+                className="card-stadium card-glow-green hover:card-glow-green cursor-pointer transition-all duration-300 hover:scale-105"
+                onClick={() => window.location.href = '/mindset-hub'}
+              >
                 <CardContent className="p-4 text-center">
                   <CustomIcon type="progress" size="lg" className="mx-auto mb-2" />
-                  <h3 className="font-bebas text-sm uppercase tracking-wide mb-1">TEAM FOCUS</h3>
+                  <h3 className="font-bebas text-xs uppercase tracking-wide mb-1">TEAM FOCUS</h3>
                   <p className="text-xs text-muted-foreground">Leadership Skills</p>
                 </CardContent>
               </Card>
+            </div>
+            
+            <div className="mt-4 text-center">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => window.location.href = '/mindset-hub'}
+              >
+                VIEW ALL TOOLS
+              </Button>
             </div>
           </CardContent>
         </Card>
