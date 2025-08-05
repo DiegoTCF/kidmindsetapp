@@ -131,7 +131,10 @@ const Index = () => {
             MINDSET TOOLS
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="card-stadium card-glow-blue hover:card-glow-blue cursor-pointer">
+            <Card 
+              className="card-stadium card-glow-blue hover:card-glow-blue cursor-pointer"
+              onClick={() => navigate('/breathing')}
+            >
               <CardContent className="p-6 text-center">
                 <Wind className="h-8 w-8 text-electric-blue mx-auto mb-3" />
                 <h3 className="font-bebas text-lg uppercase tracking-wide mb-2">BREATHING</h3>
