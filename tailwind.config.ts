@@ -77,21 +77,21 @@ export default {
 					500: 'hsl(43, 85%, 55%)',
 					600: 'hsl(43, 85%, 50%)',
 				},
-				/* Football Mindset Colors */
+				/* Premium Football Mindset Colors */
 				'neon-pink': {
 					DEFAULT: 'hsl(var(--neon-pink))',
 					foreground: 'hsl(var(--primary-foreground))'
 				},
-				'bright-blue': {
-					DEFAULT: 'hsl(var(--bright-blue))',
+				'electric-blue': {
+					DEFAULT: 'hsl(var(--electric-blue))',
+					foreground: 'hsl(0, 0%, 0%)'
+				},
+				'bright-green': {
+					DEFAULT: 'hsl(var(--bright-green))',
 					foreground: 'hsl(0, 0%, 0%)'
 				},
 				'electric-yellow': {
 					DEFAULT: 'hsl(var(--electric-yellow))',
-					foreground: 'hsl(0, 0%, 0%)'
-				},
-				'deep-green': {
-					DEFAULT: 'hsl(var(--deep-green))',
 					foreground: 'hsl(0, 0%, 0%)'
 				},
 				'danger-red': {

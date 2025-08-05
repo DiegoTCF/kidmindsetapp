@@ -49,7 +49,7 @@ export function BottomNav() {
 
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-card/90 backdrop-blur-md border-t 
-                      border-neon-pink/20 px-2 py-2 safe-area-pb shadow-lg">
+                      border-neon-pink/20 px-2 py-3 safe-area-pb shadow-lg shadow-neon-pink/10">
         <div className="flex items-center justify-around max-w-md mx-auto">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -59,17 +59,17 @@ export function BottomNav() {
                 key={item.id}
                 onClick={() => handleNavClick(item.path)}
                 className={cn(
-                  "flex flex-col items-center gap-1 px-3 py-2 rounded-xl min-w-0 flex-1",
+                  "flex flex-col items-center gap-1 px-3 py-3 rounded-xl min-w-0 flex-1",
                   "transition-all duration-300 touch-manipulation font-bold uppercase text-xs tracking-wide",
                   isActive 
-                    ? "bg-neon-pink/20 text-neon-pink shadow-lg shadow-neon-pink/25 scale-105" 
-                    : "text-muted-foreground hover:text-bright-blue hover:bg-bright-blue/10 hover:scale-102"
+                    ? "bg-neon-pink/20 text-neon-pink shadow-lg shadow-neon-pink/30 scale-105 border border-neon-pink/30" 
+                    : "text-muted-foreground hover:text-electric-blue hover:bg-electric-blue/10 hover:scale-102"
                 )}
                 aria-label={item.label}
               >
                 <div className={cn(
-                  "flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-300",
-                  isActive && "bg-neon-pink/30 scale-110 shadow-lg shadow-neon-pink/25"
+                  "flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-300",
+                  isActive && "bg-neon-pink/30 scale-110 shadow-lg shadow-neon-pink/40 border border-neon-pink/50"
                 )}>
                   <CustomIcon type={item.iconType} size="md" />
                 </div>

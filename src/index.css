@@ -10,35 +10,35 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Football Mindset App Theme - Dark Stadium Background */
-    --background: 0 0% 8%;
+    /* Football Mindset Stadium Theme - Premium Dark */
+    --background: 0 0% 6%;
     --foreground: 0 0% 98%;
 
-    --card: 0 0% 12%;
+    --card: 0 0% 10%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 12%;
+    --popover: 0 0% 10%;
     --popover-foreground: 0 0% 98%;
 
-    /* Neon Pink - Primary Actions & Headings */
-    --primary: 330 100% 52%;
+    /* Neon Pink - Primary Actions & Progress */
+    --primary: 330 100% 52%;         /* #FF008C */
     --primary-foreground: 0 0% 100%;
 
     /* Card Surfaces */
-    --secondary: 0 0% 15%;
+    --secondary: 0 0% 12%;
     --secondary-foreground: 0 0% 90%;
 
-    --muted: 0 0% 18%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 70%;
 
     --accent: 330 100% 52%;
     --accent-foreground: 0 0% 100%;
 
-    /* Football Mindset Color System */
-    --neon-pink: 330 100% 52%;          /* #FF008C - Headings, Main Buttons */
-    --bright-blue: 195 100% 50%;        /* #00C4FF - Mindset Tools, Highlights */
-    --electric-yellow: 54 100% 50%;     /* #FFE600 - ANTs, Thinking, Impact Phrases */
-    --deep-green: 150 100% 50%;         /* #00FF80 - Progress, Super Behaviours */
+    /* Premium Football Mindset Colors */
+    --neon-pink: 330 100% 52%;          /* #FF008C - Titles, Progress, Highlights */
+    --electric-blue: 195 100% 50%;      /* #00C4FF - Action Buttons, Techniques */
+    --bright-green: 150 100% 50%;       /* #00FF80 - Positive Status, Confirmations */
+    --electric-yellow: 54 100% 50%;     /* #FFE600 - Specific Highlights */
     --danger-red: 1 86% 59%;            /* #FF3B30 - Errors, Challenges */
     
     --success: 150 100% 50%;
@@ -56,37 +56,40 @@ All colors MUST be HSL.
     --purple: 280 80% 60%;
     --purple-foreground: 0 0% 100%;
     
-    /* Stadium-Inspired Gradients */
-    --gradient-stadium: linear-gradient(135deg, hsl(0, 0%, 5%) 0%, hsl(0, 0%, 15%) 100%);
+    /* Stadium Premium Gradients */
+    --gradient-stadium-bg: linear-gradient(135deg, hsl(0, 0%, 4%) 0%, hsl(240, 3%, 8%) 50%, hsl(0, 0%, 4%) 100%);
     --gradient-neon-pink: linear-gradient(135deg, hsl(330, 100%, 52%) 0%, hsl(340, 100%, 60%) 100%);
-    --gradient-bright-blue: linear-gradient(135deg, hsl(195, 100%, 50%) 0%, hsl(205, 100%, 60%) 100%);
+    --gradient-electric-blue: linear-gradient(135deg, hsl(195, 100%, 50%) 0%, hsl(205, 100%, 60%) 100%);
+    --gradient-bright-green: linear-gradient(135deg, hsl(150, 100%, 50%) 0%, hsl(160, 100%, 60%) 100%);
     --gradient-electric-yellow: linear-gradient(135deg, hsl(54, 100%, 50%) 0%, hsl(60, 100%, 60%) 100%);
-    --gradient-deep-green: linear-gradient(135deg, hsl(150, 100%, 50%) 0%, hsl(160, 100%, 60%) 100%);
+    --gradient-progress: linear-gradient(90deg, hsl(330, 100%, 52%) 0%, hsl(195, 100%, 50%) 50%, hsl(150, 100%, 50%) 100%);
     --gradient-primary: var(--gradient-neon-pink);
-    --gradient-success: var(--gradient-deep-green);
+    --gradient-success: var(--gradient-bright-green);
     --gradient-achievement: var(--gradient-neon-pink);
     
-    /* Stadium Lighting Shadows */
-    --shadow-neon: 0 0 20px hsl(330, 100%, 52% / 0.3);
-    --shadow-blue: 0 0 20px hsl(195, 100%, 50% / 0.3);
-    --shadow-green: 0 0 20px hsl(150, 100%, 50% / 0.3);
-    --shadow-yellow: 0 0 20px hsl(54, 100%, 50% / 0.3);
+    /* Stadium Lighting Effects */
+    --shadow-neon-pink: 0 0 25px hsl(330, 100%, 52% / 0.4), 0 0 50px hsl(330, 100%, 52% / 0.2);
+    --shadow-electric-blue: 0 0 25px hsl(195, 100%, 50% / 0.4), 0 0 50px hsl(195, 100%, 50% / 0.2);
+    --shadow-bright-green: 0 0 25px hsl(150, 100%, 50% / 0.4), 0 0 50px hsl(150, 100%, 50% / 0.2);
+    --shadow-electric-yellow: 0 0 25px hsl(54, 100%, 50% / 0.4), 0 0 50px hsl(54, 100%, 50% / 0.2);
+    --shadow-premium: 0 8px 32px hsl(0, 0%, 0% / 0.6), 0 2px 8px hsl(0, 0%, 0% / 0.4);
     --shadow-soft: 0 4px 20px hsl(0, 0%, 0% / 0.3);
     --shadow-achievement: 0 4px 30px hsl(330, 100%, 52% / 0.4);
     
-    /* Smooth Athletic Animations */
+    /* Athletic Performance Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     --transition-elastic: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    --transition-breathing: all 4s cubic-bezier(0.4, 0, 0.6, 1);
 
     --destructive: 1 86% 59%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 18%;
+    --border: 0 0% 18%;
+    --input: 0 0% 15%;
     --ring: 330 100% 52%;
 
-    --radius: 1rem;
+    --radius: 1.25rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -151,52 +154,133 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground font-inter;
-    background-image: 
-      radial-gradient(circle at 20% 80%, hsl(330, 100%, 52% / 0.05) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, hsl(195, 100%, 50% / 0.05) 0%, transparent 50%),
-      radial-gradient(circle at 40% 40%, hsl(0, 0%, 0% / 0.8) 0%, transparent 50%);
+    background: var(--gradient-stadium-bg);
+    background-attachment: fixed;
   }
   
-  /* Football Mindset Typography */
+  /* Premium Football Mindset Typography */
   .title-stadium {
-    @apply font-bebas text-5xl md:text-7xl uppercase tracking-wider;
+    @apply font-bebas text-5xl md:text-7xl lg:text-8xl uppercase tracking-wider;
     background: var(--gradient-neon-pink);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    text-shadow: 0 0 30px hsl(330, 100%, 52% / 0.3);
+    filter: drop-shadow(0 0 15px hsl(330, 100%, 52% / 0.5));
+  }
+  
+  .heading-process {
+    @apply font-bebas text-3xl md:text-5xl uppercase tracking-wider;
+    background: var(--gradient-progress);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 10px hsl(330, 100%, 52% / 0.3));
   }
   
   .heading-coach {
-    @apply font-bebas text-2xl md:text-4xl uppercase tracking-wide;
-    background: var(--gradient-bright-blue);
+    @apply font-bebas text-xl md:text-3xl uppercase tracking-wide;
+    background: var(--gradient-electric-blue);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
   
   .text-impact {
-    @apply font-inter font-black text-lg md:text-xl uppercase;
+    @apply font-inter font-black text-lg md:text-xl uppercase tracking-wide;
     color: hsl(var(--electric-yellow));
-    text-shadow: 0 0 15px hsl(54, 100%, 50% / 0.5);
+    text-shadow: 0 0 15px hsl(54, 100%, 50% / 0.6);
   }
   
-  /* Stadium Card Effects */
+  .text-breathing-guide {
+    @apply font-inter font-bold text-lg md:text-xl;
+    color: hsl(var(--electric-blue));
+    text-shadow: 0 0 10px hsl(195, 100%, 50% / 0.4);
+  }
+  
+  /* Premium Stadium Cards */
   .card-stadium {
-    @apply bg-card/80 backdrop-blur-sm border border-white/10 rounded-2xl p-6;
-    background-image: linear-gradient(135deg, hsl(0, 0%, 12% / 0.8) 0%, hsl(0, 0%, 8% / 0.9) 100%);
-    box-shadow: var(--shadow-soft), inset 0 1px 0 hsl(0, 0%, 100% / 0.1);
+    @apply bg-card/90 backdrop-blur-md border border-white/10 rounded-2xl p-6;
+    background-image: linear-gradient(135deg, 
+      hsl(0, 0%, 12% / 0.9) 0%, 
+      hsl(0, 0%, 8% / 0.95) 100%);
+    box-shadow: var(--shadow-premium), inset 0 1px 0 hsl(0, 0%, 100% / 0.1);
+    transition: var(--transition-smooth);
+  }
+  
+  .card-stadium:hover {
+    transform: translateY(-2px) scale(1.02);
   }
   
   .card-glow-pink {
-    box-shadow: var(--shadow-soft), 0 0 0 1px hsl(330, 100%, 52% / 0.2), var(--shadow-neon);
+    border-color: hsl(330, 100%, 52% / 0.3);
+    box-shadow: var(--shadow-premium), var(--shadow-neon-pink);
   }
   
   .card-glow-blue {
-    box-shadow: var(--shadow-soft), 0 0 0 1px hsl(195, 100%, 50% / 0.2), var(--shadow-blue);
+    border-color: hsl(195, 100%, 50% / 0.3);
+    box-shadow: var(--shadow-premium), var(--shadow-electric-blue);
   }
   
   .card-glow-green {
-    box-shadow: var(--shadow-soft), 0 0 0 1px hsl(150, 100%, 50% / 0.2), var(--shadow-green);
+    border-color: hsl(150, 100%, 50% / 0.3);
+    box-shadow: var(--shadow-premium), var(--shadow-bright-green);
+  }
+  
+  .card-glow-yellow {
+    border-color: hsl(54, 100%, 50% / 0.3);
+    box-shadow: var(--shadow-premium), var(--shadow-electric-yellow);
+  }
+  
+  /* Breathing Exercise Animations */
+  .breathing-circle {
+    transition: var(--transition-breathing);
+  }
+  
+  .breathing-circle.inhale {
+    transform: scale(1.3);
+  }
+  
+  .breathing-circle.hold {
+    transform: scale(1.3);
+  }
+  
+  .breathing-circle.exhale {
+    transform: scale(1);
+  }
+  
+  /* Progress Bar Premium Style */
+  .progress-premium {
+    background: var(--gradient-progress);
+    border-radius: 1rem;
+    box-shadow: 0 0 20px hsl(330, 100%, 52% / 0.3);
+  }
+  
+  /* Premium Animations */
+  @keyframes stadium-glow {
+    0%, 100% { 
+      box-shadow: var(--shadow-premium), 0 0 20px hsl(330, 100%, 52% / 0.2);
+    }
+    50% { 
+      box-shadow: var(--shadow-premium), 0 0 40px hsl(330, 100%, 52% / 0.4);
+    }
+  }
+  
+  @keyframes breathing-pulse {
+    0%, 100% { 
+      transform: scale(1);
+      opacity: 0.8;
+    }
+    50% { 
+      transform: scale(1.1);
+      opacity: 1;
+    }
+  }
+  
+  .animate-stadium-glow {
+    animation: stadium-glow 3s ease-in-out infinite;
+  }
+  
+  .animate-breathing-pulse {
+    animation: breathing-pulse 2s ease-in-out infinite;
   }
 }

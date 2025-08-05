@@ -9,17 +9,17 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-neon-pink text-neon-pink-foreground hover:bg-neon-pink/90 shadow-lg hover:shadow-neon-pink/25 hover:scale-105 active:scale-95",
+        default: "bg-neon-pink text-neon-pink-foreground hover:bg-neon-pink/90 shadow-lg hover:shadow-neon-pink/30 hover:scale-105 active:scale-95",
         destructive:
-          "bg-danger-red text-danger-red-foreground hover:bg-danger-red/90 shadow-lg hover:shadow-red-500/25",
+          "bg-danger-red text-danger-red-foreground hover:bg-danger-red/90 shadow-lg hover:shadow-red-500/30",
         outline:
-          "border-2 border-neon-pink bg-transparent text-neon-pink hover:bg-neon-pink hover:text-neon-pink-foreground shadow-lg hover:shadow-neon-pink/25",
+          "border-2 border-neon-pink bg-transparent text-neon-pink hover:bg-neon-pink hover:text-neon-pink-foreground shadow-lg hover:shadow-neon-pink/30",
         secondary:
-          "bg-bright-blue text-bright-blue-foreground hover:bg-bright-blue/90 shadow-lg hover:shadow-blue-500/25 hover:scale-105",
+          "bg-electric-blue text-electric-blue-foreground hover:bg-electric-blue/90 shadow-lg hover:shadow-blue-500/30 hover:scale-105",
         ghost: "hover:bg-accent/20 hover:text-accent-foreground backdrop-blur-sm",
-        link: "text-bright-blue underline-offset-4 hover:underline font-bold",
-        success: "bg-deep-green text-deep-green-foreground hover:bg-deep-green/90 shadow-lg hover:shadow-green-500/25 hover:scale-105",
-        warning: "bg-electric-yellow text-electric-yellow-foreground hover:bg-electric-yellow/90 shadow-lg hover:shadow-yellow-500/25",
+        link: "text-electric-blue underline-offset-4 hover:underline font-bold",
+        success: "bg-bright-green text-bright-green-foreground hover:bg-bright-green/90 shadow-lg hover:shadow-green-500/30 hover:scale-105",
+        warning: "bg-electric-yellow text-electric-yellow-foreground hover:bg-electric-yellow/90 shadow-lg hover:shadow-yellow-500/30",
       },
       size: {
         default: "h-10 px-4 py-2",

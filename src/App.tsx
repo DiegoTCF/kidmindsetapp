@@ -13,6 +13,7 @@ import SkillCrusher from "./pages/SkillCrusher";
 import GrownUpZone from "./pages/GrownUpZone";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import Breathing from "./pages/Breathing";
 import Auth from "./pages/Auth";
 import { useAuth } from "./hooks/useAuth";
 import { AdminProvider } from "./hooks/useAdmin";
@@ -84,6 +85,15 @@ const App = () => {
                 <ProtectedRoute>
                   <AppLayout>
                     <SkillCrusher />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Breathing Exercise - no navigation */}
+              <Route path="/breathing" element={
+                <ProtectedRoute>
+                  <AppLayout hideNavigation>
+                    <Breathing />
                   </AppLayout>
                 </ProtectedRoute>
               } />
