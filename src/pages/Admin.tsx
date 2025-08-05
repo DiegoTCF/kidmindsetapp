@@ -14,6 +14,7 @@ import Charts from '@/components/Progress/Charts';
 import BehaviourCharts from '@/components/Progress/BehaviourCharts';
 import AdminNotifications from '@/components/Admin/AdminNotifications';
 import SessionNotes from '@/components/Admin/SessionNotes';
+import { ContentUpload } from '@/components/Content/ContentUpload';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -648,10 +649,11 @@ export default function Admin() {
 
             {/* Progress Tabs */}
             <Tabs defaultValue="activity" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="activity">Activity Log</TabsTrigger>
                 <TabsTrigger value="behaviour">Behaviour</TabsTrigger>
                 <TabsTrigger value="charts">Statistics</TabsTrigger>
+                <TabsTrigger value="content">📚 Content</TabsTrigger>
                 <TabsTrigger value="sessions" className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
                   Session Notes
@@ -687,6 +689,17 @@ export default function Admin() {
                   </CardHeader>
                   <CardContent>
                     <Charts selectedFilter="All" childId={selectedChild.id} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="content" className="mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Content Management</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ContentUpload />
                   </CardContent>
                 </Card>
               </TabsContent>
