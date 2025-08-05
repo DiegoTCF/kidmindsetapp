@@ -2,6 +2,7 @@ import React from 'react';
 import { Trophy, Star, Zap } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { ProcessedAvatar } from '@/components/ui/ProcessedAvatar';
 
 interface LevelProgressCardProps {
   currentLevel: number;
@@ -52,9 +53,10 @@ export const LevelProgressCard: React.FC<LevelProgressCardProps> = ({
         {/* Level Badge */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className={`p-3 rounded-full bg-gradient-to-r ${getLevelColor(currentLevel)} shadow-lg`}>
-              {getLevelIcon(currentLevel)}
-            </div>
+            <ProcessedAvatar 
+              className={`w-12 h-12 rounded-full shadow-lg border-2 border-gradient-to-r ${getLevelColor(currentLevel)}`}
+              fallbackIcon={getLevelIcon(currentLevel)}
+            />
             <div>
               <h3 className="text-lg font-bold text-foreground">{playerName}</h3>
               <p className="text-sm text-muted-foreground">{getLevelBadgeText(currentLevel)}</p>
