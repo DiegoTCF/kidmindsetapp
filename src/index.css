@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Canard&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -41,6 +43,9 @@ All colors MUST be HSL.
     
     --level-bg: 210 85% 95%;
     --level-foreground: 210 85% 30%;
+    
+    --purple: 280 80% 60%;
+    --purple-foreground: 0 0% 100%;
     
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(340, 100%, 50%), hsl(340, 100%, 60%));

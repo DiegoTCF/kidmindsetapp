@@ -68,6 +68,10 @@ export default {
 					bg: 'hsl(var(--level-bg))',
 					foreground: 'hsl(var(--level-foreground))'
 				},
+				purple: {
+					DEFAULT: 'hsl(var(--purple))',
+					foreground: 'hsl(var(--purple-foreground))'
+				},
 				gold: {
 					400: 'hsl(43, 85%, 60%)',
 					500: 'hsl(43, 85%, 55%)',
@@ -88,6 +92,9 @@ export default {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
+			},
+			fontFamily: {
+				'canard': ['Canard', 'serif'],
 			},
 			keyframes: {
 				'accordion-down': {
