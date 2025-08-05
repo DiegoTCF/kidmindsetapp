@@ -9,7 +9,7 @@ import Stadium from "./pages/Stadium";
 import Progress from "./pages/Progress";
 import Profile from "./pages/Profile";
 import Goals from "./pages/Goals";
-
+import SkillCrusher from "./pages/SkillCrusher";
 import GrownUpZone from "./pages/GrownUpZone";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
@@ -77,6 +77,13 @@ const App = () => {
                 <ProtectedRoute>
                   <AppLayout>
                     <Goals />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/skill-crusher" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <SkillCrusher />
                   </AppLayout>
                 </ProtectedRoute>
               } />
