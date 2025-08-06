@@ -9,6 +9,7 @@ import Stadium from "./pages/Stadium";
 import Progress from "./pages/Progress";
 import Profile from "./pages/Profile";
 import Goals from "./pages/Goals";
+import YourProcess from "./pages/YourProcess";
 import SkillCrusher from "./pages/SkillCrusher";
 import GrownUpZone from "./pages/GrownUpZone";
 import Admin from "./pages/Admin";
@@ -79,6 +80,13 @@ const App = () => {
                 <ProtectedRoute>
                   <AppLayout>
                     <Goals />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/your-process" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <YourProcess />
                   </AppLayout>
                 </ProtectedRoute>
               } />
