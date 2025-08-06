@@ -12,11 +12,12 @@ import {
   Trophy,
   PartyPopper,
   Flame,
-  Goal
+  Goal,
+  Cog
 } from "lucide-react";
 
 interface CustomIconProps {
-  type: 'sad' | 'not-great' | 'okay' | 'good' | 'amazing' | 'target' | 'home' | 'stadium' | 'progress' | 'brain' | 'trophy' | 'party' | 'flame' | 'goals' | 'crusher';
+  type: 'sad' | 'not-great' | 'okay' | 'good' | 'amazing' | 'target' | 'home' | 'stadium' | 'progress' | 'brain' | 'trophy' | 'party' | 'flame' | 'goals' | 'crusher' | 'process';
   size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }
@@ -43,7 +44,8 @@ const iconMap = {
   party: PartyPopper,
   flame: Flame,
   goals: Goal,
-  crusher: Trophy
+  crusher: Trophy,
+  process: Cog
 };
 
 export function CustomIcon({ type, size = 'md', className }: CustomIconProps) {
