@@ -193,6 +193,51 @@ export type Database = {
           },
         ]
       }
+      course_content: {
+        Row: {
+          bucket_name: string
+          category: string | null
+          created_at: string
+          description: string | null
+          file_path: string
+          file_size: number | null
+          file_type: string
+          id: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bucket_name: string
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          file_path: string
+          file_size?: number | null
+          file_type: string
+          id?: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bucket_name?: string
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          file_path?: string
+          file_size?: number | null
+          file_type?: string
+          id?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_tasks: {
         Row: {
           active: boolean
@@ -251,6 +296,48 @@ export type Database = {
           payment_status?: string | null
           phone?: string | null
           pin?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      player_identity: {
+        Row: {
+          core_values: string[] | null
+          created_at: string
+          id: string
+          interests_hobbies: string | null
+          life_goals: string | null
+          personality_traits: string[] | null
+          playing_characteristics: string | null
+          playing_style: string | null
+          primary_position: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          core_values?: string[] | null
+          created_at?: string
+          id?: string
+          interests_hobbies?: string | null
+          life_goals?: string | null
+          personality_traits?: string[] | null
+          playing_characteristics?: string | null
+          playing_style?: string | null
+          primary_position?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          core_values?: string[] | null
+          created_at?: string
+          id?: string
+          interests_hobbies?: string | null
+          life_goals?: string | null
+          personality_traits?: string[] | null
+          playing_characteristics?: string | null
+          playing_style?: string | null
+          primary_position?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -317,6 +404,44 @@ export type Database = {
             columns: ["activity_id"]
             isOneToOne: false
             referencedRelation: "activities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      schedule_overrides: {
+        Row: {
+          child_id: string
+          created_at: string
+          id: string
+          new_activity_type: string | null
+          note: string | null
+          override_date: string
+          override_type: string
+        }
+        Insert: {
+          child_id: string
+          created_at?: string
+          id?: string
+          new_activity_type?: string | null
+          note?: string | null
+          override_date: string
+          override_type: string
+        }
+        Update: {
+          child_id?: string
+          created_at?: string
+          id?: string
+          new_activity_type?: string | null
+          note?: string | null
+          override_date?: string
+          override_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_overrides_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
             referencedColumns: ["id"]
           },
         ]
@@ -563,6 +688,14 @@ export type Database = {
       admin_delete_user: {
         Args: { target_user_id: string }
         Returns: Json
+      }
+      admin_get_all_users: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          email: string
+          created_at: string
+        }[]
       }
       auth_or_anon: {
         Args: Record<PropertyKey, never>
