@@ -7,7 +7,7 @@ import { CustomIcon } from "@/components/ui/custom-emoji";
 interface NavItem {
   id: string;
   label: string;
-  iconType: 'home' | 'stadium' | 'progress' | 'goals' | 'schedule';
+  iconType: 'home' | 'stadium' | 'progress' | 'goals';
   path: string;
 }
 
@@ -15,7 +15,6 @@ const navItems: NavItem[] = [
   { id: "home", label: "Home", iconType: "home", path: "/" },
   { id: "stadium", label: "Stadium", iconType: "stadium", path: "/stadium" },
   { id: "progress", label: "Progress", iconType: "progress", path: "/progress" },
-  { id: "schedule", label: "Schedule", iconType: "schedule", path: "/schedule" },
   { id: "goals", label: "Goals", iconType: "goals", path: "/goals" },
 ];
 

@@ -16,7 +16,6 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import { useAuth } from "./hooks/useAuth";
 import { AdminProvider } from "./hooks/useAdmin";
-import Schedule from "./pages/Schedule";
 
 const queryClient = new QueryClient();
 
@@ -78,13 +77,6 @@ const App = () => {
                 <ProtectedRoute>
                   <AppLayout>
                     <Goals />
-                  </AppLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/schedule" element={
-                <ProtectedRoute>
-                  <AppLayout>
-                    <Schedule />
                   </AppLayout>
                 </ProtectedRoute>
               } />
