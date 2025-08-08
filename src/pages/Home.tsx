@@ -1019,26 +1019,6 @@ const handleMoodSubmit = async (moodValue: number) => {
   <CardContent>
     {loadingTodayActivity ? (
       <div className="text-sm text-muted-foreground">Loading...</div>
-    ) : todaysActivity ? (
-      <div className="space-y-2">
-        <p className="font-medium">{todaysActivity.activity_name}</p>
-        <p className="text-sm text-muted-foreground">
-          {(activityTypeLabels[todaysActivity.activity_type] || todaysActivity.activity_type)} • {new Date(todaysActivity.activity_date).toLocaleDateString()}
-        </p>
-        <div className="text-xs text-muted-foreground">
-          {todaysActivity.pre_activity_completed ? 'Pre-activity done' : 'Pre-activity pending'} • {todaysActivity.post_activity_completed ? 'Post-activity done' : 'Post-activity pending'}
-        </div>
-        {(todaysActivity.final_score || todaysActivity.goals_scored !== null || todaysActivity.assists_made !== null) && (
-          <div className="text-sm">
-            {todaysActivity.final_score && <p>Final score: {todaysActivity.final_score}</p>}
-            {(todaysActivity.goals_scored !== null && todaysActivity.goals_scored !== undefined) && <p>Goals: {todaysActivity.goals_scored}</p>}
-            {(todaysActivity.assists_made !== null && todaysActivity.assists_made !== undefined) && <p>Assists: {todaysActivity.assists_made}</p>}
-          </div>
-        )}
-        <Button className="w-full" onClick={() => window.location.href = '/stadium'}>
-          Open Stadium
-        </Button>
-      </div>
     ) : plannedActivityType ? (
       <div className="space-y-3">
         <p className="text-sm text-muted-foreground">Planned for today:</p>
