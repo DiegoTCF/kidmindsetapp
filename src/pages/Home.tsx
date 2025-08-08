@@ -33,6 +33,18 @@ interface PlayerData {
   weeklyMoodAvg: number;
 }
 
+interface ActivityForToday {
+  id: string;
+  activity_name: string;
+  activity_type: string;
+  activity_date: string;
+  pre_activity_completed: boolean;
+  post_activity_completed: boolean;
+  final_score?: string | null;
+  goals_scored?: number | null;
+  assists_made?: number | null;
+}
+
 const moodOptions: MoodOption[] = [
   { iconType: "sad", label: "Sad", value: 1 },
   { iconType: "not-great", label: "Not Great", value: 2 },
@@ -71,18 +83,24 @@ export default function Home() {
   const [newTaskName, setNewTaskName] = useState("");
   const [showAddTask, setShowAddTask] = useState(false);
 
-  // Level up tracking
-  const [previousLevel, setPreviousLevel] = useState<number | null>(null);
-  const [showLevelUpNotification, setShowLevelUpNotification] = useState(false);
+// Level up tracking
+const [previousLevel, setPreviousLevel] = useState<number | null>(null);
+const [showLevelUpNotification, setShowLevelUpNotification] = useState(false);
 
-  // Load saved data on mount
-  useEffect(() => {
-    console.log('[KidMindset] Loading player data...');
-    loadPlayerData();
-    loadDailyTasks();
-    loadTodayData();
-    loadWeeklyMoodAverage();
-  }, []);
+// Today's activity (from signup schedule and actual records)
+const [plannedActivityType, setPlannedActivityType] = useState<string | null>(null);
+const [todaysActivity, setTodaysActivity] = useState<ActivityForToday | null>(null);
+const [loadingTodayActivity, setLoadingTodayActivity] = useState<boolean>(false);
+
+// Load saved data on mount
+useEffect(() => {
+  console.log('[KidMindset] Loading player data...');
+  loadPlayerData();
+  loadDailyTasks();
+  loadTodayData();
+  loadWeeklyMoodAverage();
+  loadTodaysActivity();
+}, []);
 
   const loadPlayerData = async () => {
     try {
@@ -487,9 +505,75 @@ export default function Home() {
     } catch (error) {
       console.error('[KidMindset] Error loading weekly mood average:', error);
     }
-  };
+};
 
-  const handleMoodSubmit = async (moodValue: number) => {
+// Labels for activity types configured during signup
+const activityTypeLabels: Record<string, string> = {
+  team_training: 'Team Training',
+  '1to1': '1 to 1',
+  small_group: 'Small Group or Futsal',
+  match: 'Match/Tournament'
+};
+
+// Load today's planned activity from weekly_schedule and any actual activity record for today
+const loadTodaysActivity = async () => {
+  try {
+    setLoadingTodayActivity(true);
+    const { data: childId, error: childError } = await supabase.rpc('get_current_user_child_id');
+    if (childError || !childId) {
+      console.error('[Home] Error getting child ID for today activity:', childError);
+      setPlannedActivityType(null);
+      setTodaysActivity(null);
+      return;
+    }
+
+    // Get weekly schedule
+    const { data: childRow, error: childRowError } = await supabase
+      .from('children')
+      .select('weekly_schedule, name')
+      .eq('id', childId)
+      .maybeSingle();
+
+    if (childRowError) {
+      console.error('[Home] Error fetching child weekly_schedule:', childRowError);
+    }
+
+    if (childRow?.weekly_schedule) {
+      try {
+        const weekly = JSON.parse(childRow.weekly_schedule) as Record<string, string>;
+        const todayKey = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+        setPlannedActivityType(weekly[todayKey] || null);
+      } catch (e) {
+        console.warn('[Home] Invalid weekly_schedule JSON');
+        setPlannedActivityType(null);
+      }
+    } else {
+      setPlannedActivityType(null);
+    }
+
+    // Fetch today's actual activity if any
+    const todayDate = new Date().toISOString().split('T')[0];
+    const { data: acts, error: actsError } = await supabase
+      .from('activities')
+      .select('id, activity_name, activity_type, activity_date, pre_activity_completed, post_activity_completed, final_score, goals_scored, assists_made')
+      .eq('child_id', childId)
+      .eq('activity_date', todayDate)
+      .order('created_at', { ascending: false });
+
+    if (actsError) {
+      console.error('[Home] Error fetching today\'s activities:', actsError);
+      setTodaysActivity(null);
+    } else {
+      setTodaysActivity(acts && acts.length > 0 ? (acts[0] as ActivityForToday) : null);
+    }
+  } catch (err) {
+    console.error('[Home] Unexpected error loading today activity:', err);
+  } finally {
+    setLoadingTodayActivity(false);
+  }
+};
+
+const handleMoodSubmit = async (moodValue: number) => {
     setMoodSubmitted(true);
     setTodayMood(moodValue);
     const today = new Date().toDateString();
@@ -925,9 +1009,56 @@ export default function Home() {
             totalPoints={playerData.points}
             playerName={playerData.name}
           />
-        </div>
+</div>
 
-        {/* Mood Check */}
+{/* Today\'s Activity */}
+<Card className="mb-6 shadow-soft">
+  <CardHeader>
+    <CardTitle className="text-lg">Today\'s Activity</CardTitle>
+  </CardHeader>
+  <CardContent>
+    {loadingTodayActivity ? (
+      <div className="text-sm text-muted-foreground">Loading...</div>
+    ) : todaysActivity ? (
+      <div className="space-y-2">
+        <p className="font-medium">{todaysActivity.activity_name}</p>
+        <p className="text-sm text-muted-foreground">
+          {(activityTypeLabels[todaysActivity.activity_type] || todaysActivity.activity_type)} • {new Date(todaysActivity.activity_date).toLocaleDateString()}
+        </p>
+        <div className="text-xs text-muted-foreground">
+          {todaysActivity.pre_activity_completed ? 'Pre-activity done' : 'Pre-activity pending'} • {todaysActivity.post_activity_completed ? 'Post-activity done' : 'Post-activity pending'}
+        </div>
+        {(todaysActivity.final_score || todaysActivity.goals_scored !== null || todaysActivity.assists_made !== null) && (
+          <div className="text-sm">
+            {todaysActivity.final_score && <p>Final score: {todaysActivity.final_score}</p>}
+            {(todaysActivity.goals_scored !== null && todaysActivity.goals_scored !== undefined) && <p>Goals: {todaysActivity.goals_scored}</p>}
+            {(todaysActivity.assists_made !== null && todaysActivity.assists_made !== undefined) && <p>Assists: {todaysActivity.assists_made}</p>}
+          </div>
+        )}
+        <Button className="w-full" onClick={() => window.location.href = '/stadium'}>
+          Open Stadium
+        </Button>
+      </div>
+    ) : plannedActivityType ? (
+      <div className="space-y-3">
+        <p className="text-sm text-muted-foreground">Planned for today:</p>
+        <p className="font-medium">{activityTypeLabels[plannedActivityType] || plannedActivityType}</p>
+        <Button className="w-full" onClick={() => window.location.href = '/stadium'}>
+          Start New Activity
+        </Button>
+      </div>
+    ) : (
+      <div className="space-y-3">
+        <p className="text-sm text-muted-foreground">No activity planned for today.</p>
+        <Button variant="outline" className="w-full" onClick={() => window.location.href = '/stadium'}>
+          New Activity
+        </Button>
+      </div>
+    )}
+  </CardContent>
+</Card>
+
+{/* Mood Check */}
         <Card className="mb-6 shadow-soft">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
