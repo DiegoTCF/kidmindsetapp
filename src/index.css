@@ -11,32 +11,32 @@ All colors MUST be HSL.
 @layer base {
   :root {
     /* Football Mindset Stadium Theme - Premium Dark */
-    --background: 0 0% 6%;
-    --foreground: 0 0% 98%;
+    --background: 0 0% 98%;
+    --foreground: 222.2 84% 4.9%;
 
-    --card: 0 0% 10%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
 
-    --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
 
     /* Neon Pink - Primary Actions & Progress */
     --primary: 330 100% 52%;         /* #FF008C */
     --primary-foreground: 0 0% 100%;
 
     /* Card Surfaces */
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 90%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 70%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 240 5% 26%;
 
     --accent: 330 100% 52%;
     --accent-foreground: 0 0% 100%;
 
     /* Premium Football Mindset Colors */
     --neon-pink: 330 100% 52%;          /* #FF008C - Titles, Progress, Highlights */
-    --electric-blue: 195 100% 50%;      /* #00C4FF - Action Buttons, Techniques */
+    --electric-blue: 270 85% 60%;       /* Purple - Action Buttons, Techniques */
     --bright-green: 150 100% 50%;       /* #00FF80 - Positive Status, Confirmations */
     --electric-yellow: 54 100% 50%;     /* #FFE600 - Specific Highlights */
     --danger-red: 1 86% 59%;            /* #FF3B30 - Errors, Challenges */
@@ -57,9 +57,9 @@ All colors MUST be HSL.
     --purple-foreground: 0 0% 100%;
     
     /* Stadium Premium Gradients */
-    --gradient-stadium-bg: linear-gradient(135deg, hsl(0, 0%, 4%) 0%, hsl(240, 3%, 8%) 50%, hsl(0, 0%, 4%) 100%);
+    --gradient-stadium-bg: linear-gradient(180deg, hsl(0, 0%, 100%) 0%, hsl(0, 0%, 96%) 100%);
     --gradient-neon-pink: linear-gradient(135deg, hsl(330, 100%, 52%) 0%, hsl(340, 100%, 60%) 100%);
-    --gradient-electric-blue: linear-gradient(135deg, hsl(195, 100%, 50%) 0%, hsl(205, 100%, 60%) 100%);
+    --gradient-electric-blue: linear-gradient(135deg, hsl(270, 85%, 60%) 0%, hsl(280, 85%, 65%) 100%);
     --gradient-bright-green: linear-gradient(135deg, hsl(150, 100%, 50%) 0%, hsl(160, 100%, 60%) 100%);
     --gradient-electric-yellow: linear-gradient(135deg, hsl(54, 100%, 50%) 0%, hsl(60, 100%, 60%) 100%);
     --gradient-progress: linear-gradient(90deg, hsl(330, 100%, 52%) 0%, hsl(195, 100%, 50%) 50%, hsl(150, 100%, 50%) 100%);
@@ -69,7 +69,7 @@ All colors MUST be HSL.
     
     /* Stadium Lighting Effects */
     --shadow-neon-pink: 0 0 25px hsl(330, 100%, 52% / 0.4), 0 0 50px hsl(330, 100%, 52% / 0.2);
-    --shadow-electric-blue: 0 0 25px hsl(195, 100%, 50% / 0.4), 0 0 50px hsl(195, 100%, 50% / 0.2);
+    --shadow-electric-blue: 0 0 25px hsl(270, 85%, 60% / 0.4), 0 0 50px hsl(270, 85%, 60% / 0.2);
     --shadow-bright-green: 0 0 25px hsl(150, 100%, 50% / 0.4), 0 0 50px hsl(150, 100%, 50% / 0.2);
     --shadow-electric-yellow: 0 0 25px hsl(54, 100%, 50% / 0.4), 0 0 50px hsl(54, 100%, 50% / 0.2);
     --shadow-premium: 0 8px 32px hsl(0, 0%, 0% / 0.6), 0 2px 8px hsl(0, 0%, 0% / 0.4);

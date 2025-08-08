@@ -84,7 +84,7 @@ export default {
 				},
 				'electric-blue': {
 					DEFAULT: 'hsl(var(--electric-blue))',
-					foreground: 'hsl(0, 0%, 0%)'
+					foreground: 'hsl(0, 0%, 100%)'
 				},
 				'bright-green': {
 					DEFAULT: 'hsl(var(--bright-green))',

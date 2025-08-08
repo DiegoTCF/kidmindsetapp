@@ -15,7 +15,7 @@ const buttonVariants = cva(
         outline:
           "border-2 border-neon-pink bg-transparent text-neon-pink hover:bg-neon-pink hover:text-neon-pink-foreground shadow-lg hover:shadow-neon-pink/30",
         secondary:
-          "bg-electric-blue text-electric-blue-foreground hover:bg-electric-blue/90 shadow-lg hover:shadow-blue-500/30 hover:scale-105",
+          "bg-electric-blue text-electric-blue-foreground hover:bg-electric-blue/90 shadow-lg hover:shadow-purple-500/30 hover:scale-105",
         ghost: "hover:bg-accent/20 hover:text-accent-foreground backdrop-blur-sm",
         link: "text-electric-blue underline-offset-4 hover:underline font-bold",
         success: "bg-bright-green text-bright-green-foreground hover:bg-bright-green/90 shadow-lg hover:shadow-green-500/30 hover:scale-105",
