@@ -9,13 +9,10 @@ import Stadium from "./pages/Stadium";
 import Progress from "./pages/Progress";
 import Profile from "./pages/Profile";
 import Goals from "./pages/Goals";
-import YourProcess from "./pages/YourProcess";
-import SkillCrusher from "./pages/SkillCrusher";
+
 import GrownUpZone from "./pages/GrownUpZone";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
-import Breathing from "./pages/Breathing";
-import MindsetHub from "./pages/MindsetHub";
 import Auth from "./pages/Auth";
 import { useAuth } from "./hooks/useAuth";
 import { AdminProvider } from "./hooks/useAdmin";
@@ -80,38 +77,6 @@ const App = () => {
                 <ProtectedRoute>
                   <AppLayout>
                     <Goals />
-                  </AppLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/your-process" element={
-                <ProtectedRoute>
-                  <AppLayout>
-                    <YourProcess />
-                  </AppLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/skill-crusher" element={
-                <ProtectedRoute>
-                  <AppLayout>
-                    <SkillCrusher />
-                  </AppLayout>
-                </ProtectedRoute>
-              } />
-              
-              {/* Breathing Exercise - no navigation */}
-              <Route path="/breathing" element={
-                <ProtectedRoute>
-                  <AppLayout hideNavigation>
-                    <Breathing />
-                  </AppLayout>
-                </ProtectedRoute>
-              } />
-              
-              {/* Mindset Hub - no navigation */}
-              <Route path="/mindset-hub" element={
-                <ProtectedRoute>
-                  <AppLayout hideNavigation>
-                    <MindsetHub />
                   </AppLayout>
                 </ProtectedRoute>
               } />

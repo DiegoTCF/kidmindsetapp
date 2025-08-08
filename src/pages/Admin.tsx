@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserLogging } from '@/hooks/useUserLogging';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Users, UserCog, ArrowLeft, User, Trophy, TrendingUp, Shield, Trash2, FileText } from 'lucide-react';
@@ -14,7 +14,6 @@ import Charts from '@/components/Progress/Charts';
 import BehaviourCharts from '@/components/Progress/BehaviourCharts';
 import AdminNotifications from '@/components/Admin/AdminNotifications';
 import SessionNotes from '@/components/Admin/SessionNotes';
-import { ContentUpload } from '@/components/Content/ContentUpload';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -105,67 +104,75 @@ export default function Admin() {
         return;
       }
 
-      // Get ALL users including those without profiles
-      // This will show users who signed up but haven't completed profile setup
-      const { data: allUsersData, error: allUsersError } = await supabase.rpc('admin_get_all_users');
+      // Get profiles with auth users data via RPC - RLS will enforce admin-only access
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*');
 
-      if (allUsersError) {
-        console.error('[AdminPanel] Failed to get all users:', allUsersError);
-        // Fall back to profiles-only view
-        const { data: profilesData } = await supabase.from('profiles').select('*');
-        
-        if (!profilesData) {
+      if (profilesError) {
+        if (profilesError.code === 'PGRST001') {
+          console.error('[AdminPanel] RLS violation - access denied:', profilesError);
           toast({
-            title: 'Error',
-            description: 'Failed to load user data.',
+            title: 'Access Denied',
+            description: 'Insufficient permissions to view profiles.',
             variant: 'destructive'
           });
+          window.location.href = '/grown-up';
           return;
         }
-        
-        // Continue with profiles only
-        const { data: parentsData } = await supabase.from('parents').select('*');
-        const { data: rolesData } = await supabase.from('user_roles').select('*');
-        
-        const combinedUsers = profilesData.map(profile => {
-          const parent = parentsData?.find(p => p.user_id === profile.user_id);
-          const role = rolesData?.find(r => r.user_id === profile.user_id);
-          
-          return {
-            id: profile.user_id,
-            email: profile.email,
-            created_at: profile.created_at,
-            name: parent?.name,
-            phone: parent?.phone,
-            role: role?.role || 'user'
-          };
-        });
-        
-        setUsers(combinedUsers);
-        return;
+        throw profilesError;
       }
 
-      // Get supplementary data for all users
-      const { data: parentsData } = await supabase.from('parents').select('*');
-      const { data: rolesData } = await supabase.from('user_roles').select('*');
-      const { data: profilesData } = await supabase.from('profiles').select('*');
+      // Get parents data - RLS will enforce admin-only access
+      const { data: parentsData, error: parentsError } = await supabase
+        .from('parents')
+        .select('*');
 
-      // Process all users data
-      const usersArray = Array.isArray(allUsersData) ? allUsersData : [];
-      
-      const combinedUsers = usersArray.map((user: any) => {
-        const parent = parentsData?.find(p => p.user_id === user.id);
-        const role = rolesData?.find(r => r.user_id === user.id);
-        const profile = profilesData?.find(p => p.user_id === user.id);
+      if (parentsError) {
+        if (parentsError.code === 'PGRST001') {
+          console.error('[AdminPanel] RLS violation - access denied:', parentsError);
+          toast({
+            title: 'Access Denied',
+            description: 'Insufficient permissions to view parent data.',
+            variant: 'destructive'
+          });
+          window.location.href = '/grown-up';
+          return;
+        }
+        throw parentsError;
+      }
+
+      // Get user roles - RLS will enforce admin-only access
+      const { data: rolesData, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('*');
+
+      if (rolesError) {
+        if (rolesError.code === 'PGRST001') {
+          console.error('[AdminPanel] RLS violation - access denied:', rolesError);
+          toast({
+            title: 'Access Denied',
+            description: 'Insufficient permissions to view user roles.',
+            variant: 'destructive'
+          });
+          window.location.href = '/grown-up';
+          return;
+        }
+        throw rolesError;
+      }
+
+      // Combine the data
+      const combinedUsers = profilesData.map(profile => {
+        const parent = parentsData.find(p => p.user_id === profile.user_id);
+        const role = rolesData.find(r => r.user_id === profile.user_id);
         
         return {
-          id: user.id,
-          email: user.email,
-          created_at: user.created_at,
+          id: profile.user_id,
+          email: profile.email,
+          created_at: profile.created_at,
           name: parent?.name,
           phone: parent?.phone,
-          role: role?.role || 'user',
-          has_profile: !!profile
+          role: role?.role || 'user'
         };
       });
 
@@ -474,106 +481,83 @@ export default function Admin() {
         {/* Admin Notifications */}
         <AdminNotifications className="mb-6" />
 
-        {/* Main Admin Tabs - only show when not in children/progress view */}
+        {/* Users View */}
         {viewMode === 'users' && (
-          <Tabs defaultValue="users" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="users">👥 User Management</TabsTrigger>
-              <TabsTrigger value="content">📚 Content Management</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="users" className="mt-6">
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Users className="h-5 w-5" />
-                      Users ({users.length})
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {loadingData ? (
-                      <div className="text-center py-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                        <p className="text-muted-foreground">Loading users...</p>
-                      </div>
-                    ) : (
-                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {users.map((userProfile) => (
-                           <Card key={userProfile.id} className="border border-border">
-                             <CardContent className="p-4">
-                               <div className="flex items-start justify-between mb-3">
-                                 <div className="flex items-center gap-2">
-                                   <User className="h-4 w-4 text-muted-foreground" />
-                                   <Badge variant={userProfile.role === 'admin' ? 'default' : 'secondary'}>
-                                     {userProfile.role || 'user'}
-                                   </Badge>
-                                 </div>
-                                 <div className="flex items-center gap-2">
-                                   {userProfile.role !== 'admin' && isSuperAdmin && (
-                                     <Button
-                                       size="sm"
-                                       variant="outline"
-                                       onClick={() => promoteToAdmin(userProfile.id, userProfile.email)}
-                                     >
-                                       <UserCog className="h-3 w-3 mr-1" />
-                                       Make Admin
-                                     </Button>
-                                   )}
-                                   {isSuperAdmin && user?.id !== userProfile.id && (
-                                     <Button
-                                       size="sm"
-                                       variant="outline"
-                                       onClick={() => openDeleteDialog(userProfile)}
-                                       className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                     >
-                                       <Trash2 className="h-3 w-3" />
-                                     </Button>
-                                   )}
-                                 </div>
-                               </div>
-                               
-                               <div className="space-y-2">
-                                 <p className="font-medium text-sm">{userProfile.email}</p>
-                                 {userProfile.name && <p className="text-sm text-muted-foreground">{userProfile.name}</p>}
-                                 {userProfile.phone && <p className="text-xs text-muted-foreground">{userProfile.phone}</p>}
-                                 <p className="text-xs text-muted-foreground">
-                                   Joined: {new Date(userProfile.created_at).toLocaleDateString()}
-                                 </p>
-                               </div>
-                               
-                               <Button
-                                 className="w-full mt-3"
-                                 variant="outline"
-                                 size="sm"
-                                 onClick={() => loadChildren(userProfile.id)}
-                               >
-                                 View Children
-                               </Button>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="content" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Content Management</CardTitle>
-                  <CardDescription>
-                    Upload and manage course materials including videos, audio files, and documents
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ContentUpload />
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Users ({users.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loadingData ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Loading users...</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {users.map((userProfile) => (
+                       <Card key={userProfile.id} className="border border-border">
+                         <CardContent className="p-4">
+                           <div className="flex items-start justify-between mb-3">
+                             <div className="flex items-center gap-2">
+                               <User className="h-4 w-4 text-muted-foreground" />
+                               <Badge variant={userProfile.role === 'admin' ? 'default' : 'secondary'}>
+                                 {userProfile.role || 'user'}
+                               </Badge>
+                             </div>
+                             <div className="flex items-center gap-2">
+                               {userProfile.role !== 'admin' && isSuperAdmin && (
+                                 <Button
+                                   size="sm"
+                                   variant="outline"
+                                   onClick={() => promoteToAdmin(userProfile.id, userProfile.email)}
+                                 >
+                                   <UserCog className="h-3 w-3 mr-1" />
+                                   Make Admin
+                                 </Button>
+                               )}
+                               {isSuperAdmin && user?.id !== userProfile.id && (
+                                 <Button
+                                   size="sm"
+                                   variant="outline"
+                                   onClick={() => openDeleteDialog(userProfile)}
+                                   className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                 >
+                                   <Trash2 className="h-3 w-3" />
+                                 </Button>
+                               )}
+                             </div>
+                           </div>
+                           
+                           <div className="space-y-2">
+                             <p className="font-medium text-sm">{userProfile.email}</p>
+                             {userProfile.name && <p className="text-sm text-muted-foreground">{userProfile.name}</p>}
+                             {userProfile.phone && <p className="text-xs text-muted-foreground">{userProfile.phone}</p>}
+                             <p className="text-xs text-muted-foreground">
+                               Joined: {new Date(userProfile.created_at).toLocaleDateString()}
+                             </p>
+                           </div>
+                           
+                           <Button
+                             className="w-full mt-3"
+                             variant="outline"
+                             size="sm"
+                             onClick={() => loadChildren(userProfile.id)}
+                           >
+                             View Children
+                           </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         )}
 
         {/* Children View */}

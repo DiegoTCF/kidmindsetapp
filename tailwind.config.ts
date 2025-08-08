@@ -68,35 +68,10 @@ export default {
 					bg: 'hsl(var(--level-bg))',
 					foreground: 'hsl(var(--level-foreground))'
 				},
-				purple: {
-					DEFAULT: 'hsl(var(--purple))',
-					foreground: 'hsl(var(--purple-foreground))'
-				},
 				gold: {
 					400: 'hsl(43, 85%, 60%)',
 					500: 'hsl(43, 85%, 55%)',
 					600: 'hsl(43, 85%, 50%)',
-				},
-				/* Premium Football Mindset Colors */
-				'neon-pink': {
-					DEFAULT: 'hsl(var(--neon-pink))',
-					foreground: 'hsl(var(--primary-foreground))'
-				},
-				'electric-blue': {
-					DEFAULT: 'hsl(var(--electric-blue))',
-					foreground: 'hsl(0, 0%, 100%)'
-				},
-				'bright-green': {
-					DEFAULT: 'hsl(var(--bright-green))',
-					foreground: 'hsl(0, 0%, 0%)'
-				},
-				'electric-yellow': {
-					DEFAULT: 'hsl(var(--electric-yellow))',
-					foreground: 'hsl(0, 0%, 0%)'
-				},
-				'danger-red': {
-					DEFAULT: 'hsl(var(--danger-red))',
-					foreground: 'hsl(0, 0%, 100%)'
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
@@ -113,10 +88,6 @@ export default {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
-			},
-			fontFamily: {
-				'bebas': ['Bebas Neue', 'Impact', 'Arial Black', 'sans-serif'],
-				'inter': ['Inter', 'system-ui', 'sans-serif'],
 			},
 			keyframes: {
 				'accordion-down': {

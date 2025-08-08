@@ -5,21 +5,19 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-bold ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 uppercase tracking-wide",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-neon-pink text-neon-pink-foreground hover:bg-neon-pink/90 shadow-lg hover:shadow-neon-pink/30 hover:scale-105 active:scale-95",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
         destructive:
-          "bg-danger-red text-danger-red-foreground hover:bg-danger-red/90 shadow-lg hover:shadow-red-500/30",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
-          "border-2 border-neon-pink bg-transparent text-neon-pink hover:bg-neon-pink hover:text-neon-pink-foreground shadow-lg hover:shadow-neon-pink/30",
+          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
         secondary:
-          "bg-electric-blue text-electric-blue-foreground hover:bg-electric-blue/90 shadow-lg hover:shadow-purple-500/30 hover:scale-105",
-        ghost: "hover:bg-accent/20 hover:text-accent-foreground backdrop-blur-sm",
-        link: "text-electric-blue underline-offset-4 hover:underline font-bold",
-        success: "bg-bright-green text-bright-green-foreground hover:bg-bright-green/90 shadow-lg hover:shadow-green-500/30 hover:scale-105",
-        warning: "bg-electric-yellow text-electric-yellow-foreground hover:bg-electric-yellow/90 shadow-lg hover:shadow-yellow-500/30",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
         default: "h-10 px-4 py-2",

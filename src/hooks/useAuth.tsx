@@ -187,12 +187,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setUser(session.user);
           setLoading(false);
         } else {
-          // No session found - redirect to auth page instead of creating anonymous user
-          console.log('[AuthFix] No session found, user needs to sign in');
+          // Only create anonymous user if we're not on the auth page
           if (window.location.pathname !== '/auth') {
-            window.location.href = '/auth';
+            console.log('[AuthFix] No session found, creating anonymous user');
+            const { data: anonData, error: anonError } = await supabase.auth.signInAnonymously();
+            
+            if (anonError) {
+              console.log('[AuthFix] Anonymous signin error:', anonError.message);
+              setLoading(false);
+            } else {
+              // Anonymous user created successfully
+              // The auth state change listener will handle the rest
+            }
+          } else {
+            // On auth page, just set loading to false without creating anonymous user
+            console.log('[AuthFix] On auth page, not creating anonymous user');
+            setLoading(false);
           }
-          setLoading(false);
         }
       } catch (error) {
         console.log('[AuthFix] Error initializing auth:', error);

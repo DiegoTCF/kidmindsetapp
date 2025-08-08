@@ -201,13 +201,10 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
   useEffect(() => {
     loadChildData();
     loadUserGoals();
-  }, []);
-
-  useEffect(() => {
-    if (existingActivityId && isResumingActivity && userGoals.length > 0) {
+    if (existingActivityId && isResumingActivity) {
       loadExistingActivityData();
     }
-  }, [existingActivityId, isResumingActivity, userGoals]);
+  }, [existingActivityId, isResumingActivity]);
 
   const loadChildData = async () => {
     try {
@@ -283,14 +280,9 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
           setIntention(preData.intention);
         }
         
-        // Load selected goal - find the goal ID that matches the text
+        // Load selected goal
         if (preData.selectedGoal) {
-          const matchingGoal = userGoals.find(g => g.goal_text === preData.selectedGoal);
-          if (matchingGoal) {
-            setSelectedGoal(matchingGoal.id);
-          } else {
-            setSelectedGoal(preData.selectedGoal); // fallback if goal not found
-          }
+          setSelectedGoal(preData.selectedGoal);
         }
         
         // Load checklist items
@@ -1125,19 +1117,11 @@ export default function ActivityForm({ activity, onComplete, existingActivityId,
                 <div className="mb-4 p-3 bg-primary/10 rounded-xl border border-primary/20">
                   <p className="text-sm font-medium mb-2 text-primary">Your goal for this session:</p>
                   <div className="text-sm flex items-center gap-2">
-                    <span className="font-medium">{userGoals.find(g => g.id === selectedGoal)?.goal_text || selectedGoal}</span>
+                    <span className="font-medium">{userGoals.find(g => g.id === selectedGoal)?.goal_text}</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
                     Did you manage to work on or improve in this area?
                   </p>
-                </div>
-              )}
-
-              {/* Display intention from pre-activity */}
-              {intention && (
-                <div className="mb-4 p-3 bg-muted/50 rounded-xl">
-                  <p className="text-sm font-medium mb-2">Your intention:</p>
-                  <p className="text-sm text-muted-foreground">{intention}</p>
                 </div>
               )}
 

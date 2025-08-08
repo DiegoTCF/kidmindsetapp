@@ -219,25 +219,60 @@ export default function Stadium() {
             </Card>
           )}
 
-          {/* MINDSET HUB */}
-          <Card className="w-full max-w-md shadow-soft card-glow-blue">
+          {/* Tools to Get Ready */}
+          <Card className="w-full max-w-md shadow-soft">
             <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2 justify-center text-electric-blue">
-                🧠 MINDSET HUB
+              <CardTitle className="text-lg flex items-center gap-2 justify-center">
+                ⚙️ Tools to Get Ready
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground text-center mb-4">
-                Build your confidence and mental strength with mindset tools designed specifically for young footballers.
+                Use these tools to help your mind and body before any activity.
               </p>
-              <Button
-                onClick={() => window.location.href = '/mindset-hub'}
-                className="w-full bg-electric-blue hover:bg-electric-blue/90 text-electric-blue-foreground"
-                size="lg"
-              >
-                <Play className="w-5 h-5 mr-2" />
-                Open Mindset Hub
-              </Button>
+              <div className="space-y-3">
+                <Button
+                  variant="outline"
+                  className="w-full h-auto p-4 text-left border-2 hover:border-primary/30"
+                  disabled
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🧘</span>
+                    <div>
+                      <p className="font-medium">Yoga Video</p>
+                      <p className="text-xs text-muted-foreground">(Coming Soon)</p>
+                    </div>
+                  </div>
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  className="w-full h-auto p-4 text-left border-2 hover:border-primary/30"
+                  disabled
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🎧</span>
+                    <div>
+                      <p className="font-medium">Visualisation Audio</p>
+                      <p className="text-xs text-muted-foreground">(Coming Soon)</p>
+                    </div>
+                  </div>
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  className="w-full h-auto p-4 text-left border-2 hover:border-primary/30"
+                  disabled
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🌬️</span>
+                    <div>
+                      <p className="font-medium">Breathing Audio</p>
+                      <p className="text-xs text-muted-foreground">(Coming Soon)</p>
+                    </div>
+                  </div>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Plus, Star, Trophy, Edit2, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -31,18 +31,6 @@ interface PlayerData {
   level: number;
   points: number;
   weeklyMoodAvg: number;
-}
-
-interface ActivityForToday {
-  id: string;
-  activity_name: string;
-  activity_type: string;
-  activity_date: string;
-  pre_activity_completed: boolean;
-  post_activity_completed: boolean;
-  final_score?: string | null;
-  goals_scored?: number | null;
-  assists_made?: number | null;
 }
 
 const moodOptions: MoodOption[] = [
@@ -83,24 +71,18 @@ export default function Home() {
   const [newTaskName, setNewTaskName] = useState("");
   const [showAddTask, setShowAddTask] = useState(false);
 
-// Level up tracking
-const [previousLevel, setPreviousLevel] = useState<number | null>(null);
-const [showLevelUpNotification, setShowLevelUpNotification] = useState(false);
+  // Level up tracking
+  const [previousLevel, setPreviousLevel] = useState<number | null>(null);
+  const [showLevelUpNotification, setShowLevelUpNotification] = useState(false);
 
-// Today's activity (from signup schedule and actual records)
-const [plannedActivityType, setPlannedActivityType] = useState<string | null>(null);
-const [todaysActivity, setTodaysActivity] = useState<ActivityForToday | null>(null);
-const [loadingTodayActivity, setLoadingTodayActivity] = useState<boolean>(false);
-
-// Load saved data on mount
-useEffect(() => {
-  console.log('[KidMindset] Loading player data...');
-  loadPlayerData();
-  loadDailyTasks();
-  loadTodayData();
-  loadWeeklyMoodAverage();
-  loadTodaysActivity();
-}, []);
+  // Load saved data on mount
+  useEffect(() => {
+    console.log('[KidMindset] Loading player data...');
+    loadPlayerData();
+    loadDailyTasks();
+    loadTodayData();
+    loadWeeklyMoodAverage();
+  }, []);
 
   const loadPlayerData = async () => {
     try {
@@ -505,75 +487,9 @@ useEffect(() => {
     } catch (error) {
       console.error('[KidMindset] Error loading weekly mood average:', error);
     }
-};
+  };
 
-// Labels for activity types configured during signup
-const activityTypeLabels: Record<string, string> = {
-  team_training: 'Team Training',
-  '1to1': '1 to 1',
-  small_group: 'Small Group or Futsal',
-  match: 'Match/Tournament'
-};
-
-// Load today's planned activity from weekly_schedule and any actual activity record for today
-const loadTodaysActivity = async () => {
-  try {
-    setLoadingTodayActivity(true);
-    const { data: childId, error: childError } = await supabase.rpc('get_current_user_child_id');
-    if (childError || !childId) {
-      console.error('[Home] Error getting child ID for today activity:', childError);
-      setPlannedActivityType(null);
-      setTodaysActivity(null);
-      return;
-    }
-
-    // Get weekly schedule
-    const { data: childRow, error: childRowError } = await supabase
-      .from('children')
-      .select('weekly_schedule, name')
-      .eq('id', childId)
-      .maybeSingle();
-
-    if (childRowError) {
-      console.error('[Home] Error fetching child weekly_schedule:', childRowError);
-    }
-
-    if (childRow?.weekly_schedule) {
-      try {
-        const weekly = JSON.parse(childRow.weekly_schedule) as Record<string, string>;
-        const todayKey = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-        setPlannedActivityType(weekly[todayKey] || null);
-      } catch (e) {
-        console.warn('[Home] Invalid weekly_schedule JSON');
-        setPlannedActivityType(null);
-      }
-    } else {
-      setPlannedActivityType(null);
-    }
-
-    // Fetch today's actual activity if any
-    const todayDate = new Date().toISOString().split('T')[0];
-    const { data: acts, error: actsError } = await supabase
-      .from('activities')
-      .select('id, activity_name, activity_type, activity_date, pre_activity_completed, post_activity_completed, final_score, goals_scored, assists_made')
-      .eq('child_id', childId)
-      .eq('activity_date', todayDate)
-      .order('created_at', { ascending: false });
-
-    if (actsError) {
-      console.error('[Home] Error fetching today\'s activities:', actsError);
-      setTodaysActivity(null);
-    } else {
-      setTodaysActivity(acts && acts.length > 0 ? (acts[0] as ActivityForToday) : null);
-    }
-  } catch (err) {
-    console.error('[Home] Unexpected error loading today activity:', err);
-  } finally {
-    setLoadingTodayActivity(false);
-  }
-};
-
-const handleMoodSubmit = async (moodValue: number) => {
+  const handleMoodSubmit = async (moodValue: number) => {
     setMoodSubmitted(true);
     setTodayMood(moodValue);
     const today = new Date().toDateString();
@@ -1009,36 +925,9 @@ const handleMoodSubmit = async (moodValue: number) => {
             totalPoints={playerData.points}
             playerName={playerData.name}
           />
-</div>
+        </div>
 
-{/* Today\'s Activity */}
-<Card className="mb-6 shadow-soft">
-  <CardHeader>
-    <CardTitle className="text-lg">Today\'s Activity</CardTitle>
-  </CardHeader>
-  <CardContent>
-    {loadingTodayActivity ? (
-      <div className="text-sm text-muted-foreground">Loading...</div>
-    ) : plannedActivityType ? (
-      <div className="space-y-3">
-        <p className="text-sm text-muted-foreground">Planned for today:</p>
-        <p className="font-medium">{activityTypeLabels[plannedActivityType] || plannedActivityType}</p>
-        <Button className="w-full" onClick={() => window.location.href = '/stadium'}>
-          Start New Activity
-        </Button>
-      </div>
-    ) : (
-      <div className="space-y-3">
-        <p className="text-sm text-muted-foreground">No activity planned for today.</p>
-        <Button variant="outline" className="w-full" onClick={() => window.location.href = '/stadium'}>
-          New Activity
-        </Button>
-      </div>
-    )}
-  </CardContent>
-</Card>
-
-{/* Mood Check */}
+        {/* Mood Check */}
         <Card className="mb-6 shadow-soft">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
@@ -1272,75 +1161,6 @@ const handleMoodSubmit = async (moodValue: number) => {
                 </p>
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        {/* Mindset Hub Section */}
-        <Card className="card-stadium">
-          <CardHeader>
-            <CardTitle className="heading-coach text-center">
-              MINDSET HUB
-            </CardTitle>
-            <CardDescription className="text-center text-muted-foreground">
-              Tools to strengthen your mental game
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-3">
-              <Card 
-                className="card-stadium card-glow-blue hover:card-glow-blue cursor-pointer transition-all duration-300 hover:scale-105"
-                onClick={() => window.location.href = '/mindset-hub'}
-              >
-                <CardContent className="p-4 text-center">
-                  <CustomIcon type="home" size="lg" className="mx-auto mb-2" />
-                  <h3 className="font-bebas text-xs uppercase tracking-wide mb-1">BREATHING</h3>
-                  <p className="text-xs text-muted-foreground">4-4-4 Technique</p>
-                </CardContent>
-              </Card>
-
-              <Card 
-                className="card-stadium card-glow-yellow hover:card-glow-yellow cursor-pointer transition-all duration-300 hover:scale-105"
-                onClick={() => window.location.href = '/mindset-hub'}
-              >
-                <CardContent className="p-4 text-center">
-                  <CustomIcon type="goals" size="lg" className="mx-auto mb-2" />
-                  <h3 className="font-bebas text-xs uppercase tracking-wide mb-1">VISUALIZATION</h3>
-                  <p className="text-xs text-muted-foreground">Mental Rehearsal</p>
-                </CardContent>
-              </Card>
-
-              <Card 
-                className="card-stadium card-glow-pink hover:card-glow-pink cursor-pointer transition-all duration-300 hover:scale-105"
-                onClick={() => window.location.href = '/mindset-hub'}
-              >
-                <CardContent className="p-4 text-center">
-                  <CustomIcon type="stadium" size="lg" className="mx-auto mb-2" />
-                  <h3 className="font-bebas text-xs uppercase tracking-wide mb-1">SELF-TALK</h3>
-                  <p className="text-xs text-muted-foreground">Positive Commands</p>
-                </CardContent>
-              </Card>
-
-              <Card 
-                className="card-stadium card-glow-green hover:card-glow-green cursor-pointer transition-all duration-300 hover:scale-105"
-                onClick={() => window.location.href = '/mindset-hub'}
-              >
-                <CardContent className="p-4 text-center">
-                  <CustomIcon type="progress" size="lg" className="mx-auto mb-2" />
-                  <h3 className="font-bebas text-xs uppercase tracking-wide mb-1">TEAM FOCUS</h3>
-                  <p className="text-xs text-muted-foreground">Leadership Skills</p>
-                </CardContent>
-              </Card>
-            </div>
-            
-            <div className="mt-4 text-center">
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={() => window.location.href = '/mindset-hub'}
-              >
-                VIEW ALL TOOLS
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </div>
