@@ -18,6 +18,7 @@ import { useAuth } from "./hooks/useAuth";
 import { AdminProvider } from "./hooks/useAdmin";
 import PlayerIdentity from "./pages/PlayerIdentity";
 import DNAYou from "./pages/DNAYou";
+import DNAYouQuiz from "./pages/DNAYouQuiz";
 
 const queryClient = new QueryClient();
 
@@ -93,6 +94,13 @@ const App = () => {
                 <ProtectedRoute>
                   <AppLayout>
                     <DNAYou />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/dna/you/quiz" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <DNAYouQuiz />
                   </AppLayout>
                 </ProtectedRoute>
               } />

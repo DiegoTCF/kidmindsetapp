@@ -1,48 +1,38 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, GraduationCap, Home, Medal } from "lucide-react";
 
-const radioOptions = [
-  "Frustrated but ready to work",
-  "Like I’m not good enough",
-  "I forget it quickly and move on",
-] as const;
+// SEO and UX constants
+const PAGE_TITLE = "Footballer’s Hat – Story Flow";
+const PAGE_DESC = "Learn the Footballer’s Hat story in 4 steps with smooth animations.";
+
+const totalSteps = 4; // Closing card is separate
 
 export default function DNAYou() {
-  const { user } = useAuth();
-  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [step, setStep] = useState(0); // 0..3; closing card is "done"
+  const [direction, setDirection] = useState<1 | -1>(1);
 
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-
-  const [q1, setQ1] = useState("");
-  const [q2, setQ2] = useState("");
-  const [q3, setQ3] = useState("");
-  const [q4, setQ4] = useState<typeof radioOptions[number] | "">("");
-  const [q5, setQ5] = useState("");
-  const [q6, setQ6] = useState("");
+  // Step 2 toggle state
+  const [goodDay, setGoodDay] = useState(true);
 
   useEffect(() => {
     // SEO: title, description, canonical
     const prevTitle = document.title;
-    document.title = "Footballer’s Hat – Your DNA";
+    document.title = PAGE_TITLE;
 
     const metaDesc = document.querySelector('meta[name="description"]');
     const createdDesc = !metaDesc;
     const el = metaDesc || document.createElement("meta");
     el.setAttribute("name", "description");
-    el.setAttribute("content", "Learn the Footballer’s Hat story and take a quick self-awareness quiz.");
+    el.setAttribute("content", PAGE_DESC);
     if (createdDesc) document.head.appendChild(el);
 
-    const linkCanonical = document.querySelector('link[rel="canonical"]') || document.createElement("link");
+    const linkCanonical =
+      document.querySelector('link[rel="canonical"]') || document.createElement("link");
     linkCanonical.setAttribute("rel", "canonical");
     linkCanonical.setAttribute("href", window.location.origin + "/dna/you");
     if (!linkCanonical.parentElement) document.head.appendChild(linkCanonical);
@@ -52,216 +42,326 @@ export default function DNAYou() {
     };
   }, []);
 
+  // Keyboard navigation
   useEffect(() => {
-    const load = async () => {
-      if (!user) return;
-      setLoading(true);
-      const { data, error } = await (supabase as any)
-        .from("player_identity_hats")
-        .select("q1,q2,q3,q4,q5,q6")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (error) {
-        console.error("Failed to load hats quiz", error);
-      }
-
-      if (data) {
-        setQ1(data.q1 ?? "");
-        setQ2(data.q2 ?? "");
-        setQ3(data.q3 ?? "");
-        setQ4((data.q4 as any) ?? "");
-        setQ5(data.q5 ?? "");
-        setQ6(data.q6 ?? "");
-      }
-      setLoading(false);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") next();
+      if (e.key === "ArrowLeft") prev();
     };
-    load();
-  }, [user]);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [step]);
 
-  const validate = () => {
-    const within = (s: string) => s.length <= 140;
-    if (!within(q1) || !within(q2) || !within(q3) || !within(q5) || !within(q6)) {
-      toast({ title: "Answers too long", description: "Keep each answer under 140 characters.", variant: "destructive" });
-      return false;
-    }
-    if (!q4 || !radioOptions.includes(q4 as any)) {
-      toast({ title: "Choose an option for Q4", variant: "destructive" });
-      return false;
-    }
-    return true;
+  const next = () => {
+    setDirection(1);
+    setStep((s) => Math.min(s + 1, totalSteps - 1));
+  };
+  const prev = () => {
+    setDirection(-1);
+    setStep((s) => Math.max(s - 1, 0));
   };
 
-  const onSubmit = async () => {
-    if (!user) return;
-    if (!validate()) return;
+  const progress = useMemo(() => ((step + 1) / totalSteps) * 100, [step]);
 
-    setSaving(true);
-    try {
-      const payload = {
-        user_id: user.id,
-        q1, q2, q3, q4, q5, q6,
-      };
-      const { error } = await (supabase as any)
-        .from("player_identity_hats")
-        .upsert(payload, { onConflict: "user_id" });
-      if (error) throw error;
-      toast({ title: "Saved", description: "Your answers were saved." });
-      setSubmitted(true);
-    } catch (e: any) {
-      console.error(e);
-      toast({ title: "Save failed", description: e.message ?? "Please try again.", variant: "destructive" });
-    } finally {
-      setSaving(false);
-    }
+  // Variants
+  const slideVariants = {
+    enter: (dir: 1 | -1) => ({ x: dir === 1 ? 40 : -40, opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (dir: 1 | -1) => ({ x: dir === 1 ? -40 : 40, opacity: 0 }),
   };
 
-  const Summary = useMemo(() => (
-    <Card className="shadow-sm">
-      <CardHeader>
-        <CardTitle>Summary – Your Hats</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3 text-sm text-muted-foreground">
-        <p>Family Hat, School Hat, Footballer’s Hat, Qualities Hat.</p>
-        <div className="grid gap-2">
-          <div><span className="font-medium text-foreground">Q1</span>: {q1 || "—"}</div>
-          <div><span className="font-medium text-foreground">Q2</span>: {q2 || "—"}</div>
-          <div><span className="font-medium text-foreground">Q3</span>: {q3 || "—"}</div>
-          <div><span className="font-medium text-foreground">Q4</span>: {q4 || "—"}</div>
-          <div><span className="font-medium text-foreground">Q5</span>: {q5 || "—"}</div>
-          <div><span className="font-medium text-foreground">Q6</span>: {q6 || "—"}</div>
+  const transition = { duration: 0.25, ease: "easeOut" };
+
+  const iconStagger = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.06 }
+    }
+  };
+  const iconItem = {
+    hidden: { opacity: 0, y: 8 },
+    show: { opacity: 1, y: 0 }
+  };
+
+  const Step1 = (
+    <div className="space-y-4">
+      <p className="text-muted-foreground">
+        Think of your life like a hat rack with different hats hanging on it.
+      </p>
+      <motion.ul
+        className="grid grid-cols-2 gap-3"
+        variants={iconStagger}
+        initial="hidden"
+        animate="show"
+      >
+        {[
+          { Icon: Home, text: "Family Hat — who you are at home." },
+          { Icon: GraduationCap, text: "School Hat — who you are in the classroom and with friends." },
+          { Icon: Trophy, text: "Footballer’s Hat — who you are on the pitch." },
+          { Icon: Medal, text: "Qualities Hat — the traits that make you… you (kind, funny, hardworking, resilient)." },
+        ].map(({ Icon, text }, i) => (
+          <motion.li
+            key={i}
+            variants={iconItem}
+            className="flex items-start gap-2 rounded-md border p-3"
+          >
+            <motion.div
+              aria-hidden
+              className="shrink-0"
+              animate={{ y: [0, -4, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <Icon className="h-5 w-5 text-foreground/80" />
+            </motion.div>
+            <span>{text}</span>
+          </motion.li>
+        ))}
+      </motion.ul>
+      <p className="text-muted-foreground">You don’t just wear one hat. You switch between them every day.</p>
+    </div>
+  );
+
+  const Step2 = (
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <div className="text-sm text-muted-foreground">Toggle mood:</div>
+        <div className="flex items-center gap-1 rounded-full border p-1">
+          <motion.button
+            type="button"
+            className={`px-3 py-1 rounded-full text-sm ${goodDay ? "bg-primary/10" : ""}`}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setGoodDay(true)}
+          >
+            Great game
+          </motion.button>
+          <motion.button
+            type="button"
+            className={`px-3 py-1 rounded-full text-sm ${!goodDay ? "bg-primary/10" : ""}`}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setGoodDay(false)}
+          >
+            Tough game
+          </motion.button>
         </div>
-        <p className="pt-1 text-foreground">You are all your hats, not just one. A bad day doesn’t change who you are.</p>
-        <div className="pt-2">
-          <Button variant="secondary" onClick={() => setSubmitted(false)}>Retake quiz</Button>
-        </div>
-      </CardContent>
-    </Card>
-  ), [q1,q2,q3,q4,q5,q6]);
+      </div>
+      <div className="min-h-[72px]">
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={goodDay ? "great" : "tough"}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={transition}
+            className="text-muted-foreground"
+          >
+            {goodDay
+              ? "Some days, your Footballer’s Hat feels amazing — great decisions, maybe a goal."
+              : "Other days, it feels heavy — mistakes, missed chances, bad passes."}
+          </motion.p>
+        </AnimatePresence>
+      </div>
+      <motion.div
+        initial={{ scale: 1 }}
+        animate={{ scale: [1, 1.02, 1] }}
+        transition={{ duration: 0.4 }}
+        className="rounded-md border p-3"
+      >
+        <span className="font-medium">Truth:</span>{" "}
+        <span className="text-muted-foreground">
+          a bad game doesn’t make you less valuable. It just means that hat had a tough day — the others are still on the rack, just as strong.
+        </span>
+      </motion.div>
+    </div>
+  );
+
+  const Step3 = (
+    <div className="space-y-4">
+      <motion.ul
+        initial="hidden"
+        animate="show"
+        variants={{
+          hidden: {},
+          show: { transition: { staggerChildren: 0.3 } },
+        }}
+        className="space-y-2"
+      >
+        {[
+          "If you play badly, does it make you a worse friend?",
+          "A worse son/daughter?",
+          "Does it erase your effort in training?",
+          "No. It’s one part of who you are — not the whole picture.",
+        ].map((t, i) => (
+          <motion.li key={i} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
+            {t}
+          </motion.li>
+        ))}
+      </motion.ul>
+      <motion.div
+        className="h-px w-full bg-border"
+        initial={{ scaleX: 0 }}
+        animate={{ scaleX: 1 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        style={{ transformOrigin: "left" }}
+      />
+    </div>
+  );
+
+  const Step4 = (
+    <div className="space-y-4 relative overflow-hidden">
+      {/* Subtle sparkle */}
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute -top-6 -left-6 h-24 w-24 rounded-full"
+        style={{ background: "radial-gradient(circle, hsl(var(--primary)/0.15), transparent 60%)" }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: [0, 1, 0] }}
+        transition={{ duration: 1.0 }}
+      />
+      <p className="text-muted-foreground">
+        Your Footballer’s Hat is different from anyone else’s. Maybe it says:
+      </p>
+      <motion.div
+        className="flex flex-wrap gap-2"
+        initial="hidden"
+        animate="show"
+        variants={{ hidden: {}, show: { transition: { staggerChildren: 0.04 } } }}
+      >
+        {[
+          "Quick thinker",
+          "Great first touch",
+          "Leader under pressure",
+        ].map((chip) => (
+          <motion.span
+            key={chip}
+            className="px-3 py-1 rounded-full border text-sm"
+            initial={{ opacity: 0, scale: 0.9, y: 4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+          >
+            {chip}
+          </motion.span>
+        ))}
+      </motion.div>
+      <p className="text-muted-foreground">
+        Your other hats carry their own strengths too. No one else has your exact mix. That’s your identity.
+      </p>
+    </div>
+  );
+
+  const steps = [
+    { title: "1️⃣ The Hat Rack", node: Step1 },
+    { title: "2️⃣ Match Day Reality", node: Step2 },
+    { title: "3️⃣ The Bad Day Test", node: Step3 },
+    { title: "4️⃣ Why Your Hats Are Unique", node: Step4 },
+  ];
+
+  // Swipe handling using drag
+  const handleDragEnd = (_: any, info: { offset: { x: number }; velocity: { x: number } }) => {
+    const { x } = info.offset;
+    const v = info.velocity.x;
+    const threshold = 80; // px
+    if (x < -threshold || v < -400) {
+      next();
+    } else if (x > threshold || v > 400) {
+      prev();
+    }
+  };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 pt-20 pb-10">
-      <header className="mb-6">
+    <div className="max-w-[720px] mx-auto px-4 pt-20 pb-10">
+      {/* Header */}
+      <motion.header initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="mb-4">
         <h1 className="text-2xl font-bold tracking-tight">The Footballer’s Hat</h1>
-        <p className="text-muted-foreground">A quick story and self-check to build real confidence.</p>
-      </header>
+        <p className="text-muted-foreground">A short story in 4 steps</p>
+      </motion.header>
 
-      {/* Story */}
-      <section aria-labelledby="story" className="mb-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle id="story">1️⃣ The Hat Rack</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <p>Think of your life like a hat rack with different hats hanging on it.</p>
-              <ul className="space-y-2">
-                <li className="flex items-center gap-2"><Home className="h-5 w-5" aria-hidden /> <span>A Family Hat – who you are at home.</span></li>
-                <li className="flex items-center gap-2"><GraduationCap className="h-5 w-5" aria-hidden /> <span>A School Hat – who you are in the classroom or with friends.</span></li>
-                <li className="flex items-center gap-2"><Trophy className="h-5 w-5" aria-hidden /> <span>A Footballer’s Hat – who you are on the pitch.</span></li>
-                <li className="flex items-center gap-2"><Medal className="h-5 w-5" aria-hidden /> <span>A Qualities Hat – the traits that make you… you (kind, funny, hardworking, resilient).</span></li>
-              </ul>
-              <p>You don’t just wear one hat. You switch between them every day.</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>2️⃣ Match Day Reality</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <p>Some days, your Footballer’s Hat feels amazing — you’ve had a great match, made smart decisions, maybe scored a goal. Other days, it feels heavy — mistakes, missed chances, bad passes.</p>
-              <p>Here’s the truth: a bad game doesn’t make you less valuable as a person. It just means that on that day, that hat didn’t feel great — but the others are still on the rack, just as strong.</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>3️⃣ The Bad Day Test</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <p>If you had a poor game, does it make you a worse friend? A worse brother or sister? Does it erase the effort you’ve put into training or the kindness you show others? No. It’s one part of who you are — not the whole picture.</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>4️⃣ Why Your Hats Are Unique</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <p>Every Footballer’s Hat is different — yours might say:</p>
-              <ul className="list-disc ml-5 space-y-1">
-                <li>Quick thinker</li>
-                <li>Great first touch</li>
-                <li>Leader under pressure</li>
-              </ul>
-              <p>Your other hats carry different strengths — your school hat, your family hat, your qualities hat. No one else has the exact combination you do. That’s what makes you unique.</p>
-            </CardContent>
-          </Card>
-
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>5️⃣ The Lesson</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <p>When you know your value comes from all your hats, you stop letting one bad game decide your worth. Your Footballer’s Hat can have ups and downs — but you still have all the other hats that make you who you are.</p>
-              <p className="font-medium">Key Line:</p>
-              <p className="italic">“A bad day doesn’t change who I am — it just means I’ve got something to work on.”</p>
-            </CardContent>
-          </Card>
+      {/* Progress */}
+      <div className="mb-4">
+        <div className="relative h-2 w-full rounded-full bg-muted overflow-hidden">
+          <motion.div
+            className="h-full bg-primary"
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ type: "spring", stiffness: 140, damping: 20 }}
+          />
+          {/* Segments markers */}
+          <div className="absolute inset-0 flex justify-between">
+            {Array.from({ length: totalSteps - 1 }).map((_, i) => (
+              <div key={i} className="h-full w-px bg-background/60" />
+            ))}
+          </div>
         </div>
-      </section>
+        <div className="mt-2 text-sm text-muted-foreground">Step {step + 1} of {totalSteps}</div>
+      </div>
 
-      {/* Quiz */}
-      <section aria-labelledby="quiz">
-        <Card className="shadow-sm">
-          <CardHeader>
-            <CardTitle id="quiz">Know Your Hats – Quick Quiz</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {submitted ? (
-              Summary
+      {/* Flow */}
+      <Card className="shadow-sm">
+        <CardHeader>
+          <CardTitle>{steps[step].title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <AnimatePresence mode="popLayout" custom={direction}>
+            <motion.div
+              key={step}
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={transition}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              onDragEnd={handleDragEnd}
+              className="min-h-[220px]"
+            >
+              {steps[step].node}
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Navigation */}
+          <div className="mt-6 flex items-center justify-between">
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Button variant="secondary" onClick={prev} disabled={step === 0}>Back</Button>
+            </motion.div>
+            {step < totalSteps - 1 ? (
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Button onClick={next}>Next</Button>
+              </motion.div>
             ) : (
-              <div className="space-y-5">
-                <div className="grid gap-2">
-                  <Label>1. List 3 qualities you’re proud of that have nothing to do with football.</Label>
-                  <Input value={q1} onChange={(e) => setQ1(e.target.value.slice(0,140))} placeholder="e.g. kind, funny, loyal" />
-                </div>
-                <div className="grid gap-2">
-                  <Label>2. What’s one thing you do well as a footballer?</Label>
-                  <Input value={q2} onChange={(e) => setQ2(e.target.value.slice(0,140))} placeholder="e.g. first touch, vision" />
-                </div>
-                <div className="grid gap-2">
-                  <Label>3. What’s one thing you want to improve in your game?</Label>
-                  <Input value={q3} onChange={(e) => setQ3(e.target.value.slice(0,140))} placeholder="e.g. weak foot, scanning" />
-                </div>
-                <div className="grid gap-2">
-                  <Label>4. If you have a bad match, how does it usually make you feel?</Label>
-                  <RadioGroup value={q4} onValueChange={(v) => setQ4(v as any)}>
-                    {radioOptions.map((opt) => (
-                      <div key={opt} className="flex items-center space-x-2">
-                        <RadioGroupItem id={opt} value={opt} />
-                        <Label htmlFor={opt}>{opt}</Label>
-                      </div>
-                    ))}
-                  </RadioGroup>
-                </div>
-                <div className="grid gap-2">
-                  <Label>5. What’s one thing you could tell yourself after a bad game?</Label>
-                  <Input value={q5} onChange={(e) => setQ5(e.target.value.slice(0,140))} placeholder="e.g. Next play. Best play." />
-                </div>
-                <div className="grid gap-2">
-                  <Label>6. Which “hat” are you wearing when you feel the most confident? Why?</Label>
-                  <Input value={q6} onChange={(e) => setQ6(e.target.value.slice(0,140))} placeholder="e.g. School – because I lead group projects" />
-                </div>
-                <div className="pt-2">
-                  <Button onClick={onSubmit} disabled={saving || loading}>{saving ? "Saving..." : "Save & See Summary"}</Button>
-                </div>
-              </div>
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Button onClick={() => navigate("/dna/you/quiz")}>Got it — take the quick self-check</Button>
+              </motion.div>
             )}
-          </CardContent>
-        </Card>
-      </section>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Closing Card */}
+      {step === totalSteps - 1 && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25 }}
+          className="mt-6"
+        >
+          <Card className="shadow-sm">
+            <CardContent className="py-6">
+              <motion.p className="text-center text-lg" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                “A bad day doesn’t change who I am — it just means I’ve got something to work on.”
+              </motion.p>
+              <motion.div
+                className="mx-auto mt-3 h-0.5 w-40 bg-primary"
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                style={{ transformOrigin: "left" }}
+              />
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
     </div>
   );
 }
