@@ -70,7 +70,7 @@ export default function DNAYou() {
     exit: (dir: 1 | -1) => ({ x: dir === 1 ? -40 : 40, opacity: 0 }),
   };
 
-  const transition = { duration: 0.25, ease: "easeOut" };
+  const transition = { duration: 0.25, ease: [0.16, 1, 0.3, 1] as const };
 
   const iconStagger = {
     hidden: { opacity: 0 },
@@ -110,7 +110,7 @@ export default function DNAYou() {
               aria-hidden
               className="shrink-0"
               animate={{ y: [0, -4, 0] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              transition={{ duration: 3, repeat: Infinity, ease: [0.42, 0, 0.58, 1] }}
             >
               <Icon className="h-5 w-5 text-foreground/80" />
             </motion.div>
@@ -203,7 +203,7 @@ export default function DNAYou() {
         className="h-px w-full bg-border"
         initial={{ scaleX: 0 }}
         animate={{ scaleX: 1 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         style={{ transformOrigin: "left" }}
       />
     </div>
@@ -355,7 +355,7 @@ export default function DNAYou() {
                 className="mx-auto mt-3 h-0.5 w-40 bg-primary"
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
+                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                 style={{ transformOrigin: "left" }}
               />
             </CardContent>
