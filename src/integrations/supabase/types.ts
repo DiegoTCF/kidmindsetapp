@@ -301,6 +301,42 @@ export type Database = {
         }
         Relationships: []
       }
+      player_identities: {
+        Row: {
+          avatar_url: string | null
+          helps_team: string[] | null
+          main_weapon: string | null
+          motto: string | null
+          role_main: string | null
+          role_type: string | null
+          strengths: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          helps_team?: string[] | null
+          main_weapon?: string | null
+          motto?: string | null
+          role_main?: string | null
+          role_type?: string | null
+          strengths?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          helps_team?: string[] | null
+          main_weapon?: string | null
+          motto?: string | null
+          role_main?: string | null
+          role_type?: string | null
+          strengths?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       player_identity: {
         Row: {
           core_values: string[] | null
