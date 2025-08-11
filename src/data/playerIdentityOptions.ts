@@ -20,10 +20,10 @@ export const MAIN_ROLES: { value: MainRole; label: string }[] = [
 
 export const ROLE_TYPES: Record<MainRole, RoleTypeOption[]> = {
   Goalkeeper: [
-    { value: "gk_shot_stopper", label: "Shot Stopper (Alisson)", subtitle: "Brave in 1v1s, big saves" },
-    { value: "gk_sweeper", label: "Sweeper Keeper (Ederson)", subtitle: "Good on the ball, starts attacks" },
-    { value: "gk_commanding_box", label: "Commanding Box (Neuer)", subtitle: "Wins high balls, talks all game" },
-    { value: "gk_distributor", label: "Distributor (Ter Stegen)", subtitle: "Accurate long/short distribution" },
+    { value: "gk_shot_stopper", label: "Shot Stopper (Alisson)", subtitle: "Brave in 1v1s, big saves", image: "/lovable-uploads/62db5ad5-ea7e-4a89-88bf-6e2d2f9e639f.png" },
+    { value: "gk_sweeper", label: "Sweeper (Neuer)", subtitle: "Starts attacks, reads through balls, great with feet", image: "/lovable-uploads/0c9470e1-345e-4fca-81f4-74d09d83b37e.png" },
+    { value: "gk_commanding_box", label: "Commanding Box (Buffon)", subtitle: "Wins high balls, commands defence", image: "/lovable-uploads/13ca30ce-88dd-4efe-b357-c93f5c0d2433.png" },
+    { value: "gk_distributor", label: "Distributor (Ederson)", subtitle: "Passes with precision, builds play from the back", image: "/lovable-uploads/ebb6f724-13e1-4201-b89f-b1ba15585720.png" },
   ],
   Defender: [
     { value: "df_tackling_machine", label: "Tackling Machine (Varane)", subtitle: "Stops attacks with timing & strength" },
@@ -32,10 +32,11 @@ export const ROLE_TYPES: Record<MainRole, RoleTypeOption[]> = {
     { value: "df_physical_leader", label: "Physical Leader (Van Dijk)", subtitle: "Aerials, organisation, presence" },
   ],
   Midfielder: [
-    { value: "mf_box_to_box", label: "Box-to-Box Engine (Bellingham)", subtitle: "Covers ground, drives forward" },
-    { value: "mf_creator", label: "Creator (De Bruyne)", subtitle: "Killer passes, chance creator" },
-    { value: "mf_dribbler_breaker", label: "Dribbler & Breaker (Bernardo Silva)", subtitle: "Beats players, opens space" },
-    { value: "mf_shield", label: "Shield (Casemiro)", subtitle: "Protects defence, wins duels" },
+    { value: "mf_box_to_box", label: "Box-to-Box Engine (Bellingham)", subtitle: "Covers ground, drives forward", image: "/lovable-uploads/f8b415d2-d3b0-474a-8522-ad270bb1edf9.png" },
+    { value: "mf_creator", label: "Creator (De Bruyne)", subtitle: "Killer passes, chance creator", image: "/lovable-uploads/a54c1e28-f8f2-4b09-a1a1-c9deaa4b9e20.png" },
+    { value: "mf_dribbler_breaker", label: "Dribbler & Breaker (Bernardo Silva)", subtitle: "Beats players, opens space", image: "/lovable-uploads/562a1ae1-43f4-4b32-845c-99b1b37732c2.png" },
+    { value: "mf_controller", label: "Controller (Vitinha)", subtitle: "Controls tempo, builds play & connects", image: "/lovable-uploads/7979991f-3e75-4fc5-ae79-2dd11fec32e6.png" },
+    { value: "mf_shield", label: "Shield (Casemiro)", subtitle: "Protects defence, wins duels", image: "/lovable-uploads/52cd1b7b-c7e3-4f68-ab10-3360f0abe163.png" },
   ],
   Attacker: [
     { value: "at_finisher", label: "Finisher (Haaland)", subtitle: "Right place, right time, goals", image: "/lovable-uploads/185bb317-e723-4fa3-be56-a46ba07261a3.png" },
@@ -59,6 +60,7 @@ export const STRENGTHS_BY_ROLE_TYPE: Record<string, string[]> = {
   mf_box_to_box: ["Work rate","Winning second balls","Third-man runs","Ball carry","Pressing triggers"],
   mf_creator: ["Vision","Through balls","Final pass","Set-pieces","Half-turn receiving"],
   mf_dribbler_breaker: ["Tight-space dribble","Change of direction","Shielding","Carry past line","Quick 1-2s"],
+  mf_controller: ["Tempo control","Progressive passing","Receives under pressure","Switch of play","Dictates rhythm"],
   mf_shield: ["Interceptions","Screening lanes","Open body shape","Simple tempo pass","Tackle timing"],
 
   at_finisher: ["First-time finishing","Runs across CB","Box movement","Shot volume","First touch to shoot"],
@@ -67,8 +69,25 @@ export const STRENGTHS_BY_ROLE_TYPE: Record<string, string[]> = {
   at_target_player: ["Hold-up play","Lay-offs","Aerial presence","Near-post runs","Protect the ball"],
 };
 
-export const HELPS_TEAM_OPTIONS: string[] = [
-  "Create chances","Score goals","Stop attacks","Protect the goal","Keep the ball moving","Win the ball back",
+export const UNIVERSAL_STRENGTHS_OUTFIELD: string[] = [
+  "First touch","Technical ability","Physicality","One-touch passes","Connecting with others","Beating players 1v1","Driving with the ball","Ball control","Tight-space dribbling","Scanning","Heads up","I am faster than most","I am good at changing speed & direction","Breaking lines with passes",
+];
+
+export const GOALKEEPER_STRENGTHS: string[] = [
+  "1v1 bravery","Reflex saves","Positioning","Handling","Communication","Starting positions","Distribution accuracy (short/long)","Decision speed under pressure",
+];
+
+export const HELPS_TEAM_GK: string[] = [
+  "Stop shots",
+  "Command the defence",
+  "Distribute to start attacks",
+  "Organise from the back",
+  "Claim crosses and high balls",
+  "Leadership",
+];
+
+export const HELPS_TEAM_OUTFIELD: string[] = [
+  "Create chances","Score goals","Stop attacks","Keep the ball moving","Win the ball back","Drive the team forward","Control the game","Support teammates","Leadership",
 ];
 
 export const MOTTO_SUGGESTIONS: string[] = [

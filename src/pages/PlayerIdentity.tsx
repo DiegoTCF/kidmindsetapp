@@ -3,12 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Dna } from "lucide-react";
-import { MAIN_ROLES, ROLE_TYPES, STRENGTHS_BY_ROLE_TYPE, HELPS_TEAM_OPTIONS, MOTTO_SUGGESTIONS, type MainRole } from "@/data/playerIdentityOptions";
+import { MAIN_ROLES, ROLE_TYPES, STRENGTHS_BY_ROLE_TYPE, UNIVERSAL_STRENGTHS_OUTFIELD, GOALKEEPER_STRENGTHS, HELPS_TEAM_GK, HELPS_TEAM_OUTFIELD, MOTTO_SUGGESTIONS, type MainRole } from "@/data/playerIdentityOptions";
+import { RoleBoxSelector } from "@/components/PlayerIdentity/RoleBoxSelector";
+import { RoleTypeGrid } from "@/components/PlayerIdentity/RoleTypeGrid";
 import { ChipMultiSelect } from "@/components/PlayerIdentity/ChipMultiSelect";
 
 // Local type to avoid depending on generated Supabase types
@@ -43,7 +44,14 @@ export default function PlayerIdentity() {
   const [avatar_url, setAvatarUrl] = useState<string>("");
 
   const roleTypeOptions = useMemo(() => (roleMain ? ROLE_TYPES[roleMain] : []), [roleMain]);
-  const strengthOptions = useMemo(() => (roleType ? (STRENGTHS_BY_ROLE_TYPE[roleType] ?? []) : []), [roleType]);
+  const baseStrengths = useMemo(() => {
+    if (!roleMain) return [] as string[];
+    return roleMain === "Goalkeeper" ? GOALKEEPER_STRENGTHS : UNIVERSAL_STRENGTHS_OUTFIELD;
+  }, [roleMain]);
+  const strengthOptions = useMemo(() => {
+    const specific = roleType ? (STRENGTHS_BY_ROLE_TYPE[roleType] ?? []) : [];
+    return Array.from(new Set([...(baseStrengths as string[]), ...specific]));
+  }, [baseStrengths, roleType]);
 
   useEffect(() => {
     setRoleType("");
@@ -71,8 +79,10 @@ export default function PlayerIdentity() {
       document.title = prevTitle;
     };
   }, []);
-
-
+  const helpOptions = useMemo(() => {
+    if (!roleMain) return [] as string[];
+    return roleMain === "Goalkeeper" ? HELPS_TEAM_GK : HELPS_TEAM_OUTFIELD;
+  }, [roleMain]);
   useEffect(() => {
     const load = async () => {
       if (!user) return;
@@ -174,53 +184,22 @@ export default function PlayerIdentity() {
         <CardContent>
           <div className="grid gap-5">
             <div className="grid gap-2">
-              <Label htmlFor="role_main">Main Role</Label>
-              <Select
-                value={roleMain ?? undefined}
-                onValueChange={(v) => setRoleMain(v as MainRole)}
-              >
-                <SelectTrigger id="role_main">
-                  <SelectValue placeholder="Select your main role" />
-                </SelectTrigger>
-                <SelectContent>
-                  {MAIN_ROLES.map((r) => (
-                    <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>Main Role</Label>
+              <RoleBoxSelector
+                roles={MAIN_ROLES}
+                selected={roleMain}
+                onSelect={(v) => setRoleMain(v as MainRole)}
+              />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="role_type">Role Type</Label>
-              <Select
-                value={roleType || undefined}
-                onValueChange={(v) => setRoleType(v)}
+              <Label>Role Type</Label>
+              <RoleTypeGrid
+                options={roleTypeOptions}
+                selected={roleType}
+                onSelect={setRoleType}
                 disabled={!roleMain}
-              >
-                <SelectTrigger id="role_type">
-                  <SelectValue placeholder={roleMain ? "Select your role type" : "Choose Main Role first"} />
-                </SelectTrigger>
-                <SelectContent>
-                  {roleTypeOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      <div className="flex items-center gap-3">
-                        {((opt as any).image) ? (
-                          <img
-                            src={(opt as any).image}
-                            alt={`Role example - ${opt.label.split(" (")[0]}`}
-                            className="w-8 h-8 rounded object-cover border"
-                            loading="lazy"
-                          />
-                        ) : null}
-                        <div className="flex flex-col">
-                          <span>{opt.label}</span>
-                          <span className="text-xs text-muted-foreground">{opt.subtitle}</span>
-                        </div>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
             </div>
 
             <div className="grid gap-2">
@@ -241,7 +220,7 @@ export default function PlayerIdentity() {
             <div className="grid gap-2">
               <Label>How you help the team (max 3)</Label>
               <ChipMultiSelect
-                options={HELPS_TEAM_OPTIONS}
+                options={helpOptions}
                 value={helpsTeam}
                 onChange={setHelpsTeam}
                 max={3}
