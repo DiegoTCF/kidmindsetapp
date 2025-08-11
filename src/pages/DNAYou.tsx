@@ -86,38 +86,27 @@ export default function DNAYou() {
 
   const Step1 = (
     <div className="space-y-4">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] as const }}
+      >
+        <img
+          src="/lovable-uploads/eab5ed4c-b868-4d1e-bf9c-a66b8ac8a9fd.png"
+          alt="The Footballer’s Hat — Family, School, Footballer, and Qualities hats on a rack"
+          loading="lazy"
+          className="w-full rounded-md border bg-background"
+        />
+      </motion.div>
       <p className="text-muted-foreground">
         Think of your life like a hat rack with different hats hanging on it.
       </p>
-      <motion.ul
-        className="grid grid-cols-2 gap-3"
-        variants={iconStagger}
-        initial="hidden"
-        animate="show"
-      >
-        {[
-          { Icon: Home, text: "Family Hat — who you are at home." },
-          { Icon: GraduationCap, text: "School Hat — who you are in the classroom and with friends." },
-          { Icon: Trophy, text: "Footballer’s Hat — who you are on the pitch." },
-          { Icon: Medal, text: "Qualities Hat — the traits that make you… you (kind, funny, hardworking, resilient)." },
-        ].map(({ Icon, text }, i) => (
-          <motion.li
-            key={i}
-            variants={iconItem}
-            className="flex items-start gap-2 rounded-md border p-3"
-          >
-            <motion.div
-              aria-hidden
-              className="shrink-0"
-              animate={{ y: [0, -4, 0] }}
-              transition={{ duration: 3, repeat: Infinity, ease: [0.42, 0, 0.58, 1] }}
-            >
-              <Icon className="h-5 w-5 text-foreground/80" />
-            </motion.div>
-            <span>{text}</span>
-          </motion.li>
-        ))}
-      </motion.ul>
+      <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+        <li>Family Hat — who you are at home.</li>
+        <li>School Hat — who you are in the classroom and with friends.</li>
+        <li>Footballer’s Hat — who you are on the pitch.</li>
+        <li>Qualities Hat — the traits that make you… you (kind, funny, hardworking, resilient).</li>
+      </ul>
       <p className="text-muted-foreground">You don’t just wear one hat. You switch between them every day.</p>
     </div>
   );
@@ -251,7 +240,7 @@ export default function DNAYou() {
   );
 
   const steps = [
-    { title: "1️⃣ The Hat Rack", node: Step1 },
+    { title: "1️⃣ Your roles in life", node: Step1 },
     { title: "2️⃣ Match Day Reality", node: Step2 },
     { title: "3️⃣ The Bad Day Test", node: Step3 },
     { title: "4️⃣ Why Your Hats Are Unique", node: Step4 },
