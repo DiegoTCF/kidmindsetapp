@@ -1,12 +1,14 @@
 // Player Identity options - single source of truth
 // Using HSL-themed UI components elsewhere, only data here
 
+
 export type MainRole = "Goalkeeper" | "Defender" | "Midfielder" | "Attacker";
 
 export type RoleTypeOption = {
   value: string;
   label: string;
   subtitle: string;
+  image?: string;
 };
 
 export const MAIN_ROLES: { value: MainRole; label: string }[] = [
@@ -36,10 +38,10 @@ export const ROLE_TYPES: Record<MainRole, RoleTypeOption[]> = {
     { value: "mf_shield", label: "Shield (Casemiro)", subtitle: "Protects defence, wins duels" },
   ],
   Attacker: [
-    { value: "at_finisher", label: "Finisher (Haaland)", subtitle: "Right place, right time, goals" },
-    { value: "at_dribbler", label: "Dribbler (Vinícius Jr)", subtitle: "1v1 threat, creates danger" },
-    { value: "at_speed_threat", label: "Speed Threat (Mbappé)", subtitle: "Runs in behind, stretches lines" },
-    { value: "at_target_player", label: "Target Player (Giroud)", subtitle: "Hold-up, link play, aerials" },
+    { value: "at_finisher", label: "Finisher (Haaland)", subtitle: "Right place, right time, goals", image: "/lovable-uploads/185bb317-e723-4fa3-be56-a46ba07261a3.png" },
+    { value: "at_dribbler", label: "Dribbler (Vinícius Jr)", subtitle: "1v1 threat, creates danger", image: "/lovable-uploads/8b06945b-c7a7-44ab-b3e4-35a9d263a616.png" },
+    { value: "at_speed_threat", label: "Speed Threat (Mbappé)", subtitle: "Runs in behind, stretches lines", image: "/lovable-uploads/ca3748e7-fa20-45fb-8e6e-a31da0e0ae84.png" },
+    { value: "at_target_player", label: "Target Player (Harry Kane)", subtitle: "Hold-up, link play, aerials", image: "/lovable-uploads/9c50eb52-df12-433a-bf77-af060a7316a7.png" },
   ],
 };
 

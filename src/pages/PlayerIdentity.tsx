@@ -203,7 +203,20 @@ export default function PlayerIdentity() {
                 <SelectContent>
                   {roleTypeOptions.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
-                      {`${opt.label} — ${opt.subtitle}`}
+                      <div className="flex items-center gap-3">
+                        {((opt as any).image) ? (
+                          <img
+                            src={(opt as any).image}
+                            alt={`Role example - ${opt.label.split(" (")[0]}`}
+                            className="w-8 h-8 rounded object-cover border"
+                            loading="lazy"
+                          />
+                        ) : null}
+                        <div className="flex flex-col">
+                          <span>{opt.label}</span>
+                          <span className="text-xs text-muted-foreground">{opt.subtitle}</span>
+                        </div>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
