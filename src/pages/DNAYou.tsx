@@ -98,9 +98,9 @@ export default function DNAYou() {
             aria-label="Your roles in life — hat rack illustration with different hats"
             className="w-full h-full rounded-md border bg-muted"
             style={{
-              backgroundImage: "url(/lovable-uploads/e7a9ef23-9220-4b24-801f-10b84dc43f0e.png)",
-              backgroundSize: "200% 200%",
-              backgroundPosition: "0% 0%",
+              backgroundImage: "url(/lovable-uploads/e6a3d592-394e-48fb-8d99-c96a49d59eda.png)",
+              backgroundSize: "contain",
+              backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
             }}
           />
@@ -131,10 +131,10 @@ export default function DNAYou() {
             role="img"
             aria-label="Match Day Reality — teen footballer with soccer ball illustration"
             className="w-full h-full rounded-md border bg-muted"
-            style={{
-              backgroundImage: "url(/lovable-uploads/e7a9ef23-9220-4b24-801f-10b84dc43f0e.png)",
-              backgroundSize: "200% 200%",
-              backgroundPosition: "100% 0%",
+          style={{
+              backgroundImage: "url(/lovable-uploads/d3af38ec-3ec7-4197-9ea1-bb98457d4456.png)",
+              backgroundSize: "contain",
+              backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
             }}
           />
@@ -206,9 +206,9 @@ export default function DNAYou() {
             aria-label="The Bad Day Test — football with beanie hat illustration"
             className="w-full h-full rounded-md border bg-muted"
             style={{
-              backgroundImage: "url(/lovable-uploads/e7a9ef23-9220-4b24-801f-10b84dc43f0e.png)",
-              backgroundSize: "200% 200%",
-              backgroundPosition: "0% 100%",
+              backgroundImage: "url(/lovable-uploads/ff7fd6be-81e5-4126-82af-2829a757104b.png)",
+              backgroundSize: "contain",
+              backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
             }}
           />
@@ -266,11 +266,11 @@ export default function DNAYou() {
             aria-label="Why Your Hats Are Unique — teen with stacked hats illustration"
             className="w-full h-full rounded-md border bg-muted"
             style={{
-              backgroundImage: "url(/lovable-uploads/e7a9ef23-9220-4b24-801f-10b84dc43f0e.png)",
-              backgroundSize: "200% 200%",
-              backgroundPosition: "100% 100%",
-              backgroundRepeat: "no-repeat",
-            }}
+               backgroundImage: "url(/lovable-uploads/a1d9b3e6-c446-4e44-ab2f-78b137b73127.png)",
+               backgroundSize: "contain",
+               backgroundPosition: "center",
+               backgroundRepeat: "no-repeat",
+             }}
           />
         </AspectRatio>
       </motion.div>
