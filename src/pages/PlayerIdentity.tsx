@@ -8,6 +8,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Dna } from "lucide-react";
+import { MAIN_ROLES, ROLE_TYPES, STRENGTHS_BY_ROLE_TYPE, HELPS_TEAM_OPTIONS, MOTTO_SUGGESTIONS, type MainRole } from "@/data/playerIdentityOptions";
+import { ChipMultiSelect } from "@/components/PlayerIdentity/ChipMultiSelect";
 
 // Local type to avoid depending on generated Supabase types
 interface PlayerIdentityRow {
@@ -22,7 +24,7 @@ interface PlayerIdentityRow {
   updated_at?: string;
 }
 
-const ROLE_OPTIONS = ["Goalkeeper", "Defender", "Midfielder", "Attacker"] as const;
+// Using MAIN_ROLES from data/playerIdentityOptions
 
 export default function PlayerIdentity() {
   const { user } = useAuth();
@@ -32,23 +34,21 @@ export default function PlayerIdentity() {
   const [saving, setSaving] = useState(false);
   const [existing, setExisting] = useState<boolean>(false);
 
-  const [form, setForm] = useState<{
-    role_main: PlayerIdentityRow["role_main"];
-    role_type: string;
-    strengthsCsv: string; // comma separated for UX
-    helpsTeamCsv: string; // comma separated for UX
-    main_weapon: string;
-    motto: string;
-    avatar_url: string;
-  }>({
-    role_main: null,
-    role_type: "",
-    strengthsCsv: "",
-    helpsTeamCsv: "",
-    main_weapon: "",
-    motto: "",
-    avatar_url: "",
-  });
+  const [roleMain, setRoleMain] = useState<MainRole | null>(null);
+  const [roleType, setRoleType] = useState<string>("");
+  const [strengths, setStrengths] = useState<string[]>([]);
+  const [helpsTeam, setHelpsTeam] = useState<string[]>([]);
+  const [main_weapon, setMainWeapon] = useState<string>("");
+  const [motto, setMotto] = useState<string>("");
+  const [avatar_url, setAvatarUrl] = useState<string>("");
+
+  const roleTypeOptions = useMemo(() => (roleMain ? ROLE_TYPES[roleMain] : []), [roleMain]);
+  const strengthOptions = useMemo(() => (roleType ? (STRENGTHS_BY_ROLE_TYPE[roleType] ?? []) : []), [roleType]);
+
+  useEffect(() => {
+    setRoleType("");
+    setStrengths([]);
+  }, [roleMain]);
 
   useEffect(() => {
     // SEO basics
@@ -72,6 +72,7 @@ export default function PlayerIdentity() {
     };
   }, []);
 
+
   useEffect(() => {
     const load = async () => {
       if (!user) return;
@@ -89,15 +90,13 @@ export default function PlayerIdentity() {
 
       if (data) {
         setExisting(true);
-        setForm({
-          role_main: data.role_main ?? null,
-          role_type: data.role_type ?? "",
-          strengthsCsv: Array.isArray(data.strengths) ? data.strengths.join(", ") : "",
-          helpsTeamCsv: Array.isArray(data.helps_team) ? data.helps_team.join(", ") : "",
-          main_weapon: data.main_weapon ?? "",
-          motto: data.motto ?? "",
-          avatar_url: data.avatar_url ?? "",
-        });
+        setRoleMain((data.role_main ?? null) as MainRole | null);
+        setRoleType(data.role_type ?? "");
+        setStrengths(Array.isArray(data.strengths) ? data.strengths : []);
+        setHelpsTeam(Array.isArray(data.helps_team) ? data.helps_team : []);
+        setMainWeapon(data.main_weapon ?? "");
+        setMotto(data.motto ?? "");
+        setAvatarUrl(data.avatar_url ?? "");
       } else {
         setExisting(false);
       }
@@ -107,40 +106,50 @@ export default function PlayerIdentity() {
     load();
   }, [user, toast]);
 
-  const parsedStrengths = useMemo(() => form.strengthsCsv.split(",").map(s => s.trim()).filter(Boolean).slice(0, 3), [form.strengthsCsv]);
-  const parsedHelpsTeam = useMemo(() => form.helpsTeamCsv.split(",").map(s => s.trim()).filter(Boolean).slice(0, 3), [form.helpsTeamCsv]);
 
   const onSave = async () => {
     if (!user) return;
+
+    // Validation
+    if (!roleMain) {
+      toast({ title: "Main Role is required", variant: "destructive" });
+      return;
+    }
+    if (!roleType) {
+      toast({ title: "Role Type is required", variant: "destructive" });
+      return;
+    }
+    if (motto.length > 140) {
+      toast({ title: "Motto too long", description: "Max 140 characters.", variant: "destructive" });
+      return;
+    }
+    if (main_weapon.length > 140) {
+      toast({ title: "Main Weapon too long", description: "Max 140 characters.", variant: "destructive" });
+      return;
+    }
+
     setSaving(true);
 
     const payload: PlayerIdentityRow = {
       user_id: user.id,
-      role_main: form.role_main,
-      role_type: form.role_type || null,
-      strengths: parsedStrengths,
-      helps_team: parsedHelpsTeam,
-      main_weapon: form.main_weapon || null,
-      motto: form.motto || null,
-      avatar_url: form.avatar_url || null,
+      role_main: roleMain,
+      role_type: roleType || null,
+      strengths: strengths.slice(0, 3),
+      helps_team: helpsTeam.slice(0, 3),
+      main_weapon: main_weapon || null,
+      motto: motto || null,
+      avatar_url: avatar_url || null,
     };
 
     try {
-      if (existing) {
-        const { error } = await (supabase as any)
-          .from("player_identities")
-          .update(payload)
-          .eq("user_id", user.id);
-        if (error) throw error;
-      } else {
-        const { error } = await (supabase as any)
-          .from("player_identities")
-          .insert(payload);
-        if (error) throw error;
-        setExisting(true);
-      }
-
-      toast({ title: "Saved", description: "Your DNA was saved successfully." });
+      const { error } = await (supabase as any)
+        .from("player_identities")
+        .upsert(payload, { onConflict: "user_id" });
+      if (error) throw error;
+      setExisting(true);
+      toast({
+        title: "Identity locked. We’ll remind you before every game.",
+      });
     } catch (e: any) {
       console.error(e);
       toast({ title: "Save failed", description: e.message ?? "Please try again.", variant: "destructive" });
@@ -153,7 +162,7 @@ export default function PlayerIdentity() {
     <div className="max-w-2xl mx-auto px-4 pt-20 pb-8">
       <header className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <Dna className="w-6 h-6" /> Player Identity
+          <Dna className="w-6 h-6" /> DNA
         </h1>
         <p className="text-muted-foreground">Define your on-field DNA</p>
       </header>
@@ -163,19 +172,19 @@ export default function PlayerIdentity() {
           <CardTitle>Your DNA</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4">
+          <div className="grid gap-5">
             <div className="grid gap-2">
               <Label htmlFor="role_main">Main Role</Label>
               <Select
-                value={form.role_main ?? undefined}
-                onValueChange={(v) => setForm((f) => ({ ...f, role_main: v as PlayerIdentityRow["role_main"] }))}
+                value={roleMain ?? undefined}
+                onValueChange={(v) => setRoleMain(v as MainRole)}
               >
                 <SelectTrigger id="role_main">
                   <SelectValue placeholder="Select your main role" />
                 </SelectTrigger>
                 <SelectContent>
-                  {ROLE_OPTIONS.map((r) => (
-                    <SelectItem key={r} value={r}>{r}</SelectItem>
+                  {MAIN_ROLES.map((r) => (
+                    <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -183,43 +192,46 @@ export default function PlayerIdentity() {
 
             <div className="grid gap-2">
               <Label htmlFor="role_type">Role Type</Label>
-              <Input
-                id="role_type"
-                placeholder="e.g. Creator, Finisher"
-                value={form.role_type}
-                onChange={(e) => setForm((f) => ({ ...f, role_type: e.target.value }))}
+              <Select
+                value={roleType || undefined}
+                onValueChange={(v) => setRoleType(v)}
+                disabled={!roleMain}
+              >
+                <SelectTrigger id="role_type">
+                  <SelectValue placeholder={roleMain ? "Select your role type" : "Choose Main Role first"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {roleTypeOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {`${opt.label} — ${opt.subtitle}`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid gap-2">
+              <Label>Top Strengths (max 3)</Label>
+              <ChipMultiSelect
+                options={strengthOptions}
+                value={strengths}
+                onChange={setStrengths}
+                max={3}
+                addYourOwn
+                onAddCustom={async () => {
+                  const input = window.prompt("Add your own strength (max 30 chars)") || "";
+                  return input.trim().slice(0, 30) || null;
+                }}
               />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="strengths">Top Strengths (max 3)</Label>
-              <Input
-                id="strengths"
-                placeholder="Comma separated, e.g. Vision, Pace, Passing"
-                value={form.strengthsCsv}
-                onChange={(e) => setForm((f) => ({ ...f, strengthsCsv: e.target.value }))}
-              />
-              <p className="text-xs text-muted-foreground">Current: {parsedStrengths.join(" • ") || "None"}</p>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="helps">How you help the team (max 3)</Label>
-              <Input
-                id="helps"
-                placeholder="Comma separated, e.g. Create chances, Win duels"
-                value={form.helpsTeamCsv}
-                onChange={(e) => setForm((f) => ({ ...f, helpsTeamCsv: e.target.value }))}
-              />
-              <p className="text-xs text-muted-foreground">Current: {parsedHelpsTeam.join(" • ") || "None"}</p>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="weapon">Main Weapon</Label>
-              <Input
-                id="weapon"
-                placeholder="One sentence about your standout skill"
-                value={form.main_weapon}
-                onChange={(e) => setForm((f) => ({ ...f, main_weapon: e.target.value }))}
+              <Label>How you help the team (max 3)</Label>
+              <ChipMultiSelect
+                options={HELPS_TEAM_OPTIONS}
+                value={helpsTeam}
+                onChange={setHelpsTeam}
+                max={3}
               />
             </div>
 
@@ -228,8 +240,26 @@ export default function PlayerIdentity() {
               <Input
                 id="motto"
                 placeholder="A short motto that defines you"
-                value={form.motto}
-                onChange={(e) => setForm((f) => ({ ...f, motto: e.target.value }))}
+                value={motto}
+                maxLength={140}
+                onChange={(e) => setMotto(e.target.value)}
+              />
+              <div className="flex flex-wrap gap-2">
+                {MOTTO_SUGGESTIONS.map((m) => (
+                  <Button key={m} type="button" variant="secondary" size="sm" onClick={() => setMotto(m)}>
+                    {m}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="weapon">Main Weapon (optional)</Label>
+              <Input
+                id="weapon"
+                placeholder="One sentence about your standout skill"
+                value={main_weapon}
+                onChange={(e) => setMainWeapon(e.target.value.slice(0, 140))}
               />
             </div>
 
@@ -238,12 +268,12 @@ export default function PlayerIdentity() {
               <Input
                 id="avatar"
                 placeholder="Link to an image"
-                value={form.avatar_url}
-                onChange={(e) => setForm((f) => ({ ...f, avatar_url: e.target.value }))}
+                value={avatar_url}
+                onChange={(e) => setAvatarUrl(e.target.value)}
               />
-              {form.avatar_url && (
+              {avatar_url && (
                 <img
-                  src={form.avatar_url}
+                  src={avatar_url}
                   alt="Player identity avatar"
                   className="w-24 h-24 rounded-md object-cover border"
                   loading="lazy"
