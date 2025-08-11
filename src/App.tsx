@@ -17,6 +17,7 @@ import Auth from "./pages/Auth";
 import { useAuth } from "./hooks/useAuth";
 import { AdminProvider } from "./hooks/useAdmin";
 import PlayerIdentity from "./pages/PlayerIdentity";
+import DNAYou from "./pages/DNAYou";
 
 const queryClient = new QueryClient();
 
@@ -85,6 +86,13 @@ const App = () => {
                 <ProtectedRoute>
                   <AppLayout>
                     <PlayerIdentity />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/dna/you" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <DNAYou />
                   </AppLayout>
                 </ProtectedRoute>
               } />

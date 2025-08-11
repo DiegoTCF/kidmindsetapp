@@ -11,6 +11,7 @@ import { MAIN_ROLES, ROLE_TYPES, STRENGTHS_BY_ROLE_TYPE, UNIVERSAL_STRENGTHS_OUT
 import { RoleBoxSelector } from "@/components/PlayerIdentity/RoleBoxSelector";
 import { RoleTypeGrid } from "@/components/PlayerIdentity/RoleTypeGrid";
 import { ChipMultiSelect } from "@/components/PlayerIdentity/ChipMultiSelect";
+import { Link } from "react-router-dom";
 
 // Local type to avoid depending on generated Supabase types
 interface PlayerIdentityRow {
@@ -175,6 +176,11 @@ export default function PlayerIdentity() {
           <Dna className="w-6 h-6" /> DNA
         </h1>
         <p className="text-muted-foreground">Define your on-field DNA</p>
+        <div className="mt-3">
+          <Button variant="secondary" asChild>
+            <Link to="/dna/you">Learn About Your Footballer’s Hat</Link>
+          </Button>
+        </div>
       </header>
 
       <Card className="shadow-sm">
