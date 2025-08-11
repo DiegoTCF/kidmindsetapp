@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, GraduationCap, Home, Medal } from "lucide-react";
@@ -91,12 +92,19 @@ export default function DNAYou() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] as const }}
       >
-        <img
-          src="/lovable-uploads/eab5ed4c-b868-4d1e-bf9c-a66b8ac8a9fd.png"
-          alt="The Footballer’s Hat — Family, School, Footballer, and Qualities hats on a rack"
-          loading="lazy"
-          className="w-full rounded-md border bg-background"
-        />
+        <AspectRatio ratio={16 / 9}>
+          <div
+            role="img"
+            aria-label="Your roles in life — hat rack illustration with different hats"
+            className="w-full h-full rounded-md border bg-muted"
+            style={{
+              backgroundImage: "url(/lovable-uploads/e7a9ef23-9220-4b24-801f-10b84dc43f0e.png)",
+              backgroundSize: "200% 200%",
+              backgroundPosition: "0% 0%",
+              backgroundRepeat: "no-repeat",
+            }}
+          />
+        </AspectRatio>
       </motion.div>
       <p className="text-muted-foreground">
         Think of your life like a hat rack with different hats hanging on it.
@@ -113,6 +121,25 @@ export default function DNAYou() {
 
   const Step2 = (
     <div className="space-y-4">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] as const }}
+      >
+        <AspectRatio ratio={16 / 9}>
+          <div
+            role="img"
+            aria-label="Match Day Reality — teen footballer with soccer ball illustration"
+            className="w-full h-full rounded-md border bg-muted"
+            style={{
+              backgroundImage: "url(/lovable-uploads/e7a9ef23-9220-4b24-801f-10b84dc43f0e.png)",
+              backgroundSize: "200% 200%",
+              backgroundPosition: "100% 0%",
+              backgroundRepeat: "no-repeat",
+            }}
+          />
+        </AspectRatio>
+      </motion.div>
       <div className="flex items-center gap-3">
         <div className="text-sm text-muted-foreground">Toggle mood:</div>
         <div className="flex items-center gap-1 rounded-full border p-1">
@@ -168,6 +195,25 @@ export default function DNAYou() {
 
   const Step3 = (
     <div className="space-y-4">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] as const }}
+      >
+        <AspectRatio ratio={16 / 9}>
+          <div
+            role="img"
+            aria-label="The Bad Day Test — football with beanie hat illustration"
+            className="w-full h-full rounded-md border bg-muted"
+            style={{
+              backgroundImage: "url(/lovable-uploads/e7a9ef23-9220-4b24-801f-10b84dc43f0e.png)",
+              backgroundSize: "200% 200%",
+              backgroundPosition: "0% 100%",
+              backgroundRepeat: "no-repeat",
+            }}
+          />
+        </AspectRatio>
+      </motion.div>
       <motion.ul
         initial="hidden"
         animate="show"
@@ -209,6 +255,25 @@ export default function DNAYou() {
         animate={{ opacity: [0, 1, 0] }}
         transition={{ duration: 1.0 }}
       />
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] as const }}
+      >
+        <AspectRatio ratio={16 / 9}>
+          <div
+            role="img"
+            aria-label="Why Your Hats Are Unique — teen with stacked hats illustration"
+            className="w-full h-full rounded-md border bg-muted"
+            style={{
+              backgroundImage: "url(/lovable-uploads/e7a9ef23-9220-4b24-801f-10b84dc43f0e.png)",
+              backgroundSize: "200% 200%",
+              backgroundPosition: "100% 100%",
+              backgroundRepeat: "no-repeat",
+            }}
+          />
+        </AspectRatio>
+      </motion.div>
       <p className="text-muted-foreground">
         Your Footballer’s Hat is different from anyone else’s. Maybe it says:
       </p>
