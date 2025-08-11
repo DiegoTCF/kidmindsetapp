@@ -379,6 +379,45 @@ export type Database = {
         }
         Relationships: []
       }
+      player_identity_hats: {
+        Row: {
+          created_at: string
+          id: string
+          q1: string | null
+          q2: string | null
+          q3: string | null
+          q4: string | null
+          q5: string | null
+          q6: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          q1?: string | null
+          q2?: string | null
+          q3?: string | null
+          q4?: string | null
+          q5?: string | null
+          q6?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          q1?: string | null
+          q2?: string | null
+          q3?: string | null
+          q4?: string | null
+          q5?: string | null
+          q6?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
