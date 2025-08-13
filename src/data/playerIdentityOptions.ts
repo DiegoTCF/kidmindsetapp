@@ -26,10 +26,10 @@ export const ROLE_TYPES: Record<MainRole, RoleTypeOption[]> = {
     { value: "gk_distributor", label: "Distributor (Ederson)", subtitle: "Passes with precision, builds play from the back", image: "/lovable-uploads/ebb6f724-13e1-4201-b89f-b1ba15585720.png" },
   ],
   Defender: [
-    { value: "df_tackling_machine", label: "Tackling Machine (Varane)", subtitle: "Stops attacks with timing & strength" },
-    { value: "df_build_up_boss", label: "Build-Up Boss (John Stones)", subtitle: "Calm on ball, breaks lines" },
-    { value: "df_fast_agile", label: "Fast & Agile (Kyle Walker)", subtitle: "Wins races, great recovery" },
-    { value: "df_physical_leader", label: "Physical Leader (Van Dijk)", subtitle: "Aerials, organisation, presence" },
+    { value: "df_tackling_machine", label: "Tackling Machine (Varane)", subtitle: "Stops attacks with timing & strength", image: "/lovable-uploads/8ae75401-f9d7-4629-a827-5a4bbc2d9ba3.png" },
+    { value: "df_build_up_boss", label: "Build-Up Boss (John Stones)", subtitle: "Calm on ball, breaks lines", image: "/lovable-uploads/a1caed59-3d0a-417c-9894-bc7d78d1f7dd.png" },
+    { value: "df_fast_agile", label: "Fast & Agile (Kyle Walker)", subtitle: "Wins races, great recovery", image: "/lovable-uploads/e9944e73-ed32-4150-b5fa-29486ce742c3.png" },
+    { value: "df_physical_leader", label: "Physical Leader (Van Dijk)", subtitle: "Aerials, organisation, presence", image: "/lovable-uploads/a7953801-4ad7-4e46-a40c-cd7e23b44f5b.png" },
   ],
   Midfielder: [
     { value: "mf_box_to_box", label: "Box-to-Box Engine (Bellingham)", subtitle: "Covers ground, drives forward", image: "/lovable-uploads/f8b415d2-d3b0-474a-8522-ad270bb1edf9.png" },
