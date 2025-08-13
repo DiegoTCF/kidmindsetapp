@@ -912,8 +912,8 @@ export default function Home() {
         </Card>
 
         {/* Daily Tasks */}
-        <Card className="mb-6 shadow-soft bg-purple-700 dark:bg-purple-800">
-          <CardHeader>
+        <Card className="mb-6 shadow-soft rounded-sm bg-violet-500">
+          <CardHeader className="bg-violet-500">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-2xl text-gray-50">
                 <CustomIcon type="target" size="md" />
@@ -925,7 +925,7 @@ export default function Home() {
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3 bg-violet-500">
             {/* Add Custom Task */}
             {showAddTask && <div className="flex gap-2 p-3 bg-muted/50 rounded-lg">
                 <Input placeholder="Enter custom task..." value={newTaskName} onChange={e => setNewTaskName(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleAddCustomTask()} className="flex-1" />
