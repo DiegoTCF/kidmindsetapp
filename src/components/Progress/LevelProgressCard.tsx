@@ -1,7 +1,7 @@
 import React from 'react';
-import { Trophy, Star, Zap } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { CustomIcon } from '@/components/ui/custom-emoji';
 
 interface LevelProgressCardProps {
   currentLevel: number;
@@ -23,9 +23,9 @@ export const LevelProgressCard: React.FC<LevelProgressCardProps> = ({
   const progressPercentage = (pointsInCurrentLevel / 100) * 100;
 
   const getLevelIcon = (level: number) => {
-    if (level === 1) return <Star className="h-6 w-6 text-yellow-500" />;
-    if (level <= 3) return <Zap className="h-6 w-6 text-orange-500" />;
-    return <Trophy className="h-6 w-6 text-gold-500" />;
+    if (level === 1) return <CustomIcon type="trophy" size="lg" />;
+    if (level <= 3) return <CustomIcon type="flame" size="lg" />;
+    return <CustomIcon type="trophy" size="lg" />;
   };
 
   const getLevelColor = (level: number) => {
