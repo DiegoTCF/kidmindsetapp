@@ -6,28 +6,18 @@ import { useUserLogging } from "@/hooks/useUserLogging";
 import ActivityLog from "@/components/Progress/ActivityLog";
 import Charts from "@/components/Progress/Charts";
 import BehaviourCharts from "@/components/Progress/BehaviourCharts";
-
-const activityFilters = [
-  "All",
-  "Match", 
-  "Training",
-  "1to1",
-  "Futsal",
-  "Small Group",
-  "Other"
-];
-
+const activityFilters = ["All", "Match", "Training", "1to1", "Futsal", "Small Group", "Other"];
 export default function Progress() {
   const [selectedFilter, setSelectedFilter] = useState("All");
-  const { logProgressView } = useUserLogging();
+  const {
+    logProgressView
+  } = useUserLogging();
 
   // Log progress view when component mounts
   React.useEffect(() => {
     logProgressView();
   }, [logProgressView]);
-
-  return (
-    <div className="min-h-screen bg-background p-4">
+  return <div className="min-h-screen bg-background p-4">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground mb-2">
           📈 Progress
@@ -41,22 +31,15 @@ export default function Progress() {
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="activities">Activity Log</TabsTrigger>
           <TabsTrigger value="behaviours">Super Behaviours</TabsTrigger>
-          <TabsTrigger value="stats">Stats & Charts</TabsTrigger>
+          <TabsTrigger value="stats">Your Stats</TabsTrigger>
         </TabsList>
 
         <TabsContent value="activities" className="space-y-6">
           {/* Filter Buttons */}
           <div className="flex flex-wrap gap-2">
-            {activityFilters.map((filter) => (
-              <Button
-                key={filter}
-                variant={selectedFilter === filter ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedFilter(filter)}
-              >
+            {activityFilters.map(filter => <Button key={filter} variant={selectedFilter === filter ? "default" : "outline"} size="sm" onClick={() => setSelectedFilter(filter)}>
                 {filter}
-              </Button>
-            ))}
+              </Button>)}
           </div>
 
           <ActivityLog selectedFilter={selectedFilter} />
@@ -69,21 +52,13 @@ export default function Progress() {
         <TabsContent value="stats" className="space-y-6">
           {/* Filter Buttons */}
           <div className="flex flex-wrap gap-2">
-            {activityFilters.map((filter) => (
-              <Button
-                key={filter}
-                variant={selectedFilter === filter ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedFilter(filter)}
-              >
+            {activityFilters.map(filter => <Button key={filter} variant={selectedFilter === filter ? "default" : "outline"} size="sm" onClick={() => setSelectedFilter(filter)}>
                 {filter}
-              </Button>
-            ))}
+              </Button>)}
           </div>
           
           <Charts selectedFilter={selectedFilter} />
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>;
 }
