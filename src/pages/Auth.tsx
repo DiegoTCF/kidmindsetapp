@@ -562,7 +562,7 @@ const Auth = () => {
           <Link to="/" className="flex justify-center mb-4">
             <div className="text-2xl font-bold text-primary">🧠 KidMindset</div>
           </Link>
-          <CardTitle className="text-center font-canard">Welcome Back</CardTitle>
+          <CardTitle className="text-center">Welcome Back</CardTitle>
           <CardDescription className="text-center">
             Sign in to your account
           </CardDescription>
