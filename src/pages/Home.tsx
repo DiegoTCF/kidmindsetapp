@@ -1014,7 +1014,7 @@ export default function Home() {
         </Card>
 
         {/* Daily Tasks */}
-        <Card className="mb-6 shadow-soft bg-purple-50 dark:bg-purple-900/20">
+        <Card className="mb-6 shadow-soft bg-purple-700 dark:bg-purple-800">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg flex items-center gap-2">
