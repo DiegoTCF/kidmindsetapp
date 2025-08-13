@@ -90,6 +90,7 @@ const App = () => {
                   </AppLayout>
                 </ProtectedRoute>
               } />
+              {/* DISABLED: DNA You pages - uncomment to reactivate
               <Route path="/dna/you" element={
                 <ProtectedRoute>
                   <AppLayout>
@@ -104,6 +105,7 @@ const App = () => {
                   </AppLayout>
                 </ProtectedRoute>
               } />
+              */}
               
               {/* Grown Up Zone - no navigation - protected */}
               <Route path="/grown-up" element={

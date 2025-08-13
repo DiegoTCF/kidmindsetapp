@@ -159,7 +159,7 @@ export default function PlayerIdentity() {
       if (error) throw error;
       setExisting(true);
       toast({
-        title: "Identity locked. We’ll remind you before every game.",
+        title: "Identity locked. We'll remind you before every game.",
       });
     } catch (e: any) {
       console.error(e);
@@ -176,11 +176,6 @@ export default function PlayerIdentity() {
           <Dna className="w-6 h-6" /> DNA
         </h1>
         <p className="text-muted-foreground">Define your on-field DNA</p>
-        <div className="mt-3">
-          <Button variant="secondary" asChild>
-            <Link to="/dna/you">Learn About Your Footballer’s Hat</Link>
-          </Button>
-        </div>
       </header>
 
       <Card className="shadow-sm">
