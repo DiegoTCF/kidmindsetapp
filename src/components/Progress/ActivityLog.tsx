@@ -7,7 +7,6 @@ import { CheckCircle, Clock, Trophy, Target, Trash2 } from "lucide-react";
 import { CustomIcon } from "@/components/ui/custom-emoji";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
 interface Activity {
   id: string;
   activity_name: string;
@@ -25,63 +24,57 @@ interface Activity {
   worry_reason?: string;
   worry_answers?: any;
 }
-
 interface ActivityLogProps {
   selectedFilter: string;
   childId?: string;
 }
-
-export default function ActivityLog({ selectedFilter, childId }: ActivityLogProps) {
+export default function ActivityLog({
+  selectedFilter,
+  childId
+}: ActivityLogProps) {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   useEffect(() => {
     loadActivities();
   }, [selectedFilter, childId]);
-
   const loadActivities = async () => {
     try {
       setLoading(true);
-      
       let targetChildId = childId;
-      
+
       // If no childId provided, get current user's child ID using RLS-safe function
       if (!targetChildId) {
         console.log('[ProgressPage] ActivityLog: Getting current user child ID...');
-        
-        const { data: childIdResult, error: childIdError } = await supabase
-          .rpc('get_current_user_child_id');
-        
+        const {
+          data: childIdResult,
+          error: childIdError
+        } = await supabase.rpc('get_current_user_child_id');
         if (childIdError) {
           console.error('[ProgressPage] ActivityLog: Error getting child ID:', childIdError);
           return;
         }
-        
         if (!childIdResult) {
           console.log('[ProgressPage] ActivityLog: No child found for current user');
           return;
         }
-        
         targetChildId = childIdResult;
         console.log('[ProgressPage] ActivityLog: Using child ID:', targetChildId);
       }
-      
-      let query = supabase
-        .from('activities')
-        .select('*')
-        .eq('child_id', targetChildId)
-        .order('activity_date', { ascending: false });
-
+      let query = supabase.from('activities').select('*').eq('child_id', targetChildId).order('activity_date', {
+        ascending: false
+      });
       if (selectedFilter !== 'All') {
         query = query.eq('activity_type', selectedFilter);
       }
-
-      const { data, error } = await query;
-      
+      const {
+        data,
+        error
+      } = await query;
       if (error) throw error;
-      
       setActivities(data || []);
     } catch (error) {
       console.error('Error loading activities:', error);
@@ -89,7 +82,6 @@ export default function ActivityLog({ selectedFilter, childId }: ActivityLogProp
       setLoading(false);
     }
   };
-
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('en-US', {
       month: 'short',
@@ -97,7 +89,6 @@ export default function ActivityLog({ selectedFilter, childId }: ActivityLogProp
       year: 'numeric'
     });
   };
-
   const getStatusBadge = (activity: Activity) => {
     if (activity.post_activity_completed) {
       return <Badge className="bg-success text-success-foreground">Complete</Badge>;
@@ -107,7 +98,6 @@ export default function ActivityLog({ selectedFilter, childId }: ActivityLogProp
       return <Badge variant="outline">Incomplete</Badge>;
     }
   };
-
   const getActivityIcon = (type: string) => {
     switch (type) {
       case 'Match':
@@ -118,53 +108,51 @@ export default function ActivityLog({ selectedFilter, childId }: ActivityLogProp
         return <CheckCircle className="w-4 h-4" />;
     }
   };
-
   const handleDeleteActivity = async (activityId: string, activityName: string, points: number, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent opening activity details
-    
+
     // Get the activity data before deletion for notification
     const activityToDelete = activities.find(activity => activity.id === activityId);
     const wasIncomplete = activityToDelete ? !activityToDelete.post_activity_completed : false;
-    
     console.log('=== DELETE ACTIVITY DEBUG ===');
     console.log('Activity ID to delete:', activityId);
     console.log('Activity name:', activityName);
     console.log('Activity found in local state:', activityToDelete);
     console.log('Current user auth state:', await supabase.auth.getUser());
-    
     try {
       // First, let's verify the activity exists in the database and we can access it
-      const { data: verifyActivity, error: verifyError } = await supabase
-        .from('activities')
-        .select('id, activity_name, child_id')
-        .eq('id', activityId)
-        .single();
-      
-      console.log('Verification query result:', { verifyActivity, verifyError });
-      
+      const {
+        data: verifyActivity,
+        error: verifyError
+      } = await supabase.from('activities').select('id, activity_name, child_id').eq('id', activityId).single();
+      console.log('Verification query result:', {
+        verifyActivity,
+        verifyError
+      });
       if (verifyError) {
         console.error('Cannot find activity to delete:', verifyError);
         throw new Error(`Activity not found: ${verifyError.message}`);
       }
-      
       if (!verifyActivity) {
         console.error('Activity does not exist in database');
         throw new Error('Activity not found in database');
       }
-      
+
       // Optimistically remove from UI first
       setActivities(prev => prev.filter(activity => activity.id !== activityId));
-      
       console.log('Attempting database deletion...');
-      
+
       // Delete the activity from database
-      const { error: deleteError, count } = await supabase
-        .from('activities')
-        .delete({ count: 'exact' })
-        .eq('id', activityId);
-
-      console.log('Delete operation result:', { deleteError, count });
-
+      const {
+        error: deleteError,
+        count
+      } = await supabase.from('activities').delete({
+        count: 'exact'
+      }).eq('id', activityId);
+      console.log('Delete operation result:', {
+        deleteError,
+        count
+      });
       if (deleteError) {
         console.error('Database delete failed:', deleteError);
         console.error('Delete error details:', {
@@ -173,36 +161,31 @@ export default function ActivityLog({ selectedFilter, childId }: ActivityLogProp
           details: deleteError.details,
           hint: deleteError.hint
         });
-        
+
         // If delete failed, restore the activity in UI
         loadActivities();
         throw new Error(`Database deletion failed: ${deleteError.message}`);
       }
-
       if (count === 0) {
         console.warn('No rows were deleted - activity might not exist or user lacks permissions');
         loadActivities();
         throw new Error('No rows were deleted. You may not have permission to delete this activity.');
       }
-
       console.log('Successfully deleted activity from database. Rows affected:', count);
 
       // Update child's points (subtract the deleted activity points)
       console.log('Updating child points...');
-      const { data: children } = await supabase
-        .from('children')
-        .select('id, points')
-        .limit(1);
-        
+      const {
+        data: children
+      } = await supabase.from('children').select('id, points').limit(1);
       if (children && children.length > 0) {
         const newPoints = Math.max(0, children[0].points - points); // Ensure points don't go negative
         console.log('Updating points from', children[0].points, 'to', newPoints);
-        
-        const { error: pointsError } = await supabase
-          .from('children')
-          .update({ points: newPoints })
-          .eq('id', children[0].id);
-          
+        const {
+          error: pointsError
+        } = await supabase.from('children').update({
+          points: newPoints
+        }).eq('id', children[0].id);
         if (pointsError) {
           console.error('Error updating points:', pointsError);
           // Don't throw here as the activity was already deleted successfully
@@ -222,49 +205,42 @@ export default function ActivityLog({ selectedFilter, childId }: ActivityLogProp
       }, 100);
 
       // Notify Stadium component to reload incomplete activities
-      window.dispatchEvent(new CustomEvent('activityDeleted', { 
-        detail: { activityId, wasIncomplete }
+      window.dispatchEvent(new CustomEvent('activityDeleted', {
+        detail: {
+          activityId,
+          wasIncomplete
+        }
       }));
-      
       console.log('=== DELETE SUCCESS ===');
-      
       toast({
         title: "Activity deleted successfully",
-        description: `"${activityName}" has been removed from your log.`,
+        description: `"${activityName}" has been removed from your log.`
       });
     } catch (error) {
       console.error('=== DELETE FAILED ===');
       console.error('Full error object:', error);
-      
       let errorMessage = "Something went wrong while deleting. Please try again.";
-      
       if (error instanceof Error) {
         errorMessage = error.message;
       }
-      
       toast({
         title: "Delete Failed",
         description: errorMessage,
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   if (loading) {
-    return (
-      <Card className="shadow-soft">
+    return <Card className="shadow-soft">
         <CardContent className="p-6">
           <div className="text-center text-muted-foreground">
             Loading activities...
           </div>
         </CardContent>
-      </Card>
-    );
+      </Card>;
   }
-
   if (selectedActivity) {
-    return (
-      <Card className="shadow-soft">
+    return <Card className="shadow-soft">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">Activity Details</CardTitle>
@@ -282,28 +258,20 @@ export default function ActivityLog({ selectedFilter, childId }: ActivityLogProp
               </p>
             </div>
             
-            {selectedActivity.activity_type === 'Match' && (
-              <div className="grid grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
-                {selectedActivity.final_score && (
-                  <div className="text-center">
+            {selectedActivity.activity_type === 'Match' && <div className="grid grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
+                {selectedActivity.final_score && <div className="text-center">
                     <p className="text-sm text-muted-foreground">Final Score</p>
                     <p className="font-semibold">{selectedActivity.final_score}</p>
-                  </div>
-                )}
-                {selectedActivity.goals_scored !== undefined && (
-                  <div className="text-center">
+                  </div>}
+                {selectedActivity.goals_scored !== undefined && <div className="text-center">
                     <p className="text-sm text-muted-foreground">Goals</p>
                     <p className="font-semibold">{selectedActivity.goals_scored}</p>
-                  </div>
-                )}
-                {selectedActivity.assists_made !== undefined && (
-                  <div className="text-center">
+                  </div>}
+                {selectedActivity.assists_made !== undefined && <div className="text-center">
                     <p className="text-sm text-muted-foreground">Assists</p>
                     <p className="font-semibold">{selectedActivity.assists_made}</p>
-                  </div>
-                )}
-              </div>
-            )}
+                  </div>}
+              </div>}
             
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -318,70 +286,49 @@ export default function ActivityLog({ selectedFilter, childId }: ActivityLogProp
             
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-                {selectedActivity.pre_activity_completed ? (
-                  <CheckCircle className="w-5 h-5 text-success" />
-                ) : (
-                  <Clock className="w-5 h-5 text-muted-foreground" />
-                )}
+                {selectedActivity.pre_activity_completed ? <CheckCircle className="w-5 h-5 text-success" /> : <Clock className="w-5 h-5 text-muted-foreground" />}
                 <span className="text-sm">Pre-Activity</span>
               </div>
               <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-                {selectedActivity.post_activity_completed ? (
-                  <CheckCircle className="w-5 h-5 text-success" />
-                ) : (
-                  <Clock className="w-5 h-5 text-muted-foreground" />
-                )}
+                {selectedActivity.post_activity_completed ? <CheckCircle className="w-5 h-5 text-success" /> : <Clock className="w-5 h-5 text-muted-foreground" />}
                 <span className="text-sm">Post-Activity</span>
               </div>
             </div>
             
             {/* Pre-Activity Details */}
-            {selectedActivity.pre_activity_completed && selectedActivity.pre_activity_data && (
-              <div className="space-y-2">
+            {selectedActivity.pre_activity_completed && selectedActivity.pre_activity_data && <div className="space-y-2">
                 <h4 className="font-medium text-primary">Pre-Activity Answers</h4>
                 <div className="p-4 bg-muted/30 rounded-lg space-y-3">
-                  {selectedActivity.pre_activity_data.confidence && (
-                    <div>
+                  {selectedActivity.pre_activity_data.confidence && <div>
                       <p className="text-sm font-medium">Confidence Level:</p>
                       <p className="text-sm text-muted-foreground">{selectedActivity.pre_activity_data.confidence}/10</p>
-                    </div>
-                  )}
-                  {selectedActivity.pre_activity_data.intention && (
-                    <div>
+                    </div>}
+                  {selectedActivity.pre_activity_data.intention && <div>
                       <p className="text-sm font-medium">Intention:</p>
                       <p className="text-sm text-muted-foreground">{selectedActivity.pre_activity_data.intention}</p>
-                    </div>
-                  )}
-                  {selectedActivity.pre_activity_data.items && Array.isArray(selectedActivity.pre_activity_data.items) && (
-                    <div>
+                    </div>}
+                  {selectedActivity.pre_activity_data.items && Array.isArray(selectedActivity.pre_activity_data.items) && <div>
                       <p className="text-sm font-medium">Pre-Activity Items:</p>
                       <div className="space-y-1">
-                        {selectedActivity.pre_activity_data.items.map((item: any, index: number) => (
-                          <div key={index} className="flex items-center justify-between text-sm">
+                        {selectedActivity.pre_activity_data.items.map((item: any, index: number) => <div key={index} className="flex items-center justify-between text-sm">
                             <span className={item.completed ? "text-success" : "text-muted-foreground"}>
                               {item.name}
                             </span>
                             <span className="text-primary">+{item.points}</span>
-                          </div>
-                        ))}
+                          </div>)}
                       </div>
-                    </div>
-                  )}
-                  {selectedActivity.pre_activity_data.completedAt && (
-                    <div>
+                    </div>}
+                  {selectedActivity.pre_activity_data.completedAt && <div>
                       <p className="text-sm font-medium">Completed At:</p>
                       <p className="text-sm text-muted-foreground">
                         {new Date(selectedActivity.pre_activity_data.completedAt).toLocaleString()}
                       </p>
-                    </div>
-                  )}
+                    </div>}
                 </div>
-              </div>
-            )}
+              </div>}
 
             {/* Mindset Support Section */}
-            {selectedActivity.worry_reason && (
-              <div className="space-y-2">
+            {selectedActivity.worry_reason && <div className="space-y-2">
                 <h4 className="font-medium text-primary flex items-center gap-2">
                   💙 Mindset Support
                 </h4>
@@ -391,266 +338,217 @@ export default function ActivityLog({ selectedFilter, childId }: ActivityLogProp
                     <p className="text-sm text-foreground">{selectedActivity.worry_reason}</p>
                   </div>
                   
-                  {selectedActivity.worry_answers && typeof selectedActivity.worry_answers === 'object' && (
-                    <div className="space-y-2">
+                  {selectedActivity.worry_answers && typeof selectedActivity.worry_answers === 'object' && <div className="space-y-2">
                       <p className="text-sm font-medium text-primary">Support Session Responses:</p>
                       <div className="space-y-2">
-                        {Object.entries(selectedActivity.worry_answers).map(([questionId, answer], index) => (
-                          <div key={questionId} className="p-2 bg-background/80 rounded text-sm">
+                        {Object.entries(selectedActivity.worry_answers).map(([questionId, answer], index) => <div key={questionId} className="p-2 bg-background/80 rounded text-sm">
                             <p className="text-foreground/90">{String(answer)}</p>
-                          </div>
-                        ))}
+                          </div>)}
                       </div>
-                    </div>
-                  )}
+                    </div>}
                 </div>
-              </div>
-            )}
+              </div>}
             
             {/* Post-Activity Details */}
-            {selectedActivity.post_activity_completed && selectedActivity.post_activity_data && (
-              <div className="space-y-2">
+            {selectedActivity.post_activity_completed && selectedActivity.post_activity_data && <div className="space-y-2">
                 <h4 className="font-medium text-primary">Post-Activity Reflection & Journal</h4>
                 <div className="p-4 bg-muted/30 rounded-lg space-y-4">
                   {/* Mood and Ratings */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {selectedActivity.post_activity_data.mood && (
-                      <div className="text-center p-3 bg-background rounded-lg">
+                    {selectedActivity.post_activity_data.mood && <div className="text-center p-3 bg-background rounded-lg">
                         <p className="text-sm font-medium">Mood</p>
                         <p className="text-2xl font-bold text-primary">{selectedActivity.post_activity_data.mood}/5</p>
-                      </div>
-                    )}
-                    {selectedActivity.post_activity_data.confidence && (
-                      <div className="text-center p-3 bg-background rounded-lg">
+                      </div>}
+                    {selectedActivity.post_activity_data.confidence && <div className="text-center p-3 bg-background rounded-lg">
                         <p className="text-sm font-medium">Confidence</p>
                         <p className="text-2xl font-bold text-primary">{selectedActivity.post_activity_data.confidence}/10</p>
-                      </div>
-                    )}
-                    {selectedActivity.post_activity_data.satisfaction && (
-                      <div className="text-center p-3 bg-background rounded-lg">
+                      </div>}
+                    {selectedActivity.post_activity_data.satisfaction && <div className="text-center p-3 bg-background rounded-lg">
                         <p className="text-sm font-medium">Satisfaction</p>
                         <p className="text-2xl font-bold text-primary">{selectedActivity.post_activity_data.satisfaction}/10</p>
-                      </div>
-                    )}
+                      </div>}
                   </div>
 
                   {/* Journal Entries */}
                   <div className="space-y-4">
-                    {selectedActivity.post_activity_data.journalPrompts?.wentWell && (
-                      <div className="p-4 bg-background rounded-lg border-l-4 border-success">
+                    {selectedActivity.post_activity_data.journalPrompts?.wentWell && <div className="p-4 bg-background rounded-lg border-l-4 border-success">
                          <div className="flex items-center gap-2 text-sm font-medium text-success mb-2">
                            <CustomIcon type="good" size="sm" />
                            <span>What went well:</span>
                          </div>
                         <p className="text-sm text-foreground whitespace-pre-wrap">{selectedActivity.post_activity_data.journalPrompts.wentWell}</p>
-                      </div>
-                    )}
+                      </div>}
                     
-                    {selectedActivity.post_activity_data.journalPrompts?.couldImprove && (
-                      <div className="p-4 bg-background rounded-lg border-l-4 border-warning">
+                    {selectedActivity.post_activity_data.journalPrompts?.couldImprove && <div className="p-4 bg-background rounded-lg border-l-4 border-warning">
                         <p className="text-sm font-medium text-warning mb-2">🔄 What could improve:</p>
                         <p className="text-sm text-foreground whitespace-pre-wrap">{selectedActivity.post_activity_data.journalPrompts.couldImprove}</p>
-                      </div>
-                    )}
+                      </div>}
                     
-                    {selectedActivity.post_activity_data.journalPrompts?.whatAffected && (
-                      <div className="p-4 bg-background rounded-lg border-l-4 border-accent">
+                    {selectedActivity.post_activity_data.journalPrompts?.whatAffected && <div className="p-4 bg-background rounded-lg border-l-4 border-accent">
                         <p className="text-sm font-medium text-accent mb-2">🌟 What affected you today:</p>
                         <p className="text-sm text-foreground whitespace-pre-wrap">{selectedActivity.post_activity_data.journalPrompts.whatAffected}</p>
-                      </div>
-                    )}
+                      </div>}
                   </div>
 
                   {/* Super Behaviour Ratings */}
-                  {selectedActivity.post_activity_data.superBehaviours && (
-                    <div className="space-y-4">
+                  {selectedActivity.post_activity_data.superBehaviours && <div className="space-y-4">
                       <h5 className="font-medium text-primary">Super Behaviour Ratings</h5>
                       <div className="space-y-4">
-                        {selectedActivity.post_activity_data.superBehaviours.braveOnBall && (
-                          <div className="p-4 bg-background rounded-lg border border-border">
+                        {selectedActivity.post_activity_data.superBehaviours.braveOnBall && <div className="p-4 bg-background rounded-lg border border-border">
                             <div className="text-center mb-3">
                               <p className="text-sm font-medium">🔥 Brave on Ball</p>
                               <p className="text-2xl font-bold text-primary">
                                 {(() => {
-                                  const ratings = selectedActivity.post_activity_data.superBehaviours.braveOnBall;
-                                  if (typeof ratings === 'object' && ratings.question1 !== undefined) {
-                                    const avg = (ratings.question1 + ratings.question2 + ratings.question3 + ratings.question4) / 4;
-                                    return `${avg.toFixed(1)}/10`;
-                                  }
-                                  return `${ratings}/10`;
-                                })()}
+                          const ratings = selectedActivity.post_activity_data.superBehaviours.braveOnBall;
+                          if (typeof ratings === 'object' && ratings.question1 !== undefined) {
+                            const avg = (ratings.question1 + ratings.question2 + ratings.question3 + ratings.question4) / 4;
+                            return `${avg.toFixed(1)}/10`;
+                          }
+                          return `${ratings}/10`;
+                        })()}
                               </p>
                             </div>
                             {(() => {
-                              const ratings = selectedActivity.post_activity_data.superBehaviours.braveOnBall;
-                              if (typeof ratings === 'object' && ratings.question1 !== undefined) {
-                                const questions = [
-                                  'How often did you try to take players on or play forward?',
-                                  'How much intent did you show when doing it — did you really go for it?',
-                                  'Did you take risks even when you made mistakes or lost the ball?',
-                                  'How much did you play to win your 1v1s, not just avoid losing the ball?'
-                                ];
-                                return (
-                                  <div className="space-y-2">
-                                    {questions.map((question, index) => (
-                                      <div key={index} className="flex justify-between items-start text-xs">
+                      const ratings = selectedActivity.post_activity_data.superBehaviours.braveOnBall;
+                      if (typeof ratings === 'object' && ratings.question1 !== undefined) {
+                        const questions = ['How often did you try to take players on or play forward?', 'How much intent did you show when doing it — did you really go for it?', 'Did you take risks even when you made mistakes or lost the ball?', 'How much did you play to win your 1v1s, not just avoid losing the ball?'];
+                        return <div className="space-y-2">
+                                    {questions.map((question, index) => <div key={index} className="flex justify-between items-start text-xs">
                                         <span className="flex-1 mr-2">{question}</span>
                                         <span className="font-medium text-primary">
                                           {ratings[`question${index + 1}`]}/10
                                         </span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                );
-                              }
-                              return null;
-                            })()}
-                          </div>
-                        )}
+                                      </div>)}
+                                  </div>;
+                      }
+                      return null;
+                    })()}
+                          </div>}
                         
-                        {selectedActivity.post_activity_data.superBehaviours.braveOffBall && (
-                          <div className="p-4 bg-background rounded-lg border border-border">
+                        {selectedActivity.post_activity_data.superBehaviours.braveOffBall && <div className="p-4 bg-background rounded-lg border border-border">
                             <div className="text-center mb-3">
                               <p className="text-sm font-medium">🧱 Brave off Ball</p>
                               <p className="text-2xl font-bold text-primary">
                                 {(() => {
-                                  const ratings = selectedActivity.post_activity_data.superBehaviours.braveOffBall;
-                                  if (typeof ratings === 'object' && ratings.question1 !== undefined) {
-                                    const avg = (ratings.question1 + ratings.question2 + ratings.question3 + ratings.question4) / 4;
-                                    return `${avg.toFixed(1)}/10`;
-                                  }
-                                  return `${ratings}/10`;
-                                })()}
+                          const ratings = selectedActivity.post_activity_data.superBehaviours.braveOffBall;
+                          if (typeof ratings === 'object' && ratings.question1 !== undefined) {
+                            const avg = (ratings.question1 + ratings.question2 + ratings.question3 + ratings.question4) / 4;
+                            return `${avg.toFixed(1)}/10`;
+                          }
+                          return `${ratings}/10`;
+                        })()}
                               </p>
                             </div>
                             {(() => {
-                              const ratings = selectedActivity.post_activity_data.superBehaviours.braveOffBall;
-                              if (typeof ratings === 'object' && ratings.question1 !== undefined) {
-                                const questions = [
-                                  'How often did you show for the ball or move into space?',
-                                  'How much intent did you show when trying to get involved?',
-                                  'Did you keep moving even when things weren\'t going well?',
-                                  'Did you create good angles and options for your teammates?'
-                                ];
-                                return (
-                                  <div className="space-y-2">
-                                    {questions.map((question, index) => (
-                                      <div key={index} className="flex justify-between items-start text-xs">
+                      const ratings = selectedActivity.post_activity_data.superBehaviours.braveOffBall;
+                      if (typeof ratings === 'object' && ratings.question1 !== undefined) {
+                        const questions = ['How often did you show for the ball or move into space?', 'How much intent did you show when trying to get involved?', 'Did you keep moving even when things weren\'t going well?', 'Did you create good angles and options for your teammates?'];
+                        return <div className="space-y-2">
+                                    {questions.map((question, index) => <div key={index} className="flex justify-between items-start text-xs">
                                         <span className="flex-1 mr-2">{question}</span>
                                         <span className="font-medium text-primary">
                                           {ratings[`question${index + 1}`]}/10
                                         </span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                );
-                              }
-                              return null;
-                            })()}
-                          </div>
-                         )}
+                                      </div>)}
+                                  </div>;
+                      }
+                      return null;
+                    })()}
+                          </div>}
                         
-                         {selectedActivity.post_activity_data.superBehaviours.electric && (
-                          <div className="p-4 bg-background rounded-lg border border-border">
+                         {selectedActivity.post_activity_data.superBehaviours.electric && <div className="p-4 bg-background rounded-lg border border-border">
                             <div className="text-center mb-3">
                               <p className="text-sm font-medium">⚡ Electric</p>
                               <p className="text-2xl font-bold text-primary">
                                 {(() => {
-                                  const ratings = selectedActivity.post_activity_data.superBehaviours.electric;
-                                  if (typeof ratings === 'object' && ratings.question1 !== undefined) {
-                                    const avg = (ratings.question1 + ratings.question2 + ratings.question3 + ratings.question4) / 4;
-                                    return `${avg.toFixed(1)}/10`;
-                                  }
-                                  return `${ratings}/10`;
-                                })()}
+                          const ratings = selectedActivity.post_activity_data.superBehaviours.electric;
+                          if (typeof ratings === 'object' && ratings.question1 !== undefined) {
+                            const avg = (ratings.question1 + ratings.question2 + ratings.question3 + ratings.question4) / 4;
+                            return `${avg.toFixed(1)}/10`;
+                          }
+                          return `${ratings}/10`;
+                        })()}
                               </p>
                             </div>
                             {(() => {
-                              const ratings = selectedActivity.post_activity_data.superBehaviours.electric;
-                              if (typeof ratings === 'object' && ratings.question1 !== undefined) {
-                                const questions = [
-                                  'How much energy did you bring to the game today?',
-                                  'How quick were your reactions during the game?',
-                                  'How fast and sharp were your decisions?',
-                                  'Did you move with speed and urgency when the team needed it?'
-                                ];
-                                return (
-                                  <div className="space-y-2">
-                                    {questions.map((question, index) => (
-                                      <div key={index} className="flex justify-between items-start text-xs">
+                      const ratings = selectedActivity.post_activity_data.superBehaviours.electric;
+                      if (typeof ratings === 'object' && ratings.question1 !== undefined) {
+                        const questions = ['How much energy did you bring to the game today?', 'How quick were your reactions during the game?', 'How fast and sharp were your decisions?', 'Did you move with speed and urgency when the team needed it?'];
+                        return <div className="space-y-2">
+                                    {questions.map((question, index) => <div key={index} className="flex justify-between items-start text-xs">
                                         <span className="flex-1 mr-2">{question}</span>
                                         <span className="font-medium text-primary">
                                           {ratings[`question${index + 1}`]}/10
                                         </span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                );
-                              }
-                              return null;
-                            })()}
-                          </div>
-                        )}
+                                      </div>)}
+                                  </div>;
+                      }
+                      return null;
+                    })()}
+                          </div>}
                         
-                        {selectedActivity.post_activity_data.superBehaviours.aggressive && (
-                          <div className="p-4 bg-background rounded-lg border border-border">
+                        {selectedActivity.post_activity_data.superBehaviours.aggressive && <div className="p-4 bg-background rounded-lg border border-border">
                             <div className="text-center mb-3">
                               <p className="text-sm font-medium">💢 Aggressive</p>
                               <p className="text-2xl font-bold text-primary">
                                 {(() => {
-                                  const ratings = selectedActivity.post_activity_data.superBehaviours.aggressive;
-                                  if (typeof ratings === 'object' && ratings.question1 !== undefined) {
-                                    const avg = (ratings.question1 + ratings.question2 + ratings.question3 + ratings.question4) / 4;
-                                    return `${avg.toFixed(1)}/10`;
-                                  }
-                                  return `${ratings}/10`;
-                                })()}
+                          const ratings = selectedActivity.post_activity_data.superBehaviours.aggressive;
+                          if (typeof ratings === 'object' && ratings.question1 !== undefined) {
+                            const avg = (ratings.question1 + ratings.question2 + ratings.question3 + ratings.question4) / 4;
+                            return `${avg.toFixed(1)}/10`;
+                          }
+                          return `${ratings}/10`;
+                        })()}
                               </p>
                             </div>
                             {(() => {
-                              const ratings = selectedActivity.post_activity_data.superBehaviours.aggressive;
-                              if (typeof ratings === 'object' && ratings.question1 !== undefined) {
-                                const questions = [
-                                  'How often did you go into 1v1 duels or physical challenges?',
-                                  'When you pressed or challenged, how committed were you?',
-                                  'How often did you win your battles or at least make it difficult?',
-                                  'How much did you enjoy competing and fighting for the ball?'
-                                ];
-                                return (
-                                  <div className="space-y-2">
-                                    {questions.map((question, index) => (
-                                      <div key={index} className="flex justify-between items-start text-xs">
+                      const ratings = selectedActivity.post_activity_data.superBehaviours.aggressive;
+                      if (typeof ratings === 'object' && ratings.question1 !== undefined) {
+                        const questions = ['How often did you go into 1v1 duels or physical challenges?', 'When you pressed or challenged, how committed were you?', 'How often did you win your battles or at least make it difficult?', 'How much did you enjoy competing and fighting for the ball?'];
+                        return <div className="space-y-2">
+                                    {questions.map((question, index) => <div key={index} className="flex justify-between items-start text-xs">
                                         <span className="flex-1 mr-2">{question}</span>
                                         <span className="font-medium text-primary">
                                           {ratings[`question${index + 1}`]}/10
                                         </span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                );
-                              }
-                              return null;
-                            })()}
-                          </div>
-                        )}
+                                      </div>)}
+                                  </div>;
+                      }
+                      return null;
+                    })()}
+                          </div>}
                        </div>
-                     </div>
-                   )}
+                     </div>}
 
                   {/* During Activity Ratings */}
-                  {selectedActivity.post_activity_data && (
-                    <div className="space-y-3">
+                  {selectedActivity.post_activity_data && <div className="space-y-3">
                       <h5 className="font-medium text-primary">During the Activity Ratings</h5>
                       <div className="grid grid-cols-1 gap-3">
-                        {[
-                          { key: "workRate", label: "Work rate", icon: "⚡" },
-                          { key: "confidence", label: "Confidence", icon: "🧠" },
-                          { key: "mistakes", label: "Mistakes & recovery", icon: "🎯" },
-                          { key: "focus", label: "Focus", icon: "🎯" },
-                          { key: "performance", label: "Performance", icon: "⚡" },
-                        ].map(({ key, label, icon }) => (
-                          selectedActivity.post_activity_data[key] && (
-                            <div key={key} className="flex items-center justify-between p-3 bg-background rounded-lg border border-border">
+                        {[{
+                    key: "workRate",
+                    label: "Work rate",
+                    icon: "⚡"
+                  }, {
+                    key: "confidence",
+                    label: "Confidence",
+                    icon: "🧠"
+                  }, {
+                    key: "mistakes",
+                    label: "Mistakes & recovery",
+                    icon: "🎯"
+                  }, {
+                    key: "focus",
+                    label: "Focus",
+                    icon: "🎯"
+                  }, {
+                    key: "performance",
+                    label: "Performance",
+                    icon: "⚡"
+                  }].map(({
+                    key,
+                    label,
+                    icon
+                  }) => selectedActivity.post_activity_data[key] && <div key={key} className="flex items-center justify-between p-3 bg-background rounded-lg border border-border">
                               <div className="flex items-center gap-2">
                                 <span className="text-lg">{icon}</span>
                                 <span className="text-sm font-medium">{label}</span>
@@ -658,43 +556,28 @@ export default function ActivityLog({ selectedFilter, childId }: ActivityLogProp
                               <span className="text-lg font-bold text-primary">
                                 {selectedActivity.post_activity_data[key]}/10
                               </span>
-                            </div>
-                          )
-                        ))}
+                            </div>)}
                       </div>
-                    </div>
-                  )}
+                    </div>}
 
-                  {selectedActivity.post_activity_data.completedAt && (
-                    <div className="pt-3 border-t border-muted">
+                  {selectedActivity.post_activity_data.completedAt && <div className="pt-3 border-t border-muted">
                       <p className="text-xs text-muted-foreground">
                         Completed on: {new Date(selectedActivity.post_activity_data.completedAt).toLocaleString()}
                       </p>
-                    </div>
-                  )}
+                    </div>}
                 </div>
-              </div>
-            )}
+              </div>}
           </div>
         </CardContent>
-      </Card>
-    );
+      </Card>;
   }
-
-  return (
-    <Card className="shadow-soft">
-      <CardHeader>
-        <CardTitle className="text-lg">Activity Log</CardTitle>
+  return <Card className="shadow-soft">
+      <CardHeader className="bg-violet-500">
+        <CardTitle className="text-2xl text-white">Your Sessions &amp; Matches</CardTitle>
       </CardHeader>
-      <CardContent>
-        {activities.length > 0 ? (
-          <div className="space-y-3">
-            {activities.map((activity) => (
-              <div
-                key={activity.id}
-                className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors cursor-pointer"
-                onClick={() => setSelectedActivity(activity)}
-              >
+      <CardContent className="bg-violet-500">
+        {activities.length > 0 ? <div className="space-y-3">
+            {activities.map(activity => <div key={activity.id} className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => setSelectedActivity(activity)}>
                 <div className="flex items-center gap-3">
                   {getActivityIcon(activity.activity_type)}
                   <div>
@@ -713,12 +596,7 @@ export default function ActivityLog({ selectedFilter, childId }: ActivityLogProp
                   </div>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
-                        onClick={(e) => e.stopPropagation()}
-                      >
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive" onClick={e => e.stopPropagation()}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </AlertDialogTrigger>
@@ -733,28 +611,17 @@ export default function ActivityLog({ selectedFilter, childId }: ActivityLogProp
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={(e) => handleDeleteActivity(activity.id, activity.activity_name, activity.points_awarded, e)}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
+                        <AlertDialogAction onClick={e => handleDeleteActivity(activity.id, activity.activity_name, activity.points_awarded, e)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                           Delete Activity
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center text-muted-foreground py-8">
-            {selectedFilter === 'All' 
-              ? "No activities completed yet. Start your first activity in the Stadium!"
-              : `No ${selectedFilter} activities found. Try a different filter.`
-            }
-          </div>
-        )}
+              </div>)}
+          </div> : <div className="text-center text-muted-foreground py-8">
+            {selectedFilter === 'All' ? "No activities completed yet. Start your first activity in the Stadium!" : `No ${selectedFilter} activities found. Try a different filter.`}
+          </div>}
       </CardContent>
-    </Card>
-  );
+    </Card>;
 }
