@@ -950,10 +950,10 @@ export default function ActivityForm({
 
               {/* Set Intention */}
           <Card className="shadow-soft">
-            <CardHeader className="bg-[#ff0066]">
+            <CardHeader className="bg-violet-500">
               <CardTitle className="text-center text-2xl text-white">Have a plan</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 bg-violet-500">
               {/* Goal Selection */}
               {userGoals.length > 0 && <div className="mb-6">
                   <p className="text-sm font-medium mb-3">What is it that you want to achieve in the session today ?
