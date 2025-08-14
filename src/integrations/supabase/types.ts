@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -422,21 +422,30 @@ export type Database = {
         Row: {
           created_at: string
           email: string
+          help_team: string[] | null
           id: string
+          role: string | null
+          strengths: string[] | null
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
           email: string
+          help_team?: string[] | null
           id?: string
+          role?: string | null
+          strengths?: string[] | null
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
           email?: string
+          help_team?: string[] | null
           id?: string
+          role?: string | null
+          strengths?: string[] | null
           updated_at?: string
           user_id?: string
         }
@@ -746,13 +755,13 @@ export type Database = {
     Functions: {
       add_admin_notification: {
         Args: {
-          notification_type_param: string
-          title_param: string
           message_param: string
-          related_user_id_param?: string
-          related_user_email_param?: string
-          related_child_name_param?: string
+          notification_type_param: string
           related_activity_name_param?: string
+          related_child_name_param?: string
+          related_user_email_param?: string
+          related_user_id_param?: string
+          title_param: string
         }
         Returns: string
       }
@@ -767,9 +776,9 @@ export type Database = {
       admin_get_all_users: {
         Args: Record<PropertyKey, never>
         Returns: {
-          id: string
-          email: string
           created_at: string
+          email: string
+          id: string
         }[]
       }
       auth_or_anon: {
@@ -780,8 +789,8 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: {
           child_id: string
-          child_name: string
           child_level: number
+          child_name: string
           child_points: number
           weekly_mood_avg: number
         }[]
@@ -818,10 +827,10 @@ export type Database = {
       }
       log_user_action: {
         Args: {
-          action_type_param: string
           action_details_param?: Json
-          page_location_param?: string
+          action_type_param: string
           child_id_param?: string
+          page_location_param?: string
         }
         Returns: string
       }
