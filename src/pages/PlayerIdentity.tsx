@@ -239,7 +239,7 @@ export default function PlayerIdentity() {
         {/* Motto & Main Weapon */}
         <Card className="shadow-sm">
           <CardHeader>
-            <CardTitle>Your Identity</CardTitle>
+            <CardTitle className="text-[#ff0066]">Your Identity</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-2">
