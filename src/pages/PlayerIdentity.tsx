@@ -201,7 +201,7 @@ export default function PlayerIdentity() {
             </div>
 
             <div className="grid gap-2">
-              <Label>Role Type</Label>
+              <h3 className="text-lg font-semibold">Pick the player that best describe your style</h3>
               <RoleTypeGrid options={roleTypeOptions} selected={roleType} onSelect={setRoleType} disabled={!roleMain} />
             </div>
           </CardContent>
