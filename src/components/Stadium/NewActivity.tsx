@@ -22,7 +22,7 @@ interface NewActivityProps {
 const activityTypes = [
   { value: "Match", label: "Match" },
   { value: "Training", label: "Training" },
-  { value: "1to1", label: "1 to 1" },
+  { value: "one_to_one", label: "One-to-One (Technical)" },
   { value: "Futsal", label: "Futsal" },
   { value: "Small Group", label: "Small Group" },
   { value: "Other", label: "Other" },

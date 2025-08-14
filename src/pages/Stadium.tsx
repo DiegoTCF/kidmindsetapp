@@ -4,7 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import NewActivity from "@/components/Stadium/NewActivity";
 import ActivityForm from "@/components/Stadium/ActivityForm";
+import OneToOnePreForm from "@/components/Stadium/OneToOnePreForm";
+import OneToOnePostForm from "@/components/Stadium/OneToOnePostForm";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useUserLogging } from "@/hooks/useUserLogging";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ActivityData {
   name: string;
@@ -25,15 +30,42 @@ interface IncompleteActivity {
 }
 
 export default function Stadium() {
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const { logActivity, logActivityCompletion } = useUserLogging();
+  
   const [showNewActivity, setShowNewActivity] = useState(false);
   const [showActivityForm, setShowActivityForm] = useState(false);
   const [currentActivity, setCurrentActivity] = useState<ActivityData | null>(null);
   const [incompleteActivities, setIncompleteActivities] = useState<IncompleteActivity[]>([]);
   const [resumingActivity, setResumingActivity] = useState<IncompleteActivity | null>(null);
+  
+  // One-to-One flow state
+  const [showOneToOnePreForm, setShowOneToOnePreForm] = useState(false);
+  const [showOneToOnePostForm, setShowOneToOnePostForm] = useState(false);
+  const [oneToOnePreData, setOneToOnePreData] = useState<any>(null);
+  const [currentChildId, setCurrentChildId] = useState<string | null>(null);
 
   useEffect(() => {
     loadIncompleteActivities();
+    loadChildData();
   }, []);
+
+  const loadChildData = async () => {
+    try {
+      const { data: childId, error: childError } = await supabase
+        .rpc('get_current_user_child_id');
+      
+      if (childError) {
+        console.error('Error getting child ID:', childError);
+        return;
+      }
+      
+      setCurrentChildId(childId);
+    } catch (error) {
+      console.error('Error loading child data:', error);
+    }
+  };
 
   // Also reload when component becomes visible again (user returns from other pages)
   useEffect(() => {
@@ -94,7 +126,7 @@ export default function Stadium() {
     }
   };
 
-  const handleResumeActivity = (activity: IncompleteActivity) => {
+  const handleResumeActivity = async (activity: IncompleteActivity) => {
     const activityData: ActivityData = {
       name: activity.activity_name,
       type: activity.activity_type,
@@ -103,13 +135,42 @@ export default function Stadium() {
     
     setCurrentActivity(activityData);
     setResumingActivity(activity);
-    setShowActivityForm(true);
+    
+    // For one_to_one activities, load pre-data and go to post form
+    if (activity.activity_type === 'one_to_one') {
+      try {
+        const { data: fullActivity, error } = await supabase
+          .from('activities')
+          .select('*')
+          .eq('id', activity.id)
+          .single();
+          
+        if (fullActivity && fullActivity.pre_activity_data) {
+          setOneToOnePreData(fullActivity.pre_activity_data);
+          setShowOneToOnePostForm(true);
+        } else {
+          // Fallback to regular form if no pre-data found
+          setShowActivityForm(true);
+        }
+      } catch (error) {
+        console.error('Error loading one-to-one pre-data:', error);
+        setShowActivityForm(true);
+      }
+    } else {
+      setShowActivityForm(true);
+    }
   };
 
   const handleNewActivitySubmit = (activity: ActivityData) => {
     setCurrentActivity(activity);
     setShowNewActivity(false);
-    setShowActivityForm(true);
+    
+    // Route to One-to-One forms if activity type is one_to_one
+    if (activity.type === 'one_to_one') {
+      setShowOneToOnePreForm(true);
+    } else {
+      setShowActivityForm(true);
+    }
   };
 
   const handleActivityFormComplete = () => {
@@ -119,11 +180,187 @@ export default function Stadium() {
     loadIncompleteActivities(); // Reload to update the list
   };
 
+  const handleOneToOnePreComplete = async (preData: any) => {
+    if (!currentChildId || !currentActivity) return;
+
+    try {
+      // Create activity record with pre-data
+      const { data: activityRecord, error: activityError } = await supabase
+        .from('activities')
+        .insert({
+          child_id: currentChildId,
+          activity_name: currentActivity.name,
+          activity_type: 'one_to_one',
+          activity_date: currentActivity.date.toISOString().split('T')[0],
+          pre_activity_completed: true,
+          pre_activity_data: preData,
+          points_awarded: 20 // Base points for completing pre-activity
+        })
+        .select()
+        .single();
+
+      if (activityError) {
+        console.error('Error creating one-to-one activity:', activityError);
+        toast({
+          title: "Error",
+          description: "Failed to save session data. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Log activity creation
+      await logActivity(currentActivity.name, 'one_to_one', currentChildId);
+
+      setOneToOnePreData(preData);
+      setShowOneToOnePreForm(false);
+      setShowOneToOnePostForm(true);
+
+      toast({
+        title: "Session Started! 🎉",
+        description: "Great planning! Now complete your technical session."
+      });
+    } catch (error) {
+      console.error('Error handling one-to-one pre completion:', error);
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleOneToOnePostComplete = async (postData: any) => {
+    if (!currentChildId || !currentActivity) return;
+
+    try {
+      // Find the activity record to update
+      const { data: activities, error: findError } = await supabase
+        .from('activities')
+        .select('*')
+        .eq('child_id', currentChildId)
+        .eq('activity_name', currentActivity.name)
+        .eq('activity_type', 'one_to_one')
+        .eq('post_activity_completed', false)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (findError || !activities || activities.length === 0) {
+        console.error('Error finding activity to update:', findError);
+        toast({
+          title: "Error",
+          description: "Could not find session to update. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const activity = activities[0];
+
+      // Calculate points based on ratings and content
+      const ratings = postData.one_to_one.ratings;
+      const avgRating = (ratings.work_rate + ratings.technique_quality + ratings.effort_level + 
+                        ratings.confidence_during_session + ratings.enjoyment + ratings.focus_concentration) / 6;
+      
+      const wordCount = (postData.one_to_one.what_went_well + postData.one_to_one.what_to_improve_next).split(' ').length;
+      const postPoints = Math.round(avgRating * 5) + (wordCount * 2) + (postData.one_to_one.goal_achieved ? 10 : 0) + 15;
+
+      // Update activity with post-data
+      const { error: updateError } = await supabase
+        .from('activities')
+        .update({
+          post_activity_completed: true,
+          post_activity_data: postData,
+          points_awarded: activity.points_awarded + postPoints
+        })
+        .eq('id', activity.id);
+
+      if (updateError) {
+        console.error('Error updating activity:', updateError);
+        toast({
+          title: "Error",
+          description: "Failed to save session reflection. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Create progress entry
+      await supabase.from('progress_entries').insert({
+        child_id: currentChildId,
+        entry_type: 'activity',
+        entry_value: {
+          activity_id: activity.id,
+          phase: 'post_activity',
+          ratings: ratings,
+          avg_rating: avgRating,
+          goal_achieved: postData.one_to_one.goal_achieved
+        },
+        entry_date: currentActivity.date.toISOString().split('T')[0],
+        points_earned: postPoints,
+        activity_id: activity.id
+      });
+
+      // Log completion
+      await logActivityCompletion(currentActivity.name, 'post', currentChildId);
+
+      toast({
+        title: `🎉 Session Complete! +${postPoints} points`,
+        description: "Great technical work! Your progress has been saved."
+      });
+
+      // Reset state
+      setShowOneToOnePostForm(false);
+      setCurrentActivity(null);
+      setOneToOnePreData(null);
+      loadIncompleteActivities();
+    } catch (error) {
+      console.error('Error completing one-to-one session:', error);
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleOneToOneBack = () => {
+    if (showOneToOnePostForm) {
+      setShowOneToOnePostForm(false);
+      setShowOneToOnePreForm(true);
+    } else {
+      setShowOneToOnePreForm(false);
+      setCurrentActivity(null);
+      setOneToOnePreData(null);
+    }
+  };
+
   if (showNewActivity) {
     return (
       <NewActivity
         onSubmit={handleNewActivitySubmit}
         onCancel={() => setShowNewActivity(false)}
+      />
+    );
+  }
+
+  if (showOneToOnePreForm && currentActivity) {
+    return (
+      <OneToOnePreForm
+        activity={currentActivity}
+        onComplete={handleOneToOnePreComplete}
+        onBack={handleOneToOneBack}
+      />
+    );
+  }
+
+  if (showOneToOnePostForm && currentActivity && oneToOnePreData) {
+    return (
+      <OneToOnePostForm
+        activity={currentActivity}
+        preData={oneToOnePreData}
+        onComplete={handleOneToOnePostComplete}
+        onBack={handleOneToOneBack}
       />
     );
   }
@@ -210,7 +447,7 @@ export default function Stadium() {
                         className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
                       >
                         <Play className="w-4 h-4 mr-1" />
-                        Resume Post-Match
+                        {activity.activity_type === 'one_to_one' ? 'Complete Session' : 'Resume Post-Match'}
                       </Button>
                     </div>
                   ))}
