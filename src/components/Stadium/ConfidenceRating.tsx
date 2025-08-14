@@ -113,8 +113,7 @@ export default function ConfidenceRating({
   return <div className="space-y-6">
       <Card className="shadow-soft border-primary/20">
         <CardHeader className="text-center pb-4">
-          <CardTitle className="text-xl font-bold text-primary">Let’s build your confidence 
-First we will check how you are feeling</CardTitle>
+          <CardTitle className="text-xl font-bold text-primary">First we will check how you are feeling</CardTitle>
           <p className="text-sm text-muted-foreground">
             Question {currentStep + 1} of {questions.length}
           </p>
