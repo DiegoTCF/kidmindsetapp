@@ -136,8 +136,8 @@ export default function Stadium() {
     setCurrentActivity(activityData);
     setResumingActivity(activity);
     
-    // For one_to_one activities, load pre-data and go to post form
-    if (activity.activity_type === 'one_to_one') {
+    // For 1to1 activities, load pre-data and go to post form
+    if (activity.activity_type === '1to1') {
       try {
         const { data: fullActivity, error } = await supabase
           .from('activities')
@@ -165,8 +165,8 @@ export default function Stadium() {
     setCurrentActivity(activity);
     setShowNewActivity(false);
     
-    // Route to One-to-One forms if activity type is one_to_one
-    if (activity.type === 'one_to_one') {
+    // Route to One-to-One forms if activity type is 1to1
+    if (activity.type === '1to1') {
       setShowOneToOnePreForm(true);
     } else {
       setShowActivityForm(true);
@@ -190,7 +190,7 @@ export default function Stadium() {
         .insert({
           child_id: currentChildId,
           activity_name: currentActivity.name,
-          activity_type: 'one_to_one',
+          activity_type: '1to1',
           activity_date: currentActivity.date.toISOString().split('T')[0],
           pre_activity_completed: true,
           pre_activity_data: preData,
@@ -210,7 +210,7 @@ export default function Stadium() {
       }
 
       // Log activity creation
-      await logActivity(currentActivity.name, 'one_to_one', currentChildId);
+      await logActivity(currentActivity.name, '1to1', currentChildId);
 
       setOneToOnePreData(preData);
       setShowOneToOnePreForm(false);
@@ -240,7 +240,7 @@ export default function Stadium() {
         .select('*')
         .eq('child_id', currentChildId)
         .eq('activity_name', currentActivity.name)
-        .eq('activity_type', 'one_to_one')
+        .eq('activity_type', '1to1')
         .eq('post_activity_completed', false)
         .order('created_at', { ascending: false })
         .limit(1);
@@ -447,7 +447,7 @@ export default function Stadium() {
                         className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
                       >
                         <Play className="w-4 h-4 mr-1" />
-                        {activity.activity_type === 'one_to_one' ? 'Complete Session' : 'Resume Post-Match'}
+                        {activity.activity_type === '1to1' ? 'Complete Session' : 'Resume Post-Match'}
                       </Button>
                     </div>
                   ))}
