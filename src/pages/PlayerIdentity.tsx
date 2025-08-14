@@ -185,14 +185,14 @@ export default function PlayerIdentity() {
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <Dna className="w-6 h-6" /> DNA
         </h1>
-        <p className="text-muted-foreground">Define your on-field DNA</p>
+        <p className="text-white">What kind of player are you?</p>
       </header>
 
       <div className="space-y-4">
         {/* Role Selection */}
         <Card className="shadow-sm">
           <CardHeader>
-            <CardTitle>Choose Your Role</CardTitle>
+            <CardTitle>Choose Your Position / Role</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-2">
