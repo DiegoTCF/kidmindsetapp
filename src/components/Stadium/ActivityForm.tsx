@@ -18,6 +18,7 @@ import { CustomIcon } from "@/components/ui/custom-emoji";
 import { supabase } from "@/integrations/supabase/client";
 import MindsetSupportFlow from "./MindsetSupportFlow";
 import ConfidenceRating from "./ConfidenceRating";
+import { DNAReminder } from "@/components/DNA/DNAReminder";
 interface Activity {
   name: string;
   type: string;
@@ -784,7 +785,7 @@ export default function ActivityForm({
       </div>;
   }
   return <div className="min-h-screen bg-background p-4">
-      <div className="mb-6 bg-sky-400">
+      <div className="mb-6">
         <Button variant="outline" onClick={onComplete} className="mb-4">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Stadium
@@ -951,9 +952,12 @@ export default function ActivityForm({
               {/* Set Intention */}
           <Card className="shadow-soft">
             <CardHeader className="bg-violet-500">
-              <CardTitle className="text-center text-2xl text-white bg-green-400">Have a plan</CardTitle>
+              <CardTitle className="text-center text-2xl text-white">Have a plan</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 bg-violet-500">
+              {/* DNA Reminder */}
+              <DNAReminder />
+              
               {/* Goal Selection */}
               {userGoals.length > 0 && <div className="mb-6">
                   <p className="text-sm font-medium mb-3">What is it that you want to achieve in the session today ?
