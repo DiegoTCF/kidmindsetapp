@@ -11,6 +11,7 @@ import { MAIN_ROLES, ROLE_TYPES, STRENGTHS_BY_ROLE_TYPE, UNIVERSAL_STRENGTHS_OUT
 import { RoleBoxSelector } from "@/components/PlayerIdentity/RoleBoxSelector";
 import { RoleTypeGrid } from "@/components/PlayerIdentity/RoleTypeGrid";
 import { ChipMultiSelect } from "@/components/PlayerIdentity/ChipMultiSelect";
+import { Separator } from "@/components/ui/separator";
 import { Link } from "react-router-dom";
 
 // Local type to avoid depending on generated Supabase types
@@ -210,6 +211,8 @@ export default function PlayerIdentity() {
               return input.trim().slice(0, 30) || null;
             }} />
             </div>
+
+            <Separator className="my-2" />
 
             <div className="grid gap-2">
               <Label>How you help the team (max 3)</Label>
