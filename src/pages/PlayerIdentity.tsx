@@ -11,6 +11,7 @@ import { MAIN_ROLES, ROLE_TYPES, STRENGTHS_BY_ROLE_TYPE, UNIVERSAL_STRENGTHS_OUT
 import { RoleBoxSelector } from "@/components/PlayerIdentity/RoleBoxSelector";
 import { RoleTypeGrid } from "@/components/PlayerIdentity/RoleTypeGrid";
 import { ChipMultiSelect } from "@/components/PlayerIdentity/ChipMultiSelect";
+import { Separator } from "@/components/ui/separator";
 import { Link } from "react-router-dom";
 
 // Local type to avoid depending on generated Supabase types
@@ -179,7 +180,7 @@ export default function PlayerIdentity() {
       setSaving(false);
     }
   };
-  return <div className="max-w-2xl mx-auto px-4 pt-20 pb-8">
+  return <div className="max-w-2xl mx-auto px-4 pt-20 pb-8 bg-sky-400">
       <header className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <Dna className="w-6 h-6" /> DNA
@@ -187,14 +188,15 @@ export default function PlayerIdentity() {
         <p className="text-muted-foreground">Define your on-field DNA</p>
       </header>
 
-      <Card className="shadow-sm">
-        <CardHeader>
-          <CardTitle>Your DNA</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-5">
+      <div className="space-y-4">
+        {/* Role Selection */}
+        <Card className="shadow-sm">
+          <CardHeader>
+            <CardTitle>Choose Your Role</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="grid gap-2">
-              <Label className="text-white">Main Role</Label>
+              <Label>Main Role</Label>
               <RoleBoxSelector roles={MAIN_ROLES} selected={roleMain} onSelect={v => setRoleMain(v as MainRole)} />
             </div>
 
@@ -202,20 +204,44 @@ export default function PlayerIdentity() {
               <Label>Role Type</Label>
               <RoleTypeGrid options={roleTypeOptions} selected={roleType} onSelect={setRoleType} disabled={!roleMain} />
             </div>
+          </CardContent>
+        </Card>
 
+        {/* Top Strengths */}
+        <Card className="shadow-sm">
+          <CardHeader>
+            <CardTitle>Top Strengths</CardTitle>
+          </CardHeader>
+          <CardContent>
             <div className="grid gap-2">
-              <Label>Top Strengths (max 3)</Label>
+              <Label>Select up to 3 strengths</Label>
               <ChipMultiSelect options={strengthOptions} value={strengths} onChange={setStrengths} max={3} addYourOwn onAddCustom={async () => {
               const input = window.prompt("Add your own strength (max 30 chars)") || "";
               return input.trim().slice(0, 30) || null;
             }} />
             </div>
+          </CardContent>
+        </Card>
 
+        {/* How You Help Team */}
+        <Card className="shadow-sm">
+          <CardHeader>
+            <CardTitle>How You Help the Team</CardTitle>
+          </CardHeader>
+          <CardContent>
             <div className="grid gap-2">
-              <Label>How you help the team (max 3)</Label>
+              <Label>Select up to 3 ways</Label>
               <ChipMultiSelect options={helpOptions} value={helpsTeam} onChange={setHelpsTeam} max={3} />
             </div>
+          </CardContent>
+        </Card>
 
+        {/* Motto & Main Weapon */}
+        <Card className="shadow-sm">
+          <CardHeader>
+            <CardTitle>Your Identity</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="grid gap-2">
               <Label htmlFor="motto">Motto</Label>
               <Input id="motto" placeholder="A short motto that defines you" value={motto} maxLength={140} onChange={e => setMotto(e.target.value)} />
@@ -236,14 +262,17 @@ export default function PlayerIdentity() {
               <Input id="avatar" placeholder="Link to an image" value={avatar_url} onChange={e => setAvatarUrl(e.target.value)} />
               {avatar_url && <img src={avatar_url} alt="Player identity avatar" className="w-24 h-24 rounded-md object-cover border" loading="lazy" />}
             </div>
+          </CardContent>
+        </Card>
 
-            <div className="pt-2">
-              <Button onClick={onSave} disabled={saving || loading}>
-                {saving ? "Saving..." : existing ? "Save changes" : "Create identity"}
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        {/* Save Button */}
+        <Card className="shadow-sm">
+          <CardContent className="pt-6">
+            <Button onClick={onSave} disabled={saving || loading} className="w-full">
+              {saving ? "Saving..." : existing ? "Save changes" : "Create identity"}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     </div>;
 }
