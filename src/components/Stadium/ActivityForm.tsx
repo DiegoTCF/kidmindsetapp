@@ -920,7 +920,7 @@ export default function ActivityForm({
           {/* Checklist */}
           <Card className="shadow-soft">
             <CardHeader className="bg-[fff] bg-[#ff0066]">
-              <CardTitle className="text-lg">Checklist</CardTitle>
+              <CardTitle className="text-white text-center text-2xl">Checklist</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 px-4 bg-[ff0066] bg-[#ff0066]">
               {preActivityItems.map(item => <div key={item.id} className={cn("flex items-center justify-between p-3 rounded-xl border-2 transition-all duration-200", item.completed ? "bg-success/10 border-success/30" : item.skipped ? "bg-muted/50 border-muted" : "bg-card border-border")}>
