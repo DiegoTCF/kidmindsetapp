@@ -210,7 +210,7 @@ export default function PlayerIdentity() {
         {/* Top Strengths */}
         <Card className="shadow-sm">
           <CardHeader>
-            <CardTitle>Top Strengths</CardTitle>
+            <CardTitle className="text-[#ff0066]">Choose your top strengths</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-2">
