@@ -849,7 +849,7 @@ export default function Home() {
       description: "Your custom task has been added to today's list."
     });
   };
-  return <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-[#ff0066]">
       <div className="w-full max-w-sm mx-auto p-4">
         {/* Top Navigation */}
         <TopNavigation />
@@ -861,7 +861,7 @@ export default function Home() {
 
         {/* Mood Check */}
         <Card className="mb-6 shadow-soft">
-          <CardHeader className="bg-sky-400">
+          <CardHeader className="bg-slate-50">
             <CardTitle className="flex items-center gap-2 text-xl text-slate-800">
               How are you feeling today?
               <CustomIcon type="good" size="sm" />
@@ -873,7 +873,7 @@ export default function Home() {
                 </span>
               </div>}
           </CardHeader>
-          <CardContent className="bg-sky-400">
+          <CardContent className="bg-slate-50">
             {!moodSubmitted || showMoodReview ? <div className="space-y-4">
                 <div className="grid grid-cols-5 gap-2">
                   {moodOptions.map(mood => <button key={mood.value} onClick={() => showMoodReview ? handleMoodChange(mood.value) : handleMoodSubmit(mood.value)} className={cn("flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all duration-200", "active:scale-95 touch-manipulation", showMoodReview && todayMood === mood.value ? "border-primary bg-primary/10" : "border-transparent hover:border-primary/30 hover:bg-primary/5")}>
@@ -912,8 +912,8 @@ export default function Home() {
         </Card>
 
         {/* Daily Tasks */}
-        <Card className="mb-6 shadow-soft rounded-sm bg-violet-500">
-          <CardHeader className="bg-violet-500">
+        <Card className="mb-6 shadow-soft rounded-sm bg-sky-500">
+          <CardHeader className="bg-sky-500">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-2xl text-gray-50">
                 <CustomIcon type="target" size="md" />
@@ -925,7 +925,7 @@ export default function Home() {
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="space-y-3 bg-violet-500">
+          <CardContent className="space-y-3 bg-slate-50">
             {/* Add Custom Task */}
             {showAddTask && <div className="flex gap-2 p-3 bg-muted/50 rounded-lg">
                 <Input placeholder="Enter custom task..." value={newTaskName} onChange={e => setNewTaskName(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleAddCustomTask()} className="flex-1" />
