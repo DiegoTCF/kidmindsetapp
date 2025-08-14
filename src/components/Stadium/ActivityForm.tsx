@@ -951,7 +951,9 @@ export default function ActivityForm({
               {/* Set Intention */}
           <Card className="shadow-soft">
             <CardHeader>
-              <CardTitle className="text-center text-2xl">Have a plan</CardTitle>
+              <CardTitle className="text-3xl text-center">Have a plan...
+What is it that you want to achieve in the session today ?
+            </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Goal Selection */}
