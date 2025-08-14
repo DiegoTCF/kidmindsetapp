@@ -861,7 +861,7 @@ export default function Home() {
 
         {/* Mood Check */}
         <Card className="mb-6 shadow-soft">
-          <CardHeader className="bg-yellow-200">
+          <CardHeader className="bg-sky-400">
             <CardTitle className="flex items-center gap-2 text-xl text-slate-800">
               How are you feeling today?
               <CustomIcon type="good" size="sm" />
@@ -873,7 +873,7 @@ export default function Home() {
                 </span>
               </div>}
           </CardHeader>
-          <CardContent className="bg-yellow-200">
+          <CardContent className="bg-sky-400">
             {!moodSubmitted || showMoodReview ? <div className="space-y-4">
                 <div className="grid grid-cols-5 gap-2">
                   {moodOptions.map(mood => <button key={mood.value} onClick={() => showMoodReview ? handleMoodChange(mood.value) : handleMoodSubmit(mood.value)} className={cn("flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all duration-200", "active:scale-95 touch-manipulation", showMoodReview && todayMood === mood.value ? "border-primary bg-primary/10" : "border-transparent hover:border-primary/30 hover:bg-primary/5")}>
