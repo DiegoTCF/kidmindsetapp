@@ -226,7 +226,7 @@ export default function PlayerIdentity() {
         {/* How You Help Team */}
         <Card className="shadow-sm">
           <CardHeader>
-            <CardTitle>How You Help the Team</CardTitle>
+            <CardTitle className="text-[#ff0066]">How You Help the Team</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-2">
