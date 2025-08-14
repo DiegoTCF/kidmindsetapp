@@ -259,11 +259,11 @@ export default function Stadium() {
 
       // Calculate points based on ratings and content
       const ratings = postData.one_to_one.ratings;
-      const avgRating = (ratings.work_rate + ratings.technique_quality + ratings.effort_level + 
-                        ratings.confidence_during_session + ratings.enjoyment + ratings.focus_concentration) / 6;
+      const avgRating = (ratings.work_rate + ratings.performance + ratings.confidence_during_session + 
+                        ratings.enjoyment + ratings.focus_concentration) / 5;
       
       const wordCount = (postData.one_to_one.what_went_well + postData.one_to_one.what_to_improve_next).split(' ').length;
-      const postPoints = Math.round(avgRating * 5) + (wordCount * 2) + (postData.one_to_one.goal_achieved ? 10 : 0) + 15;
+      const postPoints = Math.round(avgRating * 2) + (wordCount * 2) + (postData.one_to_one.goal_achieved ? 10 : 0) + 15;
 
       // Update activity with post-data
       const { error: updateError } = await supabase
@@ -285,14 +285,19 @@ export default function Stadium() {
         return;
       }
 
-      // Create progress entry
+      // Create progress entry with specific ratings
       await supabase.from('progress_entries').insert({
         child_id: currentChildId,
         entry_type: 'activity',
         entry_value: {
           activity_id: activity.id,
           phase: 'post_activity',
-          ratings: ratings,
+          ratings: {
+            work_rate: ratings.work_rate,
+            performance: ratings.performance,
+            confidence: ratings.confidence_during_session,
+            focus: ratings.focus_concentration
+          },
           avg_rating: avgRating,
           goal_achieved: postData.one_to_one.goal_achieved
         },

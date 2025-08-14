@@ -23,8 +23,7 @@ interface OneToOnePostFormProps {
 
 const ratingLabels = {
   work_rate: "Work rate",
-  technique_quality: "Technique quality", 
-  effort_level: "Effort",
+  performance: "Performance", 
   confidence_during_session: "Confidence",
   enjoyment: "Enjoyment",
   focus_concentration: "Focus"
@@ -32,12 +31,11 @@ const ratingLabels = {
 
 export default function OneToOnePostForm({ activity, preData, onComplete, onBack }: OneToOnePostFormProps) {
   const [ratings, setRatings] = useState({
-    work_rate: [3],
-    technique_quality: [3],
-    effort_level: [3],
-    confidence_during_session: [3],
-    enjoyment: [3],
-    focus_concentration: [3]
+    work_rate: [5],
+    performance: [5],
+    confidence_during_session: [5],
+    enjoyment: [5],
+    focus_concentration: [5]
   });
 
   const [whatYouWorkedOn, setWhatYouWorkedOn] = useState(
@@ -60,8 +58,7 @@ export default function OneToOnePostForm({ activity, preData, onComplete, onBack
       one_to_one: {
         ratings: {
           work_rate: ratings.work_rate[0],
-          technique_quality: ratings.technique_quality[0],
-          effort_level: ratings.effort_level[0],
+          performance: ratings.performance[0],
           confidence_during_session: ratings.confidence_during_session[0],
           enjoyment: ratings.enjoyment[0],
           focus_concentration: ratings.focus_concentration[0]
@@ -114,7 +111,7 @@ export default function OneToOnePostForm({ activity, preData, onComplete, onBack
                     <Slider
                       value={ratings[key as keyof typeof ratings]}
                       onValueChange={(value) => handleRatingChange(key as keyof typeof ratings, value)}
-                      max={5}
+                      max={10}
                       min={1}
                       step={1}
                       className="w-full"
@@ -122,7 +119,7 @@ export default function OneToOnePostForm({ activity, preData, onComplete, onBack
                     <div className="flex justify-between text-xs text-muted-foreground mt-1">
                       <span>1</span>
                       <span className="font-medium">{ratings[key as keyof typeof ratings][0]}</span>
-                      <span>5</span>
+                      <span>10</span>
                     </div>
                   </div>
                 </div>
