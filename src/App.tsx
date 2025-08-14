@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import { useAuth } from "./hooks/useAuth";
 import { AdminProvider } from "./hooks/useAdmin";
+import { ProfileProvider } from "./hooks/useProfile";
 import PlayerIdentity from "./pages/PlayerIdentity";
 import DNAYou from "./pages/DNAYou";
 import DNAYouQuiz from "./pages/DNAYouQuiz";
@@ -47,8 +48,9 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AdminProvider>
-          <Toaster />
-          <Sonner />
+          <ProfileProvider>
+            <Toaster />
+            <Sonner />
           <BrowserRouter>
             <Routes>
               {/* Auth route */}
@@ -127,6 +129,7 @@ const App = () => {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
+          </ProfileProvider>
         </AdminProvider>
       </TooltipProvider>
     </QueryClientProvider>
