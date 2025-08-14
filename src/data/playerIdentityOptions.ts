@@ -32,11 +32,11 @@ export const ROLE_TYPES: Record<MainRole, RoleTypeOption[]> = {
     { value: "df_physical_leader", label: "Physical Leader (Van Dijk)", subtitle: "Aerials, organisation, presence", image: "/lovable-uploads/a7953801-4ad7-4e46-a40c-cd7e23b44f5b.png" },
   ],
   Midfielder: [
-    { value: "mf_box_to_box", label: "Box-to-Box Engine (Bellingham)", subtitle: "Covers ground, drives forward", image: "/lovable-uploads/f8b415d2-d3b0-474a-8522-ad270bb1edf9.png" },
-    { value: "mf_creator", label: "Creator (De Bruyne)", subtitle: "Killer passes, chance creator", image: "/lovable-uploads/a54c1e28-f8f2-4b09-a1a1-c9deaa4b9e20.png" },
-    { value: "mf_dribbler_breaker", label: "Dribbler & Breaker (Bernardo Silva)", subtitle: "Beats players, opens space", image: "/lovable-uploads/562a1ae1-43f4-4b32-845c-99b1b37732c2.png" },
-    { value: "mf_controller", label: "Controller (Vitinha)", subtitle: "Controls tempo, builds play & connects", image: "/lovable-uploads/7979991f-3e75-4fc5-ae79-2dd11fec32e6.png" },
-    { value: "mf_shield", label: "Shield (Casemiro)", subtitle: "Protects defence, wins duels", image: "/lovable-uploads/52cd1b7b-c7e3-4f68-ab10-3360f0abe163.png" },
+    { value: "mf_box_to_box", label: "Box-to-Box Engine (Bellingham)", subtitle: "Covers ground, drives forward", image: "/lovable-uploads/dc72311d-a6de-43f7-b716-22bc288788b8.png" },
+    { value: "mf_creator", label: "Creator (De Bruyne)", subtitle: "Killer passes, chance creator", image: "/lovable-uploads/6f3ac988-6452-4f6a-ac0c-94f8f78c09bf.png" },
+    { value: "mf_dribbler_breaker", label: "Dribbler & Breaker (Bernardo Silva)", subtitle: "Beats players, opens space", image: "/lovable-uploads/64f3753d-631d-4333-a306-8aa2d85ae9ad.png" },
+    { value: "mf_controller", label: "Controller (Vitinha)", subtitle: "Controls tempo, builds play & connects", image: "/lovable-uploads/82224132-e6fb-4ece-bb8a-6a03de6cef1b.png" },
+    { value: "mf_shield", label: "Shield (Casemiro)", subtitle: "Protects defence, wins duels", image: "/lovable-uploads/c2cc2cc7-b3de-405b-bc10-ffbf38708bd2.png" },
   ],
   Attacker: [
     { value: "at_finisher", label: "Finisher (Haaland)", subtitle: "Right place, right time, goals", image: "/lovable-uploads/185bb317-e723-4fa3-be56-a46ba07261a3.png" },
