@@ -20,10 +20,10 @@ export const MAIN_ROLES: { value: MainRole; label: string }[] = [
 
 export const ROLE_TYPES: Record<MainRole, RoleTypeOption[]> = {
   Goalkeeper: [
-    { value: "gk_shot_stopper", label: "Shot Stopper (Alisson)", subtitle: "Brave in 1v1s, big saves", image: "/lovable-uploads/62db5ad5-ea7e-4a89-88bf-6e2d2f9e639f.png" },
-    { value: "gk_sweeper", label: "Sweeper (Neuer)", subtitle: "Starts attacks, reads through balls, great with feet", image: "/lovable-uploads/0c9470e1-345e-4fca-81f4-74d09d83b37e.png" },
-    { value: "gk_commanding_box", label: "Commanding Box (Buffon)", subtitle: "Wins high balls, commands defence", image: "/lovable-uploads/13ca30ce-88dd-4efe-b357-c93f5c0d2433.png" },
-    { value: "gk_distributor", label: "Distributor (Ederson)", subtitle: "Passes with precision, builds play from the back", image: "/lovable-uploads/ebb6f724-13e1-4201-b89f-b1ba15585720.png" },
+    { value: "gk_shot_stopper", label: "Shot Stopper (Alisson)", subtitle: "Brave in 1v1s, big saves", image: "/lovable-uploads/c5dfaa48-6f6c-475f-b9f2-50295eb558f6.png" },
+    { value: "gk_sweeper", label: "Sweeper (Neuer)", subtitle: "Starts attacks, reads through balls, great with feet", image: "/lovable-uploads/309c4943-05f4-4973-b501-bd34bf0369f7.png" },
+    { value: "gk_commanding_box", label: "Commanding Box (Buffon)", subtitle: "Wins high balls, commands defence", image: "/lovable-uploads/f245edc5-0d9f-4f66-8385-7a1e6c6958c3.png" },
+    { value: "gk_distributor", label: "Distributor (Ederson)", subtitle: "Passes with precision, builds play from the back", image: "/lovable-uploads/ffbe4239-9cb2-4a0b-81f9-05ae3791e324.png" },
   ],
   Defender: [
     { value: "df_tackling_machine", label: "Tackling Machine (Varane)", subtitle: "Stops attacks with timing & strength", image: "/lovable-uploads/8ae75401-f9d7-4629-a827-5a4bbc2d9ba3.png" },
