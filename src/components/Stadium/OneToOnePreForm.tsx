@@ -52,7 +52,6 @@ export default function OneToOnePreForm({ activity, onComplete, onBack }: OneToO
   const [customTopic, setCustomTopic] = useState("");
   const [sessionGoal, setSessionGoal] = useState("");
   const [focusCues, setFocusCues] = useState<string[]>([]);
-  const [expectedEffort, setExpectedEffort] = useState([3]);
   const [coachPresent, setCoachPresent] = useState(false);
   const [durationMinutes, setDurationMinutes] = useState(60);
 
@@ -85,7 +84,6 @@ export default function OneToOnePreForm({ activity, onComplete, onBack }: OneToO
         topic_practised: finalTopic,
         session_goal: sessionGoal,
         focus_cues: focusCues,
-        expected_effort: expectedEffort[0],
         coach_present: coachPresent,
         duration_minutes: durationMinutes
       }
@@ -193,25 +191,6 @@ export default function OneToOnePreForm({ activity, onComplete, onBack }: OneToO
               )}
             </div>
 
-            {/* Expected Effort */}
-            <div className="space-y-3">
-              <Label>Expected effort</Label>
-              <div className="px-3">
-                <Slider
-                  value={expectedEffort}
-                  onValueChange={setExpectedEffort}
-                  max={5}
-                  min={1}
-                  step={1}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                  <span>1</span>
-                  <span className="font-medium">{expectedEffort[0]}</span>
-                  <span>5</span>
-                </div>
-              </div>
-            </div>
 
             {/* Coach Present */}
             <div className="flex items-center justify-between">
