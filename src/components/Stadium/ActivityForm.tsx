@@ -950,15 +950,14 @@ export default function ActivityForm({
 
               {/* Set Intention */}
           <Card className="shadow-soft">
-            <CardHeader>
-              <CardTitle className="text-3xl text-center">Have a plan...
-What is it that you want to achieve in the session today ?
-            </CardTitle>
+            <CardHeader className="bg-[#ff0066]">
+              <CardTitle className="text-center text-2xl text-white">Have a plan</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Goal Selection */}
               {userGoals.length > 0 && <div className="mb-6">
-                  <p className="text-sm font-medium mb-3">Select a goal to focus on:</p>
+                  <p className="text-sm font-medium mb-3">What is it that you want to achieve in the session today ?
+              </p>
                   <Select value={selectedGoal} onValueChange={setSelectedGoal}>
                     <SelectTrigger>
                       <SelectValue placeholder="Choose a goal for this session..." />
