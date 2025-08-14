@@ -26,10 +26,10 @@ export const ROLE_TYPES: Record<MainRole, RoleTypeOption[]> = {
     { value: "gk_distributor", label: "Distributor (Ederson)", subtitle: "Passes with precision, builds play from the back", image: "/lovable-uploads/ffbe4239-9cb2-4a0b-81f9-05ae3791e324.png" },
   ],
   Defender: [
-    { value: "df_tackling_machine", label: "Tackling Machine (Varane)", subtitle: "Stops attacks with timing & strength", image: "/lovable-uploads/8ae75401-f9d7-4629-a827-5a4bbc2d9ba3.png" },
-    { value: "df_build_up_boss", label: "Build-Up Boss (John Stones)", subtitle: "Calm on ball, breaks lines", image: "/lovable-uploads/a1caed59-3d0a-417c-9894-bc7d78d1f7dd.png" },
-    { value: "df_fast_agile", label: "Fast & Agile (Kyle Walker)", subtitle: "Wins races, great recovery", image: "/lovable-uploads/e9944e73-ed32-4150-b5fa-29486ce742c3.png" },
-    { value: "df_physical_leader", label: "Physical Leader (Van Dijk)", subtitle: "Aerials, organisation, presence", image: "/lovable-uploads/a7953801-4ad7-4e46-a40c-cd7e23b44f5b.png" },
+    { value: "df_tackling_machine", label: "Tackling Machine (Varane)", subtitle: "Stops attacks with timing & strength", image: "/lovable-uploads/2eb275c8-9c4f-4ec4-ad44-6c187a6574f9.png" },
+    { value: "df_build_up_boss", label: "Build-Up Boss (John Stones)", subtitle: "Calm on ball, breaks lines", image: "/lovable-uploads/9465dcb3-1c9c-437f-8a97-70bdb98138e6.png" },
+    { value: "df_fast_agile", label: "Fast & Agile (Kyle Walker)", subtitle: "Wins races, great recovery", image: "/lovable-uploads/b371b255-65d7-4611-8622-775b0ca71ab5.png" },
+    { value: "df_physical_leader", label: "Physical Leader (Van Dijk)", subtitle: "Aerials, organisation, presence", image: "/lovable-uploads/dd663178-7932-4ce1-9096-fca86e6894b0.png" },
   ],
   Midfielder: [
     { value: "mf_box_to_box", label: "Box-to-Box Engine (Bellingham)", subtitle: "Covers ground, drives forward", image: "/lovable-uploads/dc72311d-a6de-43f7-b716-22bc288788b8.png" },
@@ -39,10 +39,10 @@ export const ROLE_TYPES: Record<MainRole, RoleTypeOption[]> = {
     { value: "mf_shield", label: "Shield (Casemiro)", subtitle: "Protects defence, wins duels", image: "/lovable-uploads/c2cc2cc7-b3de-405b-bc10-ffbf38708bd2.png" },
   ],
   Attacker: [
-    { value: "at_finisher", label: "Finisher (Haaland)", subtitle: "Right place, right time, goals", image: "/lovable-uploads/185bb317-e723-4fa3-be56-a46ba07261a3.png" },
-    { value: "at_dribbler", label: "Dribbler (Vinícius Jr)", subtitle: "1v1 threat, creates danger", image: "/lovable-uploads/8b06945b-c7a7-44ab-b3e4-35a9d263a616.png" },
-    { value: "at_speed_threat", label: "Speed Threat (Mbappé)", subtitle: "Runs in behind, stretches lines", image: "/lovable-uploads/ca3748e7-fa20-45fb-8e6e-a31da0e0ae84.png" },
-    { value: "at_target_player", label: "Target Player (Harry Kane)", subtitle: "Hold-up, link play, aerials", image: "/lovable-uploads/9c50eb52-df12-433a-bf77-af060a7316a7.png" },
+    { value: "at_finisher", label: "Finisher (Haaland)", subtitle: "Right place, right time, goals", image: "/lovable-uploads/845ad646-7818-420c-aefa-563600f71220.png" },
+    { value: "at_dribbler", label: "Dribbler (Vinícius Jr)", subtitle: "1v1 threat, creates danger", image: "/lovable-uploads/4935997c-170d-48a8-befa-fc5466bcbd4e.png" },
+    { value: "at_speed_threat", label: "Speed Threat (Mbappé)", subtitle: "Runs in behind, stretches lines", image: "/lovable-uploads/947c11af-3137-4525-ac6e-785a66ec0a0c.png" },
+    { value: "at_target_player", label: "Target Player (Harry Kane)", subtitle: "Hold-up, link play, aerials", image: "/lovable-uploads/3156cd9c-8977-4b2b-a8e8-237aad7c1127.png" },
   ],
 };
 
