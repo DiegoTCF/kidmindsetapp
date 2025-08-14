@@ -188,12 +188,13 @@ export default function PlayerIdentity() {
         <p className="text-muted-foreground">Define your on-field DNA</p>
       </header>
 
-      <Card className="shadow-sm">
-        <CardHeader>
-          <CardTitle>Your DNA</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-5">
+      <div className="space-y-4">
+        {/* Role Selection */}
+        <Card className="shadow-sm">
+          <CardHeader>
+            <CardTitle>Choose Your Role</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="grid gap-2">
               <Label>Main Role</Label>
               <RoleBoxSelector roles={MAIN_ROLES} selected={roleMain} onSelect={v => setRoleMain(v as MainRole)} />
@@ -203,22 +204,44 @@ export default function PlayerIdentity() {
               <Label>Role Type</Label>
               <RoleTypeGrid options={roleTypeOptions} selected={roleType} onSelect={setRoleType} disabled={!roleMain} />
             </div>
+          </CardContent>
+        </Card>
 
+        {/* Top Strengths */}
+        <Card className="shadow-sm">
+          <CardHeader>
+            <CardTitle>Top Strengths</CardTitle>
+          </CardHeader>
+          <CardContent>
             <div className="grid gap-2">
-              <Label className="bg-[#ffff00]/0">Top Strengths (max 3)</Label>
+              <Label>Select up to 3 strengths</Label>
               <ChipMultiSelect options={strengthOptions} value={strengths} onChange={setStrengths} max={3} addYourOwn onAddCustom={async () => {
               const input = window.prompt("Add your own strength (max 30 chars)") || "";
               return input.trim().slice(0, 30) || null;
             }} />
             </div>
+          </CardContent>
+        </Card>
 
-            <Separator className="my-2" />
-
+        {/* How You Help Team */}
+        <Card className="shadow-sm">
+          <CardHeader>
+            <CardTitle>How You Help the Team</CardTitle>
+          </CardHeader>
+          <CardContent>
             <div className="grid gap-2">
-              <Label>How you help the team (max 3)</Label>
+              <Label>Select up to 3 ways</Label>
               <ChipMultiSelect options={helpOptions} value={helpsTeam} onChange={setHelpsTeam} max={3} />
             </div>
+          </CardContent>
+        </Card>
 
+        {/* Motto & Main Weapon */}
+        <Card className="shadow-sm">
+          <CardHeader>
+            <CardTitle>Your Identity</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="grid gap-2">
               <Label htmlFor="motto">Motto</Label>
               <Input id="motto" placeholder="A short motto that defines you" value={motto} maxLength={140} onChange={e => setMotto(e.target.value)} />
@@ -239,14 +262,17 @@ export default function PlayerIdentity() {
               <Input id="avatar" placeholder="Link to an image" value={avatar_url} onChange={e => setAvatarUrl(e.target.value)} />
               {avatar_url && <img src={avatar_url} alt="Player identity avatar" className="w-24 h-24 rounded-md object-cover border" loading="lazy" />}
             </div>
+          </CardContent>
+        </Card>
 
-            <div className="pt-2">
-              <Button onClick={onSave} disabled={saving || loading}>
-                {saving ? "Saving..." : existing ? "Save changes" : "Create identity"}
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        {/* Save Button */}
+        <Card className="shadow-sm">
+          <CardContent className="pt-6">
+            <Button onClick={onSave} disabled={saving || loading} className="w-full">
+              {saving ? "Saving..." : existing ? "Save changes" : "Create identity"}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     </div>;
 }
