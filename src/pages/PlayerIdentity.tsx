@@ -204,7 +204,7 @@ export default function PlayerIdentity() {
             </div>
 
             <div className="grid gap-2">
-              <Label className="bg-slate-50">Top Strengths (max 3)</Label>
+              <Label className="bg-[#ffff00]/0">Top Strengths (max 3)</Label>
               <ChipMultiSelect options={strengthOptions} value={strengths} onChange={setStrengths} max={3} addYourOwn onAddCustom={async () => {
               const input = window.prompt("Add your own strength (max 30 chars)") || "";
               return input.trim().slice(0, 30) || null;
