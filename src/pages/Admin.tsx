@@ -189,7 +189,7 @@ export default function Admin() {
     }
   };
 
-  const loadChildren = async (userId: string) => {
+  const loadChildren = async (userId: string): Promise<Child[]> => {
     // Loading children for user
     setLoadingData(true);
     try {
@@ -206,7 +206,7 @@ export default function Admin() {
         });
         // Force redirect to grown-up zone
         window.location.href = '/grown-up';
-        return;
+        return [];
       }
 
       // First get the parent record (now guaranteed unique) - RLS will enforce admin-only access
@@ -228,7 +228,7 @@ export default function Admin() {
             variant: 'destructive'
           });
           window.location.href = '/grown-up';
-          return;
+          return [];
         }
         if (parentError.code === 'PGRST116') {
           console.log('[AdminPanel] No parent found for user:', userId);
@@ -239,7 +239,7 @@ export default function Admin() {
             description: 'This user does not have a parent profile set up.',
             variant: 'default'
           });
-          return;
+          return [];
         }
         throw parentError;
       }
@@ -253,7 +253,7 @@ export default function Admin() {
           description: 'This user does not have a parent profile set up.',
           variant: 'default'
         });
-        return;
+        return [];
       }
 
       console.log('[AdminPanel] Found parent:', parentData);
@@ -276,22 +276,25 @@ export default function Admin() {
             variant: 'destructive'
           });
           window.location.href = '/grown-up';
-          return;
+          return [];
         }
         throw childrenError;
       }
 
-      console.log('[AdminPanel] Successfully loaded children:', childrenData);
-      setChildren(childrenData || []);
+      const children = childrenData || [];
+      console.log('[AdminPanel] Successfully loaded children:', children);
+      setChildren(children);
       setViewMode('children');
 
-      if (!childrenData || childrenData.length === 0) {
+      if (children.length === 0) {
         toast({
           title: 'No Children Found',
           description: `${parentData.name || 'This parent'} has no children registered.`,
           variant: 'default'
         });
       }
+
+      return children;
 
     } catch (error) {
       console.error('[AdminPanel] Error in loadChildren:', error);
@@ -300,6 +303,7 @@ export default function Admin() {
         description: `Failed to load children: ${error.message || 'Unknown error'}`,
         variant: 'destructive'
       });
+      return [];
     } finally {
       setLoadingData(false);
     }
@@ -360,6 +364,49 @@ export default function Admin() {
   const viewChildProgress = (child: Child) => {
     setSelectedChild(child);
     setViewMode('progress');
+  };
+
+  const navigateToChildFromNotification = async (childName: string, userEmail: string) => {
+    try {
+      // Find the user by email
+      const user = users.find(u => u.email === userEmail);
+      if (!user) {
+        toast({
+          title: 'User Not Found',
+          description: `Cannot find parent with email: ${userEmail}`,
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      // Load children for this user and get the returned data
+      const childrenData = await loadChildren(user.id);
+      
+      // Find the specific child by name in the returned data
+      const child = childrenData.find(c => c.name === childName);
+      
+      if (child) {
+        viewChildProgress(child);
+        toast({
+          title: 'Navigated to Child',
+          description: `Viewing ${childName}'s progress`,
+        });
+      } else {
+        toast({
+          title: 'Child Not Found',
+          description: `Cannot find child named: ${childName}`,
+          variant: 'destructive'
+        });
+      }
+      
+    } catch (error) {
+      console.error('Error navigating to child:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to navigate to child profile',
+        variant: 'destructive'
+      });
+    }
   };
 
   const deleteUser = async (user: UserProfile) => {
@@ -479,7 +526,10 @@ export default function Admin() {
         </div>
 
         {/* Admin Notifications */}
-        <AdminNotifications className="mb-6" />
+        <AdminNotifications 
+          className="mb-6" 
+          onNavigateToChild={navigateToChildFromNotification}
+        />
 
         {/* Users View */}
         {viewMode === 'users' && (

@@ -21,9 +21,10 @@ interface AdminNotification {
 
 interface AdminNotificationsProps {
   className?: string;
+  onNavigateToChild?: (childName: string, userEmail: string) => void;
 }
 
-export default function AdminNotifications({ className }: AdminNotificationsProps) {
+export default function AdminNotifications({ className, onNavigateToChild }: AdminNotificationsProps) {
   const { isAdmin } = useAdmin();
   const { toast } = useToast();
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
@@ -209,6 +210,12 @@ export default function AdminNotifications({ className }: AdminNotificationsProp
     }
   };
 
+  const handleNotificationClick = (notification: AdminNotification) => {
+    if (notification.related_child_name && notification.related_user_email && onNavigateToChild) {
+      onNavigateToChild(notification.related_child_name, notification.related_user_email);
+    }
+  };
+
   if (!isAdmin) {
     return null;
   }
@@ -270,7 +277,8 @@ export default function AdminNotifications({ className }: AdminNotificationsProp
                   notification.is_read 
                     ? 'bg-muted/50 border-muted' 
                     : 'bg-background border-border shadow-sm'
-                }`}
+                } ${notification.related_child_name ? 'cursor-pointer hover:bg-muted/30' : ''}`}
+                onClick={() => handleNotificationClick(notification)}
               >
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3 flex-1">
