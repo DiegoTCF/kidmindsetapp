@@ -97,6 +97,7 @@ export default function AdminPlayerView() {
       setChild(childData);
 
       // Set the player view context
+      console.log('[AdminPlayerView] Setting player view context for child:', childData);
       setPlayerView(childData, { name: '', email: '' });
 
       // Get parent data
@@ -126,6 +127,7 @@ export default function AdminPlayerView() {
         setParent(parentInfo);
         
         // Update player view context with parent info
+        console.log('[AdminPlayerView] Updating player view with parent info:', parentInfo);
         setPlayerView(childData, parentInfo);
       }
 

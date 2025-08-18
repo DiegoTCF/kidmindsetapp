@@ -1,7 +1,11 @@
 import { useProfile } from "@/hooks/useProfile";
+import { useChildData } from "@/hooks/useChildData";
 
 export function DNAReminder() {
   const { profile } = useProfile();
+  const { childId } = useChildData();
+
+  console.log('[DNAReminder] profile:', profile, 'childId:', childId);
 
   if (!profile?.role) {
     return null;

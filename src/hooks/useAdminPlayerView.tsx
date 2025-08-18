@@ -30,20 +30,25 @@ export function AdminPlayerViewProvider({ children }: { children: ReactNode }) {
   const [selectedParent, setSelectedParent] = useState<Parent | null>(null);
 
   const setPlayerView = (child: Child, parent: Parent) => {
+    console.log('[AdminPlayerViewProvider] Setting player view:', { childId: child.id, childName: child.name });
     setSelectedChild(child);
     setSelectedParent(parent);
   };
 
   const clearPlayerView = () => {
+    console.log('[AdminPlayerViewProvider] Clearing player view');
     setSelectedChild(null);
     setSelectedParent(null);
   };
 
   const getEffectiveChildId = () => {
-    return selectedChild?.id || null;
+    const childId = selectedChild?.id || null;
+    console.log('[AdminPlayerViewProvider] getEffectiveChildId returning:', childId);
+    return childId;
   };
 
   const isViewingAsPlayer = selectedChild !== null;
+  console.log('[AdminPlayerViewProvider] isViewingAsPlayer:', isViewingAsPlayer, 'selectedChild:', selectedChild?.name);
 
   return (
     <AdminPlayerViewContext.Provider value={{

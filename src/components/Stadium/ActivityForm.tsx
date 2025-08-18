@@ -303,6 +303,8 @@ export default function ActivityForm({
       // Use child ID from context (admin player view) or user ID for regular users  
       const effectiveUserId = childId || user.id;
       
+      console.log('[ActivityForm] loadUserGoals - user.id:', user.id, 'childId:', childId, 'effectiveUserId:', effectiveUserId);
+      
       const {
         data: goals,
         error
@@ -435,6 +437,9 @@ export default function ActivityForm({
       });
       return;
     }
+    
+    console.log('[ActivityForm] handlePreActivitySubmit - currentChildId:', currentChildId, 'user.id:', user.id);
+    
     const prePoints = calculatePreActivityPoints();
 
     // Attempting to save pre-activity data

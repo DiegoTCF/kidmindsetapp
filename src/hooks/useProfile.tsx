@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { useChildData } from './useChildData';
 
 export interface Profile {
   id: string;
@@ -24,21 +25,27 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const { childId, loading: childDataLoading } = useChildData();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async () => {
-    if (!user?.id) {
+    if (!user?.id || childDataLoading) {
       setProfile(null);
       setLoading(false);
       return;
     }
 
+    // Use child ID from context (admin player view) or user ID for regular users
+    const effectiveUserId = childId || user.id;
+    
+    console.log('[useProfile] Fetching profile - user.id:', user.id, 'childId:', childId, 'effectiveUserId:', effectiveUserId);
+
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', effectiveUserId)
         .single();
 
       if (error) {
@@ -63,11 +70,16 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const updateProfile = async (updates: Partial<Profile>) => {
     if (!user?.id) return;
 
+    // Use child ID from context (admin player view) or user ID for regular users
+    const effectiveUserId = childId || user.id;
+    
+    console.log('[useProfile] Updating profile - user.id:', user.id, 'childId:', childId, 'effectiveUserId:', effectiveUserId);
+
     try {
       const { data, error } = await supabase
         .from('profiles')
         .update(updates)
-        .eq('user_id', user.id)
+        .eq('user_id', effectiveUserId)
         .select()
         .single();
 
@@ -84,8 +96,10 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    fetchProfile();
-  }, [user?.id]);
+    if (!childDataLoading) {
+      fetchProfile();
+    }
+  }, [user?.id, childId, childDataLoading]);
 
   return (
     <ProfileContext.Provider value={{ profile, loading, refetchProfile, updateProfile }}>

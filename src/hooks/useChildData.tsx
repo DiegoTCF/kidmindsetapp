@@ -13,26 +13,31 @@ export function useChildData() {
     const loadChildId = async () => {
       setLoading(true);
       try {
+        console.log('[useChildData] isAdmin:', isAdmin, 'isViewingAsPlayer:', isViewingAsPlayer);
+        
         // If admin is viewing as a player, use that child ID
         if (isAdmin && isViewingAsPlayer) {
           const effectiveChildId = getEffectiveChildId();
+          console.log('[useChildData] Using admin player view child ID:', effectiveChildId);
           setChildId(effectiveChildId);
           setLoading(false);
           return;
         }
 
         // Otherwise, get the current user's child ID
+        console.log('[useChildData] Getting current user child ID');
         const { data: currentChildId, error } = await supabase
           .rpc('get_current_user_child_id');
         
         if (error) {
-          console.error('Error getting child ID:', error);
+          console.error('[useChildData] Error getting child ID:', error);
           setChildId(null);
         } else {
+          console.log('[useChildData] Current user child ID:', currentChildId);
           setChildId(currentChildId);
         }
       } catch (error) {
-        console.error('Error loading child data:', error);
+        console.error('[useChildData] Error loading child data:', error);
         setChildId(null);
       } finally {
         setLoading(false);
@@ -42,5 +47,6 @@ export function useChildData() {
     loadChildId();
   }, [isAdmin, isViewingAsPlayer, getEffectiveChildId]);
 
+  console.log('[useChildData] Returning childId:', childId, 'loading:', loading);
   return { childId, loading };
 }
