@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useChildData } from '@/hooks/useChildData';
 import { ArrowLeft, ArrowRight, Brain, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 const OUTCOME_GOALS = ['I want to sign for an academy', 'I want to score more goals this season', 'I want to get into the starting XI', 'I want to make the representative/district team', 'I want to win the league with my team', 'I want to get a scholarship', 'I want to play for my country', 'I want to get scouted by professional clubs', 'I want to win player of the season', 'I want to play up an age group', 'I want to get into the academy\'s first team', 'I want to earn a professional contract', 'I want to play at a higher level', 'I want to be the top scorer', 'I want to win a tournament or league title', 'I want to get selected for trials'];
@@ -51,13 +52,16 @@ export const GoalSettingFlow: React.FC = () => {
     toast
   } = useToast();
   const navigate = useNavigate();
+  const { childId, loading: childDataLoading } = useChildData();
   const totalSteps = 4;
   const progress = currentStep / totalSteps * 100;
 
   // Fetch existing goals on component mount
   useEffect(() => {
-    fetchExistingGoals();
-  }, []);
+    if (!childDataLoading) {
+      fetchExistingGoals();
+    }
+  }, [childId, childDataLoading]);
   const fetchExistingGoals = async () => {
     try {
       const {
@@ -65,10 +69,14 @@ export const GoalSettingFlow: React.FC = () => {
           user
         }
       } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user || childDataLoading) return;
+      
+      // Use the effective user ID (child ID if admin in player view, otherwise user ID)
+      const effectiveUserId = childId || user.id;
+      
       const {
         data: goals
-      } = await supabase.from('user_goals').select('*').eq('user_id', user.id).order('created_at', {
+      } = await supabase.from('user_goals').select('*').eq('user_id', effectiveUserId).order('created_at', {
         ascending: false
       });
       if (goals) {
@@ -119,20 +127,23 @@ export const GoalSettingFlow: React.FC = () => {
       } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
+      // Use the effective user ID (child ID if admin in player view, otherwise user ID)
+      const effectiveUserId = childId || user.id;
+
       // Clear existing goals
-      await supabase.from('user_goals').delete().eq('user_id', user.id);
+      await supabase.from('user_goals').delete().eq('user_id', effectiveUserId);
 
       // Insert new goals
       const allGoals = [...selectedOutcomeGoals.map(goal => ({
-        user_id: user.id,
+        user_id: effectiveUserId,
         goal_type: 'outcome',
         goal_text: goal
       })), ...selectedMindsetGoals.map(goal => ({
-        user_id: user.id,
+        user_id: effectiveUserId,
         goal_type: 'mindset',
         goal_text: goal
       })), ...selectedSkillGoals.map(goal => ({
-        user_id: user.id,
+        user_id: effectiveUserId,
         goal_type: 'skill',
         goal_text: goal
       }))];
@@ -155,7 +166,7 @@ export const GoalSettingFlow: React.FC = () => {
       // Fetch and display created goals
       const {
         data: goals
-      } = await supabase.from('user_goals').select('*').eq('user_id', user.id).order('created_at', {
+      } = await supabase.from('user_goals').select('*').eq('user_id', effectiveUserId).order('created_at', {
         ascending: false
       });
       if (goals) {

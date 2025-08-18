@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { useChildData } from "@/hooks/useChildData";
 import { supabase } from "@/integrations/supabase/client";
 import { Dna } from "lucide-react";
 import { MAIN_ROLES, ROLE_TYPES, STRENGTHS_BY_ROLE_TYPE, UNIVERSAL_STRENGTHS_OUTFIELD, GOALKEEPER_STRENGTHS, HELPS_TEAM_GK, HELPS_TEAM_OUTFIELD, MOTTO_SUGGESTIONS, type MainRole } from "@/data/playerIdentityOptions";
@@ -13,6 +14,7 @@ import { RoleBoxSelector } from "@/components/PlayerIdentity/RoleBoxSelector";
 import { RoleTypeGrid } from "@/components/PlayerIdentity/RoleTypeGrid";
 import { ChipMultiSelect } from "@/components/PlayerIdentity/ChipMultiSelect";
 import { DNADisplay } from "@/components/DNA/DNADisplay";
+import { PlayerViewIndicator } from "@/components/layout/PlayerViewIndicator";
 
 // Local type to avoid depending on generated Supabase types
 interface PlayerIdentityRow {
@@ -31,6 +33,7 @@ export default function PlayerIdentity() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { profile, updateProfile, refetchProfile } = useProfile();
+  const { childId, loading: childDataLoading } = useChildData();
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -90,13 +93,16 @@ export default function PlayerIdentity() {
 
   useEffect(() => {
     const load = async () => {
-      if (!user) return;
+      if (!user || childDataLoading) return;
       setLoading(true);
+      
+      // Use the effective user ID (child ID if admin in player view, otherwise user ID)
+      const effectiveUserId = childId || user.id;
       
       const { data, error } = await supabase
         .from("player_identities")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", effectiveUserId)
         .maybeSingle();
         
       if (error) {
@@ -124,7 +130,7 @@ export default function PlayerIdentity() {
       setLoading(false);
     };
     load();
-  }, [user, toast]);
+  }, [user, toast, childId, childDataLoading]);
 
   // Load profile data for form prefill when editing
   useEffect(() => {
@@ -137,6 +143,9 @@ export default function PlayerIdentity() {
 
   const onSave = async () => {
     if (!user) return;
+
+    // Use the effective user ID (child ID if admin in player view, otherwise user ID)
+    const effectiveUserId = childId || user.id;
 
     // Validation
     if (!roleMain) {
@@ -175,7 +184,7 @@ export default function PlayerIdentity() {
     try {
       // Save to player_identities table
       const payload: PlayerIdentityRow = {
-        user_id: user.id,
+        user_id: effectiveUserId,
         role_main: roleMain,
         role_type: roleType || null,
         strengths: strengths.slice(0, 3),
@@ -223,6 +232,7 @@ export default function PlayerIdentity() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 pt-20 pb-8 bg-sky-400">
+      <PlayerViewIndicator />
       <header className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <Dna className="w-6 h-6" /> DNA

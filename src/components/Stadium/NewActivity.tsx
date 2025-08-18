@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useChildData } from "@/hooks/useChildData";
 
 interface NewActivityProps {
   onSubmit: (activity: { 
@@ -33,6 +34,7 @@ export default function NewActivity({ onSubmit, onCancel }: NewActivityProps) {
   const [activityName, setActivityName] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const { childId } = useChildData();
 
   const handleSubmit = () => {
     if (!activityName.trim() || !activityType) return;
