@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useUserLogging } from "@/hooks/useUserLogging";
 import { useAuth } from "@/hooks/useAuth";
+import { useChildData } from "@/hooks/useChildData";
+import { PlayerViewIndicator } from "@/components/layout/PlayerViewIndicator";
 
 interface ActivityData {
   name: string;
@@ -33,6 +35,7 @@ export default function Stadium() {
   const { toast } = useToast();
   const { user } = useAuth();
   const { logActivity, logActivityCompletion } = useUserLogging();
+  const { childId: currentChildId, loading: childLoading } = useChildData();
   
   const [showNewActivity, setShowNewActivity] = useState(false);
   const [showActivityForm, setShowActivityForm] = useState(false);
@@ -44,28 +47,12 @@ export default function Stadium() {
   const [showOneToOnePreForm, setShowOneToOnePreForm] = useState(false);
   const [showOneToOnePostForm, setShowOneToOnePostForm] = useState(false);
   const [oneToOnePreData, setOneToOnePreData] = useState<any>(null);
-  const [currentChildId, setCurrentChildId] = useState<string | null>(null);
 
   useEffect(() => {
-    loadIncompleteActivities();
-    loadChildData();
-  }, []);
-
-  const loadChildData = async () => {
-    try {
-      const { data: childId, error: childError } = await supabase
-        .rpc('get_current_user_child_id');
-      
-      if (childError) {
-        console.error('Error getting child ID:', childError);
-        return;
-      }
-      
-      setCurrentChildId(childId);
-    } catch (error) {
-      console.error('Error loading child data:', error);
+    if (currentChildId) {
+      loadIncompleteActivities();
     }
-  };
+  }, [currentChildId]);
 
   // Also reload when component becomes visible again (user returns from other pages)
   useEffect(() => {
@@ -94,32 +81,24 @@ export default function Stadium() {
   }, []);
 
   const loadIncompleteActivities = async () => {
+    if (!currentChildId) return;
+    
     try {
-      const { data: childId, error: childError } = await supabase
-        .rpc('get_current_user_child_id');
+      const { data: activities, error: activitiesError } = await supabase
+        .from('activities')
+        .select('*')
+        .eq('child_id', currentChildId)
+        .eq('pre_activity_completed', true)
+        .eq('post_activity_completed', false)
+        .order('created_at', { ascending: false });
       
-      if (childError) {
-        console.error('Error getting child ID:', childError);
+      if (activitiesError) {
+        console.error('Error loading incomplete activities:', activitiesError);
         return;
       }
       
-      if (childId) {
-        const { data: activities, error: activitiesError } = await supabase
-          .from('activities')
-          .select('*')
-          .eq('child_id', childId)
-          .eq('pre_activity_completed', true)
-          .eq('post_activity_completed', false)
-          .order('created_at', { ascending: false });
-        
-        if (activitiesError) {
-          console.error('Error loading incomplete activities:', activitiesError);
-          return;
-        }
-        
-        if (activities) {
-          setIncompleteActivities(activities);
-        }
+      if (activities) {
+        setIncompleteActivities(activities);
       }
     } catch (error) {
       console.error('Error loading incomplete activities:', error);
@@ -381,8 +360,20 @@ export default function Stadium() {
     );
   }
 
+  if (childLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background p-4">
+      <PlayerViewIndicator />
       <div className="mb-6">
         <div className="flex flex-col items-center text-center space-y-4">
           <div>

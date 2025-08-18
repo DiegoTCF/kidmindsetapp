@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { PlayerViewIndicator } from "@/components/layout/PlayerViewIndicator";
 
 interface UserProfile {
   name: string;
@@ -227,6 +228,7 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-background p-4">
+      <PlayerViewIndicator />
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground mb-2">
           👤 My Account

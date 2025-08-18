@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAdmin } from '@/hooks/useAdmin';
+import { useAdminPlayerView } from '@/hooks/useAdminPlayerView';
 import { Navigate } from 'react-router-dom';
 import ActivityLog from '@/components/Progress/ActivityLog';
 import Charts from '@/components/Progress/Charts';
@@ -40,6 +41,7 @@ export default function AdminPlayerView() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAdmin, loading } = useAdmin();
+  const { setPlayerView } = useAdminPlayerView();
   
   const [child, setChild] = useState<Child | null>(null);
   const [parent, setParent] = useState<Parent | null>(null);
@@ -94,6 +96,9 @@ export default function AdminPlayerView() {
 
       setChild(childData);
 
+      // Set the player view context
+      setPlayerView(childData, { name: '', email: '' });
+
       // Get parent data
       const { data: parentData, error: parentError } = await supabase
         .from('parents')
@@ -114,10 +119,14 @@ export default function AdminPlayerView() {
         .single();
 
       if (!profileError && profileData) {
-        setParent({
+        const parentInfo = {
           name: parentData.name,
           email: profileData.email
-        });
+        };
+        setParent(parentInfo);
+        
+        // Update player view context with parent info
+        setPlayerView(childData, parentInfo);
       }
 
     } catch (error) {
@@ -245,15 +254,35 @@ export default function AdminPlayerView() {
         {/* Header with player info */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate('/admin')}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Return to Admin
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/admin')}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Return to Admin
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/stadium')}
+                className="flex items-center gap-2"
+              >
+                <Trophy className="h-4 w-4" />
+                Go to Stadium
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/progress')}
+                className="flex items-center gap-2"
+              >
+                <TrendingUp className="h-4 w-4" />
+                Go to Progress
+              </Button>
+            </div>
             <Badge variant="secondary">Mentorship Mode</Badge>
           </div>
           

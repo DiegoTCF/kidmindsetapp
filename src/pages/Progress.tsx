@@ -3,21 +3,37 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUserLogging } from "@/hooks/useUserLogging";
+import { useChildData } from "@/hooks/useChildData";
+import { PlayerViewIndicator } from "@/components/layout/PlayerViewIndicator";
 import ActivityLog from "@/components/Progress/ActivityLog";
 import Charts from "@/components/Progress/Charts";
 import BehaviourCharts from "@/components/Progress/BehaviourCharts";
 const activityFilters = ["All", "Match", "Training", "1to1", "Futsal", "Small Group", "Other"];
+
 export default function Progress() {
   const [selectedFilter, setSelectedFilter] = useState("All");
-  const {
-    logProgressView
-  } = useUserLogging();
+  const { logProgressView } = useUserLogging();
+  const { childId, loading } = useChildData();
 
   // Log progress view when component mounts
   React.useEffect(() => {
     logProgressView();
   }, [logProgressView]);
-  return <div className="min-h-screen bg-background p-4">
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background p-4">
+      <PlayerViewIndicator />
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground mb-2">
           📈 Progress
@@ -42,11 +58,11 @@ export default function Progress() {
               </Button>)}
           </div>
 
-          <ActivityLog selectedFilter={selectedFilter} />
+          <ActivityLog selectedFilter={selectedFilter} childId={childId} />
         </TabsContent>
 
         <TabsContent value="behaviours" className="space-y-6">
-          <BehaviourCharts selectedFilter={selectedFilter} />
+          <BehaviourCharts selectedFilter={selectedFilter} childId={childId} />
         </TabsContent>
 
         <TabsContent value="stats" className="space-y-6">
@@ -57,8 +73,9 @@ export default function Progress() {
               </Button>)}
           </div>
           
-          <Charts selectedFilter={selectedFilter} />
+          <Charts selectedFilter={selectedFilter} childId={childId} />
         </TabsContent>
       </Tabs>
-    </div>;
+    </div>
+  );
 }
