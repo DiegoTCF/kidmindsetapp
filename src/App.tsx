@@ -12,6 +12,7 @@ import Goals from "./pages/Goals";
 
 import GrownUpZone from "./pages/GrownUpZone";
 import Admin from "./pages/Admin";
+import AdminPlayerView from "./pages/AdminPlayerView";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import { useAuth } from "./hooks/useAuth";
@@ -122,6 +123,13 @@ const App = () => {
               <Route path="/admin" element={
                 <ProtectedRoute>
                   <Admin />
+                </ProtectedRoute>
+              } />
+
+              {/* Admin Player View route - no navigation */}
+              <Route path="/admin/player/:childId" element={
+                <ProtectedRoute>
+                  <AdminPlayerView />
                 </ProtectedRoute>
               } />
               

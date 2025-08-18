@@ -366,6 +366,11 @@ export default function Admin() {
     setViewMode('progress');
   };
 
+  const viewChildAsPlayer = (child: Child) => {
+    // Navigate to the admin player view
+    window.open(`/admin/player/${child.id}`, '_blank');
+  };
+
   const navigateToChildFromNotification = async (childName: string, userEmail: string) => {
     try {
       // Find the user by email
@@ -656,14 +661,24 @@ export default function Admin() {
                               </div>
                             </div>
                             
-                            <Button
-                              className="w-full"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => viewChildProgress(child)}
-                            >
-                              View Progress
-                            </Button>
+                             <div className="space-y-2">
+                               <Button
+                                 className="w-full"
+                                 variant="outline"
+                                 size="sm"
+                                 onClick={() => viewChildProgress(child)}
+                               >
+                                 View Progress
+                               </Button>
+                               <Button
+                                 className="w-full"
+                                 variant="default"
+                                 size="sm"
+                                 onClick={() => viewChildAsPlayer(child)}
+                               >
+                                 🎯 Player View
+                               </Button>
+                             </div>
                           </div>
                         </CardContent>
                       </Card>
