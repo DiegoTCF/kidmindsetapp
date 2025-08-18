@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useUserLogging } from "@/hooks/useUserLogging";
 import { useAuth } from "@/hooks/useAuth";
+import { useChildData } from "@/hooks/useChildData";
 import { cn } from "@/lib/utils";
 import { CustomIcon } from "@/components/ui/custom-emoji";
 import { supabase } from "@/integrations/supabase/client";
@@ -168,6 +169,7 @@ export default function ActivityForm({
     user,
     session
   } = useAuth();
+  const { childId, loading: childDataLoading } = useChildData();
   const {
     logActivity,
     logActivityCompletion,
@@ -257,16 +259,23 @@ export default function ActivityForm({
     answers: Record<string, string>;
   } | null>(null);
   useEffect(() => {
-    loadChildData();
-    loadUserGoals();
-    if (existingActivityId && isResumingActivity) {
-      loadExistingActivityData();
+    if (!childDataLoading) {
+      loadChildData();
+      loadUserGoals();
+      if (existingActivityId && isResumingActivity) {
+        loadExistingActivityData();
+      }
     }
-  }, [existingActivityId, isResumingActivity]);
+  }, [existingActivityId, isResumingActivity, childId, childDataLoading]);
   const loadChildData = async () => {
     try {
-      // Getting current user child ID
+      // Use child ID from context (admin player view) or get current user's child
+      if (childId) {
+        setCurrentChildId(childId);
+        return;
+      }
 
+      // Getting current user child ID for regular users
       // Use RLS-safe function to get the correct child ID for the current user
       const {
         data: childIdResult,
@@ -288,12 +297,16 @@ export default function ActivityForm({
     }
   };
   const loadUserGoals = async () => {
-    if (!user?.id) return;
+    if (!user?.id || childDataLoading) return;
+    
     try {
+      // Use child ID from context (admin player view) or user ID for regular users  
+      const effectiveUserId = childId || user.id;
+      
       const {
         data: goals,
         error
-      } = await supabase.from('user_goals').select('id, goal_text, goal_type').eq('user_id', user.id).order('created_at', {
+      } = await supabase.from('user_goals').select('id, goal_text, goal_type').eq('user_id', effectiveUserId).order('created_at', {
         ascending: false
       });
       if (error) {

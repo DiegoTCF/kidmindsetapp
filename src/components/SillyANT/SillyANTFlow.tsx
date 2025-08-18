@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useChildData } from '@/hooks/useChildData';
 
 const CORE_BELIEFS = [
   "I'm not good enough",
@@ -114,6 +115,7 @@ export const SillyANTFlow: React.FC = () => {
   const [showResults, setShowResults] = useState(false);
   const [savedANT, setSavedANT] = useState<any>(null);
   const { toast } = useToast();
+  const { childId, loading: childDataLoading } = useChildData();
 
   const toggleOption = (option: string, type: 'beliefs' | 'thoughts' | 'coping' | 'triggers') => {
     const setters = {
@@ -144,12 +146,15 @@ export const SillyANTFlow: React.FC = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
+      // Use child ID from context (admin player view) or user ID for regular users
+      const effectiveUserId = childId || user.id;
+
       // Clear existing ANT data
-      await supabase.from('user_ants').delete().eq('user_id', user.id);
+      await supabase.from('user_ants').delete().eq('user_id', effectiveUserId);
 
       // Insert new ANT data
       const { error } = await supabase.from('user_ants').insert({
-        user_id: user.id,
+        user_id: effectiveUserId,
         core_beliefs: selectedBeliefs,
         automatic_thoughts: selectedThoughts,
         coping_mechanisms: selectedCoping,
@@ -167,7 +172,7 @@ export const SillyANTFlow: React.FC = () => {
       const { data: ant } = await supabase
         .from('user_ants')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', effectiveUserId)
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
