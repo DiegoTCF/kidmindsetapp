@@ -149,6 +149,33 @@ export type Database = {
         }
         Relationships: []
       }
+      child_goals: {
+        Row: {
+          child_id: string
+          created_at: string
+          goal_text: string
+          goal_type: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          child_id: string
+          created_at?: string
+          goal_text: string
+          goal_type: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          child_id?: string
+          created_at?: string
+          goal_text?: string
+          goal_type?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       children: {
         Row: {
           age: number
