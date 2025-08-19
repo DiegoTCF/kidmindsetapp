@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +10,9 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DNAReminder } from "@/components/DNA/DNAReminder";
+import { supabase } from "@/integrations/supabase/client";
+import { useChildData } from "@/hooks/useChildData";
 
 interface OneToOnePreFormProps {
   activity: {
@@ -48,12 +51,35 @@ const focusCueOptions = [
 ];
 
 export default function OneToOnePreForm({ activity, onComplete, onBack }: OneToOnePreFormProps) {
+  const { childId } = useChildData();
   const [topicPractised, setTopicPractised] = useState("");
   const [customTopic, setCustomTopic] = useState("");
   const [sessionGoal, setSessionGoal] = useState("");
   const [focusCues, setFocusCues] = useState<string[]>([]);
   const [coachPresent, setCoachPresent] = useState(false);
   const [durationMinutes, setDurationMinutes] = useState(60);
+  const [goals, setGoals] = useState<any[]>([]);
+
+  useEffect(() => {
+    const loadGoals = async () => {
+      if (!childId) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('child_goals')
+          .select('*')
+          .eq('child_id', childId)
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        setGoals(data || []);
+      } catch (error) {
+        console.error('Error loading goals:', error);
+      }
+    };
+
+    loadGoals();
+  }, [childId]);
 
   const handleTopicChange = (value: string) => {
     setTopicPractised(value);
@@ -114,6 +140,25 @@ export default function OneToOnePreForm({ activity, onComplete, onBack }: OneToO
             <p className="text-sm text-muted-foreground">{activity.name}</p>
           </div>
         </div>
+
+        {/* DNA Reminder */}
+        <DNAReminder />
+
+        {/* Goals Display */}
+        {goals.length > 0 && (
+          <Card className="shadow-soft mb-4">
+            <CardHeader>
+              <CardTitle className="text-sm">Your Current Goals</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {goals.slice(0, 3).map((goal) => (
+                <div key={goal.id} className="text-sm p-2 bg-muted rounded">
+                  <strong>{goal.goal_type}:</strong> {goal.goal_text}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="shadow-soft">
           <CardHeader>
