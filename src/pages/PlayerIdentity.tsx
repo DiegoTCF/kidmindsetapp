@@ -98,32 +98,39 @@ export default function PlayerIdentity() {
       
       // Use the effective user ID (child ID if admin in player view, otherwise user ID)
       const effectiveUserId = childId || user.id;
+      const isAdminPlayerView = childId && childId !== user.id;
       
-      const { data, error } = await supabase
-        .from("player_identities")
-        .select("*")
-        .eq("user_id", effectiveUserId)
-        .maybeSingle();
+      // Only load from player_identities if NOT in admin player view
+      if (!isAdminPlayerView) {
+        const { data, error } = await supabase
+          .from("player_identities")
+          .select("*")
+          .eq("user_id", user.id) // Always use actual user ID for player_identities
+          .maybeSingle();
+          
+        if (error) {
+          console.error("Failed to load identity", error);
+          toast({
+            title: "Could not load identity",
+            description: error.message,
+            variant: "destructive"
+          });
+        }
         
-      if (error) {
-        console.error("Failed to load identity", error);
-        toast({
-          title: "Could not load identity",
-          description: error.message,
-          variant: "destructive"
-        });
-      }
-      
-      if (data) {
-        setExisting(true);
-        setRoleMain((data.role_main ?? null) as MainRole | null);
-        setRoleType(data.role_type ?? "");
-        setStrengths(Array.isArray(data.strengths) ? data.strengths : []);
-        setHelpsTeam(Array.isArray(data.helps_team) ? data.helps_team : []);
-        setMainWeapon(data.main_weapon ?? "");
-        setMotto(data.motto ?? "");
-        setAvatarUrl(data.avatar_url ?? "");
+        if (data) {
+          setExisting(true);
+          setRoleMain((data.role_main ?? null) as MainRole | null);
+          setRoleType(data.role_type ?? "");
+          setStrengths(Array.isArray(data.strengths) ? data.strengths : []);
+          setHelpsTeam(Array.isArray(data.helps_team) ? data.helps_team : []);
+          setMainWeapon(data.main_weapon ?? "");
+          setMotto(data.motto ?? "");
+          setAvatarUrl(data.avatar_url ?? "");
+        } else {
+          setExisting(false);
+        }
       } else {
+        // In admin player view, only load from profile data
         setExisting(false);
       }
       
@@ -146,6 +153,7 @@ export default function PlayerIdentity() {
 
     // Use the effective user ID (child ID if admin in player view, otherwise user ID)
     const effectiveUserId = childId || user.id;
+    const isAdminPlayerView = childId && childId !== user.id;
 
     // Validation
     if (!roleMain) {
@@ -182,25 +190,28 @@ export default function PlayerIdentity() {
     setSaving(true);
 
     try {
-      // Save to player_identities table
-      const payload: PlayerIdentityRow = {
-        user_id: effectiveUserId,
-        role_main: roleMain,
-        role_type: roleType || null,
-        strengths: strengths.slice(0, 3),
-        helps_team: helpsTeam.slice(0, 3),
-        main_weapon: mainWeapon || null,
-        motto: motto || null,
-        avatar_url: avatarUrl || null
-      };
+      // Only save to player_identities table if NOT in admin player view
+      // (player_identities has FK constraint to auth.users)
+      if (!isAdminPlayerView) {
+        const payload: PlayerIdentityRow = {
+          user_id: user.id, // Always use actual user ID for player_identities
+          role_main: roleMain,
+          role_type: roleType || null,
+          strengths: strengths.slice(0, 3),
+          helps_team: helpsTeam.slice(0, 3),
+          main_weapon: mainWeapon || null,
+          motto: motto || null,
+          avatar_url: avatarUrl || null
+        };
 
-      const { error: playerIdentityError } = await supabase
-        .from("player_identities")
-        .upsert(payload, { onConflict: "user_id" });
+        const { error: playerIdentityError } = await supabase
+          .from("player_identities")
+          .upsert(payload, { onConflict: "user_id" });
 
-      if (playerIdentityError) throw playerIdentityError;
+        if (playerIdentityError) throw playerIdentityError;
+      }
 
-      // Update profiles table for DNA display
+      // Always update profiles table for DNA display (this supports child IDs)
       await updateProfile({
         role: roleMain,
         strengths: strengths.slice(0, 3),
