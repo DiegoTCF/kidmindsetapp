@@ -70,14 +70,16 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const updateProfile = async (updates: Partial<Profile>) => {
     if (!user?.id) return;
 
-    // Always use the actual user ID for profiles table, regardless of admin player view
-    console.log('[useProfile] Updating profile - user.id:', user.id, 'childId:', childId);
+    // Use child ID from context (admin player view) or user ID for regular users
+    const effectiveUserId = childId || user.id;
+    
+    console.log('[useProfile] Updating profile - user.id:', user.id, 'childId:', childId, 'effectiveUserId:', effectiveUserId);
 
     try {
       const { data, error } = await supabase
         .from('profiles')
         .update(updates)
-        .eq('user_id', user.id)
+        .eq('user_id', effectiveUserId)
         .select()
         .single();
 
