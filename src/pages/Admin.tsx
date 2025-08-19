@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useAuth } from '@/hooks/useAuth';
@@ -42,6 +42,7 @@ export default function Admin() {
   const { user } = useAuth();
   const { logAdminAccess } = useUserLogging();
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   // Check if current user is the superadmin using database function
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
@@ -380,7 +381,7 @@ export default function Admin() {
 
   const viewChildAsPlayer = (child: Child) => {
     // Navigate to the admin player view
-    window.open(`/admin/player/${child.id}`, '_blank');
+    navigate(`/admin/player/${child.id}`);
   };
 
   const navigateToChildFromNotification = async (childName: string, userEmail: string) => {
