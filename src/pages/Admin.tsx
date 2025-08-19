@@ -86,6 +86,18 @@ export default function Admin() {
     }
   }, [isAdmin, logAdminAccess]);
 
+  // Auto-refresh users every 30 seconds to catch new signups
+  useEffect(() => {
+    if (!isAdmin) return;
+    
+    const interval = setInterval(() => {
+      console.log('[Admin] Auto-refreshing user list...');
+      loadUsers();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [isAdmin]);
+
   const loadUsers = async () => {
     setLoadingData(true);
     try {
