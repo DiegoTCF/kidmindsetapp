@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Home as HomeIcon, Trophy, TrendingUp, Plus } from 'lucide-react';
+import { ArrowLeft, Home as HomeIcon, Trophy, TrendingUp, Plus, Target, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -256,7 +256,7 @@ export default function AdminPlayerView() {
         {/* Header with player info */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Button
                 variant="outline"
                 size="sm"
@@ -283,6 +283,24 @@ export default function AdminPlayerView() {
               >
                 <TrendingUp className="h-4 w-4" />
                 Go to Progress
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/goals')}
+                className="flex items-center gap-2"
+              >
+                <Target className="h-4 w-4" />
+                Edit Goals
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/dna')}
+                className="flex items-center gap-2"
+              >
+                <User className="h-4 w-4" />
+                Edit Identity
               </Button>
             </div>
             <Badge variant="secondary">Mentorship Mode</Badge>
