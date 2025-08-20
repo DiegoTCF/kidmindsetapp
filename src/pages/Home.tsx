@@ -828,26 +828,66 @@ export default function Home() {
       throw error;
     }
   };
-  const handleAddCustomTask = () => {
+  const handleAddCustomTask = async () => {
     if (!newTaskName.trim()) return;
-    const newTask: DailyTask = {
-      id: `custom_${Date.now()}`,
-      name: newTaskName.trim(),
-      completed: false,
-      streak: 0,
-      isCustom: true
-    };
-    const updatedTasks = [...dailyTasks, newTask];
-    setDailyTasks(updatedTasks);
-    const today = new Date().toDateString();
-    localStorage.setItem(`kidmindset_tasks_${today}`, JSON.stringify(updatedTasks));
-    setNewTaskName("");
-    setShowAddTask(false);
-    console.log('[KidMindset] Custom task added:', newTask.name);
-    toast({
-      title: "Task added!",
-      description: "Your custom task has been added to today's list."
-    });
+    
+    try {
+      console.log('[KidMindset] Adding custom task to Supabase...');
+      
+      // Save task to Supabase daily_tasks table first
+      const { data: insertedTask, error: insertError } = await supabase
+        .from('daily_tasks')
+        .insert({
+          label: newTaskName.trim(),
+          user_id: user?.id,
+          order: dailyTasks.length + 1,
+          active: true
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('[KidMindset] Error saving task to Supabase:', insertError);
+        toast({
+          title: "Error",
+          description: "Failed to save task. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Create new task with Supabase ID
+      const newTask: DailyTask = {
+        id: insertedTask.id,
+        name: newTaskName.trim(),
+        completed: false,
+        streak: 0,
+        isCustom: true
+      };
+      
+      const updatedTasks = [...dailyTasks, newTask];
+      setDailyTasks(updatedTasks);
+      
+      // Also save to localStorage for immediate persistence
+      const today = new Date().toDateString();
+      localStorage.setItem(`kidmindset_tasks_${today}`, JSON.stringify(updatedTasks));
+      
+      setNewTaskName("");
+      setShowAddTask(false);
+      console.log('[KidMindset] Custom task added successfully:', newTask.name);
+      
+      toast({
+        title: "Task added!",
+        description: "Your custom task has been saved and added to today's list."
+      });
+    } catch (error) {
+      console.error('[KidMindset] Error adding custom task:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add task. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
   return <div className="min-h-screen bg-[#ff0066]">
       <div className="w-full max-w-sm mx-auto p-4">
