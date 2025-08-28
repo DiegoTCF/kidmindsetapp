@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useChildData } from './useChildData';
+import { useAdmin } from './useAdmin';
 
 export interface Profile {
   id: string;
@@ -26,6 +27,7 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const { childId, loading: childDataLoading } = useChildData();
+  const { isAdmin } = useAdmin();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -36,17 +38,17 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Use child ID from context (admin player view) or user ID for regular users
-    const effectiveUserId = childId || user.id;
+    // Use child ID ONLY if admin is viewing as player, otherwise use user ID
+    const effectiveUserId = (isAdmin && childId) ? childId : user.id;
     
-    console.log('[useProfile] Fetching profile - user.id:', user.id, 'childId:', childId, 'effectiveUserId:', effectiveUserId);
+    console.log('[useProfile] Fetching profile - user.id:', user.id, 'childId:', childId, 'isAdmin:', isAdmin, 'effectiveUserId:', effectiveUserId);
 
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', effectiveUserId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching profile:', error);
@@ -70,16 +72,22 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const updateProfile = async (updates: Partial<Profile>) => {
     if (!user?.id) return;
 
-    // Use child ID from context (admin player view) or user ID for regular users
-    const effectiveUserId = childId || user.id;
+    // Use child ID ONLY if admin is viewing as player, otherwise use user ID
+    const effectiveUserId = (isAdmin && childId) ? childId : user.id;
     
-    console.log('[useProfile] Updating profile - user.id:', user.id, 'childId:', childId, 'effectiveUserId:', effectiveUserId);
+    console.log('[useProfile] Updating profile - user.id:', user.id, 'childId:', childId, 'isAdmin:', isAdmin, 'effectiveUserId:', effectiveUserId);
 
     try {
+      // First try to update, if no rows affected then insert
       const { data, error } = await supabase
         .from('profiles')
-        .update(updates)
-        .eq('user_id', effectiveUserId)
+        .upsert({ 
+          user_id: effectiveUserId,
+          email: `user_${effectiveUserId}@placeholder.com`,
+          ...updates 
+        }, { 
+          onConflict: 'user_id' 
+        })
         .select()
         .single();
 
