@@ -230,6 +230,7 @@ export default function PlayerIdentity() {
         description: "Your player identity has been saved."
       });
 
+      // Force refetch profile to ensure we have the latest data
       await refetchProfile();
     } catch (e: any) {
       console.error(e);
@@ -243,7 +244,9 @@ export default function PlayerIdentity() {
     }
   };
 
-  const showForm = editing || !profile?.role;
+  // Show form if editing OR if no DNA data exists yet
+  const showForm = editing || (!existing && !profile?.role);
+  const showDNA = !editing && existing && profile?.role;
 
   return (
     <div className="max-w-2xl mx-auto px-4 pt-20 pb-8 bg-sky-400">
@@ -257,7 +260,7 @@ export default function PlayerIdentity() {
 
       <div className="space-y-4">
         {/* Show YOUR DNA card if data exists and not editing */}
-        {!showForm && (
+        {showDNA && (
           <DNADisplay onEdit={() => setEditing(true)} />
         )}
 
@@ -401,7 +404,11 @@ export default function PlayerIdentity() {
               </CardContent>
             </Card>
           </>
-        ) : null}
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-white">DNA saved! Your player identity is ready.</p>
+          </div>
+        )}
       </div>
     </div>
   );
