@@ -144,7 +144,11 @@ export const SillyANTFlow: React.FC = () => {
     setIsSubmitting(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No user found');
+      if (!user?.id) {
+        throw new Error('No authenticated user found. Please sign in to save your ANT profile.');
+      }
+
+      console.log('[SillyANT] Saving ANT - user.id:', user.id, 'childId:', childId);
 
       // Use child ID from context (admin player view) or user ID for regular users
       const effectiveUserId = childId || user.id;
