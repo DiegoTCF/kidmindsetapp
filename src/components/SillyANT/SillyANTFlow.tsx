@@ -152,12 +152,24 @@ export const SillyANTFlow: React.FC = () => {
 
       // Use child ID from context (admin player view) or user ID for regular users
       const effectiveUserId = childId || user.id;
+      
+      console.log('[SillyANT] Using effectiveUserId:', effectiveUserId);
 
-      // Clear existing ANT data
-      await supabase.from('user_ants').delete().eq('user_id', effectiveUserId);
+      // Clear existing ANT data for the effective user
+      console.log('[SillyANT] Deleting existing ANT data...');
+      const { error: deleteError } = await supabase
+        .from('user_ants')
+        .delete()
+        .eq('user_id', effectiveUserId);
+      
+      if (deleteError) {
+        console.error('[SillyANT] Delete error:', deleteError);
+        throw deleteError;
+      }
 
       // Insert new ANT data
-      const { error } = await supabase.from('user_ants').insert({
+      console.log('[SillyANT] Inserting new ANT data...');
+      const { error: insertError } = await supabase.from('user_ants').insert({
         user_id: effectiveUserId,
         core_beliefs: selectedBeliefs,
         automatic_thoughts: selectedThoughts,
@@ -165,7 +177,10 @@ export const SillyANTFlow: React.FC = () => {
         triggers: selectedTriggers
       });
 
-      if (error) throw error;
+      if (insertError) {
+        console.error('[SillyANT] Insert error:', insertError);
+        throw insertError;
+      }
 
       toast({
         title: "🐜 ANT Squashed!",
