@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useChildData } from "@/hooks/useChildData";
+import { useAdmin } from "@/hooks/useAdmin";
 import { supabase } from "@/integrations/supabase/client";
 import { Dna } from "lucide-react";
 import { MAIN_ROLES, ROLE_TYPES, STRENGTHS_BY_ROLE_TYPE, UNIVERSAL_STRENGTHS_OUTFIELD, GOALKEEPER_STRENGTHS, HELPS_TEAM_GK, HELPS_TEAM_OUTFIELD, MOTTO_SUGGESTIONS, type MainRole } from "@/data/playerIdentityOptions";
@@ -34,6 +35,7 @@ export default function PlayerIdentity() {
   const { toast } = useToast();
   const { profile, updateProfile, refetchProfile } = useProfile();
   const { childId, loading: childDataLoading } = useChildData();
+  const { isAdmin } = useAdmin();
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -192,7 +194,8 @@ export default function PlayerIdentity() {
     try {
       // Only save to player_identities table if NOT in admin player view
       // (player_identities has FK constraint to auth.users)
-      if (!isAdminPlayerView) {
+      const isActualAdminPlayerView = (childId && childId !== user.id && isAdminPlayerView);
+      if (!isActualAdminPlayerView) {
         const payload: PlayerIdentityRow = {
           user_id: user.id, // Always use actual user ID for player_identities
           role_main: roleMain,
@@ -211,7 +214,8 @@ export default function PlayerIdentity() {
         if (playerIdentityError) throw playerIdentityError;
       }
 
-      // Always update profiles table for DNA display (this supports child IDs)
+      // Update profiles table - use user ID for regular customers, child ID for admin player view
+      const profileUserId = (isAdmin && childId) ? childId : user.id;
       await updateProfile({
         role: roleMain,
         strengths: strengths.slice(0, 3),

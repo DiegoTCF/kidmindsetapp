@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useChildData } from '@/hooks/useChildData';
+import { useAuth } from '@/hooks/useAuth';
+import { useAdmin } from '@/hooks/useAdmin';
 
 const CORE_BELIEFS = [
   "I'm not good enough",
@@ -107,6 +109,8 @@ const Section: React.FC<SectionProps> = ({ title, options, selectedOptions, onTo
 };
 
 export const SillyANTFlow: React.FC = () => {
+  const { user } = useAuth();
+  const { isAdmin } = useAdmin();
   const [selectedBeliefs, setSelectedBeliefs] = useState<string[]>([]);
   const [selectedThoughts, setSelectedThoughts] = useState<string[]>([]);
   const [selectedCoping, setSelectedCoping] = useState<string[]>([]);
@@ -141,17 +145,14 @@ export const SillyANTFlow: React.FC = () => {
   };
 
   const saveANT = async () => {
+    if (!user) return;
+    
     setIsSubmitting(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user?.id) {
-        throw new Error('No authenticated user found. Please sign in to save your ANT profile.');
-      }
+      console.log('[SillyANT] Saving ANT - user.id:', user.id, 'childId:', childId, 'isAdmin:', isAdmin);
 
-      console.log('[SillyANT] Saving ANT - user.id:', user.id, 'childId:', childId);
-
-      // Use child ID from context (admin player view) or user ID for regular users
-      const effectiveUserId = childId || user.id;
+      // Use child ID ONLY if admin is viewing as player, otherwise use user ID
+      const effectiveUserId = (isAdmin && childId) ? childId : user.id;
       
       console.log('[SillyANT] Using effectiveUserId:', effectiveUserId);
 
