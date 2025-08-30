@@ -386,12 +386,51 @@ export default function Admin() {
 
   const navigateToChildFromNotification = async (childName: string, userEmail: string) => {
     try {
-      // Find the user by email
-      const user = users.find(u => u.email === userEmail);
+      // First try to find user by email
+      let user = users.find(u => u.email === userEmail);
+      
+      // If not found by email, try to find by child name (fallback for placeholder emails)
+      if (!user) {
+        console.log(`[Admin] User not found by email: ${userEmail}, searching by child name: ${childName}`);
+        
+        // Load all children and find one with matching name
+        const { data: childrenData, error: childrenError } = await supabase
+          .from('children')
+          .select(`
+            *,
+            parents!inner (
+              *,
+              profiles!inner (email)
+            )
+          `)
+          .ilike('name', `%${childName}%`);
+          
+        if (childrenError) {
+          console.error('Error searching for child:', childrenError);
+          throw childrenError;
+        }
+        
+        if (childrenData && childrenData.length > 0) {
+          const childData = childrenData[0];
+          // Safely access the nested parent/profile email
+          const parentData = childData.parents as any;
+          const profileData = parentData?.profiles as any;
+          const parentEmail = profileData?.email;
+          
+          if (parentEmail) {
+            user = users.find(u => u.email === parentEmail);
+            
+            if (user) {
+              console.log(`[Admin] Found user by child name: ${parentEmail}`);
+            }
+          }
+        }
+      }
+      
       if (!user) {
         toast({
           title: 'User Not Found',
-          description: `Cannot find parent with email: ${userEmail}`,
+          description: `Cannot find parent with email: ${userEmail} or child: ${childName}`,
           variant: 'destructive'
         });
         return;
