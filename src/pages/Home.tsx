@@ -828,6 +828,46 @@ export default function Home() {
       throw error;
     }
   };
+
+  const handleRemoveCustomTask = async (taskId: string) => {
+    try {
+      // Remove task from daily_tasks table
+      const { error: deleteError } = await supabase
+        .from('daily_tasks')
+        .update({ active: false })
+        .eq('id', taskId)
+        .eq('user_id', user?.id);
+
+      if (deleteError) {
+        console.error('[KidMindset] Error deactivating task:', deleteError);
+        throw deleteError;
+      }
+
+      // Also delete any progress entries for this task
+      await deleteTaskFromSupabase(taskId);
+
+      // Update local state
+      const updatedTasks = dailyTasks.filter(task => task.id !== taskId);
+      setDailyTasks(updatedTasks);
+
+      // Update localStorage
+      const today = new Date().toDateString();
+      localStorage.setItem(`kidmindset_tasks_${today}`, JSON.stringify(updatedTasks));
+
+      toast({
+        title: "Task removed",
+        description: "Custom task has been removed from your daily list."
+      });
+
+    } catch (error) {
+      console.error('[KidMindset] Error removing task:', error);
+      toast({
+        title: "Error",
+        description: "Failed to remove task. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
   const handleAddCustomTask = async () => {
     if (!newTaskName.trim()) return;
     
@@ -1025,6 +1065,19 @@ export default function Home() {
                         ↻
                       </Button>
                     </div> : null}
+                  
+                  {/* Remove button for custom tasks */}
+                  {task.isCustom && (
+                    <Button 
+                      onClick={() => handleRemoveCustomTask(task.id)} 
+                      size="sm" 
+                      variant="ghost" 
+                      className="w-6 h-6 p-0 text-xs text-muted-foreground hover:text-destructive ml-1" 
+                      title="Remove custom task"
+                    >
+                      🗑️
+                    </Button>
+                  )}
                 </div>
               </div>)}
 
