@@ -498,7 +498,7 @@ export default function Stadium() {
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">🦁</span>
                     <div>
-                      <p className="font-medium">Face the Lion – Motivation Audio</p>
+                      <p className="font-medium">Listen: Face the Lion</p>
                     </div>
                   </div>
                 </Button>
