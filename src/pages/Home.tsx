@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Star, Trophy, Edit2, Check, X } from "lucide-react";
+import { Plus, Star, Trophy, Edit2, Check, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -74,12 +74,25 @@ const defaultTasks: DailyTask[] = [{
   streak: 0
 }];
 export default function Home() {
-  const {
-    toast
-  } = useToast();
-  const {
-    user
-  } = useAuth();
+  const { toast } = useToast();
+  const { user, signOut } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      // Clear all localStorage data
+      localStorage.clear();
+      // Force redirect to auth page
+      window.location.href = '/auth';
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast({
+        title: "Logout failed",
+        description: "Please try again or refresh the page",
+        variant: "destructive"
+      });
+    }
+  };
 
   // Player state
   const [playerData, setPlayerData] = useState<PlayerData>({
@@ -932,7 +945,18 @@ export default function Home() {
   return <div className="min-h-screen bg-[#ff0066]">
       <div className="w-full max-w-sm mx-auto p-4">
         {/* Top Navigation */}
-        <TopNavigation />
+        <div className="flex justify-between items-center mb-4">
+          <TopNavigation />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLogout}
+            className="flex items-center gap-2 bg-destructive/10 border-destructive/20 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+          >
+            <LogOut className="h-4 w-4" />
+            Logout
+          </Button>
+        </div>
 
         {/* Level Progress Card */}
         <div className="mb-6">
