@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Info, Save, RotateCcw, TrendingUp } from 'lucide-react';
+import { Info, Save, RotateCcw, TrendingUp, Calendar, Clock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -26,6 +26,8 @@ interface CoreSkillEvaluation {
   dealing_failure_level?: number;
   coach_notes?: string;
   evaluation_date?: string;
+  updated_at?: string;
+  created_at?: string;
 }
 
 const CORE_SKILLS = [
@@ -382,6 +384,53 @@ export default function CoreSkillsEvaluation({ childId, childName }: CoreSkillsE
         </CardHeader>
 
         <CardContent className="p-6 space-y-6">
+          {/* Last Updated Date Box */}
+          {evaluation.updated_at && (
+            <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 text-blue-700">
+                    <Calendar className="w-4 h-4" />
+                    <span className="font-medium text-sm">Last updated on:</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-blue-800">
+                    <span className="font-semibold">
+                      {new Date(evaluation.updated_at).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </span>
+                    <Clock className="w-4 h-4" />
+                    <span className="text-sm">
+                      {new Date(evaluation.updated_at).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
+          {/* New Evaluation Notice */}
+          {!evaluation.updated_at && (
+            <Card className="bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 text-emerald-700">
+                    <TrendingUp className="w-4 h-4" />
+                    <span className="font-medium text-sm">New Evaluation</span>
+                  </div>
+                  <span className="text-emerald-800 text-sm">
+                    Start evaluating {childName}'s core skills development
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
           {/* Mobile View */}
           <div className="block md:hidden space-y-4">
             {CORE_SKILLS.map((skill) => (
