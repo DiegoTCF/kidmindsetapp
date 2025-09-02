@@ -607,9 +607,13 @@ const Auth = () => {
     <div className="min-h-screen bg-gradient-primary flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <Link to="/" className="flex justify-center mb-4">
-            <div className="text-2xl font-bold text-primary">🧠 KidMindset</div>
-          </Link>
+          <div className="flex justify-center mb-4">
+            <img 
+              src="/lovable-uploads/620c4617-1719-4bc3-ba59-eeaa7cc63a8d.png" 
+              alt="The Confident Footballer Logo" 
+              className="h-16 w-auto"
+            />
+          </div>
           <CardTitle className="text-center">Welcome Back</CardTitle>
           <CardDescription className="text-center">
             Sign in to your account
