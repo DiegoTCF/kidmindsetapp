@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Users, UserCog, ArrowLeft, User, Trophy, TrendingUp, Shield, Trash2, FileText, Search } from 'lucide-react';
+import { Users, UserCog, ArrowLeft, User, Trophy, TrendingUp, Shield, Trash2, FileText, Search, LogOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ActivityLog from '@/components/Progress/ActivityLog';
 import Charts from '@/components/Progress/Charts';
@@ -40,7 +40,7 @@ type ViewMode = 'users' | 'children' | 'progress';
 
 export default function Admin() {
   const { isAdmin, loading } = useAdmin();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { logAdminAccess } = useUserLogging();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -585,13 +585,22 @@ export default function Admin() {
                 Home
               </Button>
             )}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-1">
               <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
               <Badge variant="default" className="flex items-center gap-1">
                 <Shield className="h-3 w-3" />
                 Admin
               </Badge>
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={signOut}
+              className="flex items-center gap-2 bg-destructive/10 border-destructive/20 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </Button>
           </div>
           
           {/* Breadcrumb */}
