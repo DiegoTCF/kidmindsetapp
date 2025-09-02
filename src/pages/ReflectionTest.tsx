@@ -57,14 +57,14 @@ const answerOptions = [
   {
     value: 'level_3',
     text: 'I reminded myself that mistakes don\'t define me – with some help.',
-    emoji: '🟢',
-    color: 'text-success'
+    emoji: '🔵',
+    color: 'text-blue-600'
   },
   {
     value: 'level_4',
     text: 'I knew my performance didn\'t change who I am.',
-    emoji: '✅',
-    color: 'text-blue-600'
+    emoji: '🟢',
+    color: 'text-success'
   }
 ];
 
