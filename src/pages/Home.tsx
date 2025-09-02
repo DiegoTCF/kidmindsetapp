@@ -950,7 +950,7 @@ export default function Home() {
             variant="outline"
             size="sm"
             onClick={handleLogout}
-            className="flex items-center gap-2 bg-destructive/10 border-destructive/20 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            className="flex items-center gap-2 bg-white/90 border-white text-gray-800 hover:bg-white hover:text-black font-medium shadow-md"
           >
             <LogOut className="h-4 w-4" />
             Logout
