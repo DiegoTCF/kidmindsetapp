@@ -338,7 +338,7 @@ export default function CoreSkillsEvaluation({ childId, childName }: CoreSkillsE
 
   const getSkillColor = (level: number) => {
     if (level === 4) return 'text-success';
-    if (level === 3) return 'text-primary';
+    if (level === 3) return 'text-blue-600';
     if (level === 2) return 'text-warning';
     if (level === 1) return 'text-destructive';
     return 'text-muted-foreground';
