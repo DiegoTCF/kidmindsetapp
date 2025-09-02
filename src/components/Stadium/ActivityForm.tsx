@@ -178,10 +178,10 @@ export default function ActivityForm({
     logError
   } = useUserLogging();
   const [confidenceRatings, setConfidenceRatings] = useState({
-    excited: 5,
-    nervous: 5,
-    bodyReady: 5,
-    believeWell: 5
+    excited: 0,
+    nervous: 0,
+    bodyReady: 0,
+    believeWell: 0
   });
   const [intention, setIntention] = useState("");
   const [selectedGoal, setSelectedGoal] = useState<string>("");
