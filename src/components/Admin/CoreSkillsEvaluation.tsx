@@ -478,17 +478,17 @@ export default function CoreSkillsEvaluation({ childId, childName }: CoreSkillsE
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left p-3 font-semibold">Core Skill</th>
-                    <th className="text-center p-3 font-semibold text-destructive">
+                    <th className="text-left p-4 font-semibold min-w-[220px]">Core Skill</th>
+                    <th className="text-center p-4 font-semibold text-destructive min-w-[200px]">
                       Level 1 - Struggle
                     </th>
-                    <th className="text-center p-3 font-semibold text-warning">
+                    <th className="text-center p-4 font-semibold text-warning min-w-[200px]">
                       Level 2 - Emerging
                     </th>
-                    <th className="text-center p-3 font-semibold text-primary">
+                    <th className="text-center p-4 font-semibold text-primary min-w-[200px]">
                       Level 3 - Supported
                     </th>
-                    <th className="text-center p-3 font-semibold text-success">
+                    <th className="text-center p-4 font-semibold text-success min-w-[200px]">
                       Level 4 - Independent
                     </th>
                   </tr>
@@ -496,28 +496,27 @@ export default function CoreSkillsEvaluation({ childId, childName }: CoreSkillsE
                 <tbody>
                   {CORE_SKILLS.map((skill, index) => (
                     <tr key={skill.key} className={cn("border-b", index % 2 === 0 ? "bg-muted/20" : "")}>
-                      <td className="p-3 font-medium min-w-[200px]">
-                        {skill.title}
+                      <td className="p-4 font-medium align-top">
+                        <div className="sticky top-0">
+                          {skill.title}
+                        </div>
                       </td>
                       {skill.levels.map((levelInfo) => (
-                        <td key={levelInfo.level} className="p-3 text-center">
-                          <div className="space-y-2">
-                            <input
-                              type="radio"
-                              id={`${skill.key}-${levelInfo.level}`}
-                              name={skill.key}
-                              checked={evaluation[skill.key] === levelInfo.level}
-                              onChange={() => handleLevelChange(skill.key, levelInfo.level)}
-                              className="w-5 h-5 cursor-pointer"
-                            />
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Info className="w-4 h-4 mx-auto text-muted-foreground hover:text-foreground cursor-help" />
-                              </TooltipTrigger>
-                              <TooltipContent className="max-w-xs">
-                                <p className="text-sm">{levelInfo.description}</p>
-                              </TooltipContent>
-                            </Tooltip>
+                        <td key={levelInfo.level} className="p-4 align-top">
+                          <div className="space-y-3">
+                            <div className="flex justify-center">
+                              <input
+                                type="radio"
+                                id={`${skill.key}-${levelInfo.level}`}
+                                name={skill.key}
+                                checked={evaluation[skill.key] === levelInfo.level}
+                                onChange={() => handleLevelChange(skill.key, levelInfo.level)}
+                                className="w-5 h-5 cursor-pointer"
+                              />
+                            </div>
+                            <div className="text-xs text-muted-foreground leading-relaxed px-1">
+                              {levelInfo.description}
+                            </div>
                           </div>
                         </td>
                       ))}
