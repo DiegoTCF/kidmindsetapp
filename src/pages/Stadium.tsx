@@ -466,42 +466,39 @@ export default function Stadium() {
               <div className="space-y-3">
                 <Button
                   variant="outline"
-                  className="w-full h-auto p-4 text-left border-2 hover:border-primary/30"
-                  disabled
+                  className="w-full h-auto p-4 text-left border-2 hover:border-primary/30 hover:opacity-80 transition-opacity"
+                  onClick={() => window.open('https://www.youtube.com/watch?v=3lfBP1OdoG0', '_blank')}
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">🧘</span>
                     <div>
-                      <p className="font-medium">Yoga Video</p>
-                      <p className="text-xs text-muted-foreground">(Coming Soon)</p>
+                      <p className="font-medium">Start Yoga</p>
                     </div>
                   </div>
                 </Button>
                 
                 <Button
                   variant="outline"
-                  className="w-full h-auto p-4 text-left border-2 hover:border-primary/30"
-                  disabled
+                  className="w-full h-auto p-4 text-left border-2 hover:border-primary/30 hover:opacity-80 transition-opacity"
+                  onClick={() => window.open('https://drive.google.com/file/d/12tItFhl7cqpjuPpjDwO_WRHDy_9ZOOK0/view?usp=sharing', '_blank')}
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">🎧</span>
                     <div>
-                      <p className="font-medium">Visualisation Audio</p>
-                      <p className="text-xs text-muted-foreground">(Coming Soon)</p>
+                      <p className="font-medium">Start Visualisation</p>
                     </div>
                   </div>
                 </Button>
                 
                 <Button
                   variant="outline"
-                  className="w-full h-auto p-4 text-left border-2 hover:border-primary/30"
-                  disabled
+                  className="w-full h-auto p-4 text-left border-2 hover:border-primary/30 hover:opacity-80 transition-opacity"
+                  onClick={() => window.open('https://drive.google.com/file/d/1UnpaPW8N4QzZfUTcukITMoaIVPoiZxR4/view?usp=sharing', '_blank')}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl">🌬️</span>
+                    <span className="text-2xl">🦁</span>
                     <div>
-                      <p className="font-medium">Breathing Audio</p>
-                      <p className="text-xs text-muted-foreground">(Coming Soon)</p>
+                      <p className="font-medium">Face the Lion – Motivation Audio</p>
                     </div>
                   </div>
                 </Button>
