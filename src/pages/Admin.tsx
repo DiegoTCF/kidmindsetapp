@@ -7,7 +7,8 @@ import { useUserLogging } from '@/hooks/useUserLogging';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, UserCog, ArrowLeft, User, Trophy, TrendingUp, Shield, Trash2, FileText } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Users, UserCog, ArrowLeft, User, Trophy, TrendingUp, Shield, Trash2, FileText, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ActivityLog from '@/components/Progress/ActivityLog';
 import Charts from '@/components/Progress/Charts';
@@ -75,6 +76,7 @@ export default function Admin() {
   const [selectedChild, setSelectedChild] = useState<Child | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('users');
   const [loadingData, setLoadingData] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
     user: UserProfile | null;
@@ -189,7 +191,14 @@ export default function Admin() {
         };
       });
 
-      setUsers(combinedUsers);
+      // Sort users alphabetically by name (player name)
+      const sortedUsers = combinedUsers.sort((a, b) => {
+        const nameA = a.name || a.email || '';
+        const nameB = b.name || b.email || '';
+        return nameA.toLowerCase().localeCompare(nameB.toLowerCase());
+      });
+
+      setUsers(sortedUsers);
     } catch (error) {
       console.error('Error loading users:', error);
       toast({
@@ -507,6 +516,17 @@ export default function Admin() {
     setDeleteDialog({ open: true, user });
   };
 
+  // Filter users based on search term
+  const filteredUsers = users.filter(user => {
+    if (!searchTerm) return true;
+    
+    const searchLower = searchTerm.toLowerCase();
+    const nameMatch = user.name?.toLowerCase().includes(searchLower);
+    const emailMatch = user.email.toLowerCase().includes(searchLower);
+    
+    return nameMatch || emailMatch;
+  });
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -595,18 +615,37 @@ export default function Admin() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="h-5 w-5" />
-                  Users ({users.length})
+                  Users ({filteredUsers.length} of {users.length})
                 </CardTitle>
               </CardHeader>
               <CardContent>
+                {/* Search Input */}
+                <div className="mb-6">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search by player name or email..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+
                 {loadingData ? (
                   <div className="text-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
                     <p className="text-muted-foreground">Loading users...</p>
                   </div>
+                ) : filteredUsers.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">
+                      {searchTerm ? `No users found matching "${searchTerm}"` : 'No users found'}
+                    </p>
+                  </div>
                 ) : (
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {users.map((userProfile) => (
+                    {filteredUsers.map((userProfile) => (
                        <Card key={userProfile.id} className="border border-border">
                          <CardContent className="p-4">
                            <div className="flex items-start justify-between mb-3">
