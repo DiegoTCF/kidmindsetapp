@@ -485,7 +485,7 @@ export default function CoreSkillsEvaluation({ childId, childName }: CoreSkillsE
                     <th className="text-center p-4 font-semibold text-warning min-w-[200px]">
                       Level 2 - Emerging
                     </th>
-                    <th className="text-center p-4 font-semibold text-primary min-w-[200px]">
+                    <th className="text-center p-4 font-semibold text-blue-600 min-w-[200px]">
                       Level 3 - Supported
                     </th>
                     <th className="text-center p-4 font-semibold text-success min-w-[200px]">
