@@ -127,15 +127,26 @@ const Auth = () => {
     const email = formData.get('email') as string;
 
     try {
+      console.log('[AuthFlow] Testing Supabase connection for password reset...');
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth`,
       });
 
       if (error) {
         console.log('[AuthFlow] Password reset error:', error.message);
+        
+        // Provide more specific error messages
+        let errorMessage = error.message;
+        if (error.message.includes('User not found')) {
+          errorMessage = "No account found with this email address. Please check the email and try again.";
+        } else if (error.message.includes('Email rate limit exceeded')) {
+          errorMessage = "Too many password reset requests. Please wait a few minutes before trying again.";
+        }
+        
         toast({
           title: "Error",
-          description: error.message,
+          description: errorMessage,
           variant: "destructive",
         });
       } else {
@@ -146,11 +157,23 @@ const Auth = () => {
         });
         setIsForgotPassword(false);
       }
-    } catch (networkError) {
-      console.log('[AuthFlow] Network error in password reset:', networkError);
+    } catch (networkError: any) {
+      console.error('[AuthFlow] Network error in password reset:', networkError);
+      
+      // More specific error handling for fetch failures
+      let errorMessage = "Unable to connect to authentication service.";
+      
+      if (networkError.message?.includes('fetch')) {
+        errorMessage = "Network connection failed. Please check your internet connection and try again.";
+      } else if (networkError.message?.includes('CORS')) {
+        errorMessage = "Authentication service temporarily unavailable. Please try again in a moment.";
+      } else if (networkError.name === 'TypeError') {
+        errorMessage = "Connection error. Please check your internet connection and try again.";
+      }
+      
       toast({
         title: "Connection Error",
-        description: "Unable to connect to authentication service. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
