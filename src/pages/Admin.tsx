@@ -558,11 +558,11 @@ export default function Admin() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => window.history.length > 1 ? window.history.back() : window.location.href = '/'}
+                onClick={() => navigate('/')}
                 className="flex items-center gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />
-                Back
+                Home
               </Button>
             )}
             <div className="flex items-center gap-3">
