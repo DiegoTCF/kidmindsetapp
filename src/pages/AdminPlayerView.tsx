@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Home as HomeIcon, Trophy, TrendingUp, Plus, Target, User } from 'lucide-react';
+import { ArrowLeft, Home as HomeIcon, Trophy, TrendingUp, Plus, Target, User, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -15,6 +15,7 @@ import Charts from '@/components/Progress/Charts';
 import BehaviourCharts from '@/components/Progress/BehaviourCharts';
 import NewActivity from '@/components/Stadium/NewActivity';
 import ActivityForm from '@/components/Stadium/ActivityForm';
+import CoreSkillsEvaluation from '@/components/Admin/CoreSkillsEvaluation';
 
 interface Child {
   id: string;
@@ -336,7 +337,7 @@ export default function AdminPlayerView() {
 
         {/* Navigation Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="home" className="flex items-center gap-2">
               <HomeIcon className="w-4 h-4" />
               Home
@@ -348,6 +349,10 @@ export default function AdminPlayerView() {
             <TabsTrigger value="progress" className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4" />
               Progress
+            </TabsTrigger>
+            <TabsTrigger value="evaluation" className="flex items-center gap-2">
+              <Brain className="w-4 h-4" />
+              Core Skills
             </TabsTrigger>
           </TabsList>
 
@@ -476,6 +481,20 @@ export default function AdminPlayerView() {
                 <Charts selectedFilter="All" childId={child.id} />
               </TabsContent>
             </Tabs>
+          </TabsContent>
+
+          {/* Core Skills Evaluation Tab */}
+          <TabsContent value="evaluation" className="space-y-6">
+            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-4">
+              <p className="text-emerald-800 text-sm">
+                <strong>Core Skills Assessment:</strong> Evaluate {child.name}'s development across the 6 pillars of mindset coaching.
+              </p>
+            </div>
+            
+            <CoreSkillsEvaluation 
+              childId={child.id} 
+              childName={child.name} 
+            />
           </TabsContent>
         </Tabs>
       </div>

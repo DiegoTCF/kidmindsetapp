@@ -220,6 +220,54 @@ export type Database = {
           },
         ]
       }
+      core_skill_evaluations: {
+        Row: {
+          admin_id: string
+          beating_mind_level: number | null
+          child_id: string
+          coach_notes: string | null
+          created_at: string
+          dealing_failure_level: number | null
+          evaluation_date: string
+          focus_behaviours_level: number | null
+          goals_planning_level: number | null
+          id: string
+          preparation_autonomy_level: number | null
+          self_worth_level: number | null
+          updated_at: string
+        }
+        Insert: {
+          admin_id: string
+          beating_mind_level?: number | null
+          child_id: string
+          coach_notes?: string | null
+          created_at?: string
+          dealing_failure_level?: number | null
+          evaluation_date?: string
+          focus_behaviours_level?: number | null
+          goals_planning_level?: number | null
+          id?: string
+          preparation_autonomy_level?: number | null
+          self_worth_level?: number | null
+          updated_at?: string
+        }
+        Update: {
+          admin_id?: string
+          beating_mind_level?: number | null
+          child_id?: string
+          coach_notes?: string | null
+          created_at?: string
+          dealing_failure_level?: number | null
+          evaluation_date?: string
+          focus_behaviours_level?: number | null
+          goals_planning_level?: number | null
+          id?: string
+          preparation_autonomy_level?: number | null
+          self_worth_level?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       course_content: {
         Row: {
           bucket_name: string
