@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useChildData } from './useChildData';
 import { useAdmin } from './useAdmin';
+import { useAdminPlayerView } from './useAdminPlayerView';
 
 export interface Profile {
   id: string;
@@ -28,6 +29,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const { childId, loading: childDataLoading } = useChildData();
   const { isAdmin } = useAdmin();
+  const { isViewingAsPlayer, selectedChild } = useAdminPlayerView();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -38,8 +40,12 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Use child ID ONLY if admin is viewing as player, otherwise use user ID
-    const effectiveUserId = (isAdmin && childId) ? childId : user.id;
+    // Use selected player's ID if admin is viewing as player, otherwise use child ID or user ID
+    const effectiveUserId = (isAdmin && isViewingAsPlayer && selectedChild) 
+      ? selectedChild.id 
+      : (isAdmin && childId) 
+        ? childId 
+        : user.id;
     
     console.log('[useProfile] Fetching profile - user.id:', user.id, 'childId:', childId, 'isAdmin:', isAdmin, 'effectiveUserId:', effectiveUserId);
 
@@ -72,8 +78,12 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const updateProfile = async (updates: Partial<Profile>) => {
     if (!user?.id) return;
 
-    // Use child ID ONLY if admin is viewing as player, otherwise use user ID
-    const effectiveUserId = (isAdmin && childId) ? childId : user.id;
+    // Use selected player's ID if admin is viewing as player, otherwise use child ID or user ID
+    const effectiveUserId = (isAdmin && isViewingAsPlayer && selectedChild) 
+      ? selectedChild.id 
+      : (isAdmin && childId) 
+        ? childId 
+        : user.id;
     
     console.log('[useProfile] Updating profile - user.id:', user.id, 'childId:', childId, 'isAdmin:', isAdmin, 'effectiveUserId:', effectiveUserId);
 
@@ -107,7 +117,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     if (!childDataLoading) {
       fetchProfile();
     }
-  }, [user?.id, childId, childDataLoading]);
+  }, [user?.id, childId, childDataLoading, isViewingAsPlayer, selectedChild?.id]);
 
   return (
     <ProfileContext.Provider value={{ profile, loading, refetchProfile, updateProfile }}>
