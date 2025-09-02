@@ -343,6 +343,30 @@ export type Database = {
         }
         Relationships: []
       }
+      mindset_reflections_test: {
+        Row: {
+          child_id: string
+          created_at: string
+          id: string
+          question_key: string
+          selected_option: string
+        }
+        Insert: {
+          child_id: string
+          created_at?: string
+          id?: string
+          question_key: string
+          selected_option: string
+        }
+        Update: {
+          child_id?: string
+          created_at?: string
+          id?: string
+          question_key?: string
+          selected_option?: string
+        }
+        Relationships: []
+      }
       parents: {
         Row: {
           created_at: string

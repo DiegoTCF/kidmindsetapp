@@ -22,6 +22,7 @@ import { AdminPlayerViewProvider } from "./hooks/useAdminPlayerView";
 import PlayerIdentity from "./pages/PlayerIdentity";
 import DNAYou from "./pages/DNAYou";
 import DNAYouQuiz from "./pages/DNAYouQuiz";
+import ReflectionTest from "./pages/ReflectionTest";
 
 const queryClient = new QueryClient();
 
@@ -132,6 +133,15 @@ const App = () => {
               <Route path="/admin/player/:childId" element={
                 <ProtectedRoute>
                   <AdminPlayerView />
+                </ProtectedRoute>
+              } />
+
+              {/* Reflection Test route - with navigation */}
+              <Route path="/reflection-test" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <ReflectionTest />
+                  </AppLayout>
                 </ProtectedRoute>
               } />
               
