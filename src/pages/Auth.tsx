@@ -52,6 +52,9 @@ const Auth = () => {
     const password = formData.get('password') as string;
 
     try {
+      // Test Supabase connectivity first
+      console.log('[AuthFlow] Testing Supabase connection...');
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -65,13 +68,23 @@ const Auth = () => {
         } catch (logError) {
           console.log('[AuthFlow] Could not log error:', logError);
         }
+        
+        // Provide more specific error messages
+        let errorMessage = error.message;
+        if (error.message.includes('Invalid login credentials')) {
+          errorMessage = "Invalid email or password. Please check your credentials and try again.";
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = "Please check your email and click the confirmation link before signing in.";
+        }
+        
         toast({
           title: "Error signing in",
-          description: error.message,
+          description: errorMessage,
           variant: "destructive",
         });
       } else {
         // Sign in successful
+        console.log('[AuthFlow] Sign in successful');
         // Try to log successful login
         try {
           await logLogin();
@@ -82,11 +95,23 @@ const Auth = () => {
         console.log('[AuthRedirect] Redirecting to home');
         window.location.href = '/';
       }
-    } catch (networkError) {
-      console.log('[AuthFlow] Network/connection error:', networkError);
+    } catch (networkError: any) {
+      console.error('[AuthFlow] Network/connection error:', networkError);
+      
+      // More specific error handling for fetch failures
+      let errorMessage = "Unable to connect to authentication service.";
+      
+      if (networkError.message?.includes('fetch')) {
+        errorMessage = "Network connection failed. Please check your internet connection and try again.";
+      } else if (networkError.message?.includes('CORS')) {
+        errorMessage = "Authentication service temporarily unavailable. Please try again in a moment.";
+      } else if (networkError.name === 'TypeError') {
+        errorMessage = "Connection error. Please check your internet connection and try again.";
+      }
+      
       toast({
         title: "Connection Error",
-        description: "Unable to connect to authentication service. Please check your internet connection and try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
