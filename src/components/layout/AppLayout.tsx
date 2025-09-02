@@ -26,7 +26,7 @@ export function AppLayout({ children, hideNavigation = false }: AppLayoutProps) 
           <img 
             src="/lovable-uploads/620c4617-1719-4bc3-ba59-eeaa7cc63a8d.png" 
             alt="The Confident Footballer Logo" 
-            className="h-8 w-auto"
+            className="h-24 w-auto"
           />
           <Button
             variant="ghost"
