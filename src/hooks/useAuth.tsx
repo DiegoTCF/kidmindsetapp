@@ -99,75 +99,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
               } catch (error) {
                 console.log('[AuthFix] Error processing signup data:', error);
               }
-            }, 100);
-          } else if (session.user.is_anonymous) {
-            // Create demo data for anonymous users - check if already exists
-            console.log('[AuthFix] Creating demo data for anonymous user');
-            setTimeout(async () => {
-              try {
-                // Check if profile already exists
-                const { data: existingProfile } = await supabase
-                  .from('profiles')
-                  .select('id')
-                  .eq('user_id', session.user.id)
-                  .single();
-                
-                if (existingProfile) {
-                  console.log('[AuthFix] Demo profile already exists, skipping creation');
-                  return;
-                }
-
-                // Create profile
-                const { error: profileError } = await supabase
-                  .from('profiles')
-                  .insert({
-                    user_id: session.user.id,
-                    email: `demo-${session.user.id}@example.com`,
-                  });
-
-                if (profileError) {
-                  console.log('[AuthFix] Demo profile creation error:', profileError.message);
-                }
-
-                // Create parent record
-                const { data: parentData, error: parentError } = await supabase
-                  .from('parents')
-                  .insert({
-                    user_id: session.user.id,
-                    name: 'Demo Parent',
-                    phone: '',
-                    payment_status: 'pending',
-                    pin: '1234',
-                  })
-                  .select('id')
-                  .single();
-
-                if (parentError) {
-                  console.log('[AuthFix] Demo parent creation error:', parentError.message);
-                  return;
-                }
-
-                // Create child record - ALWAYS start with level 1 and 0 points
-                const { error: childError } = await supabase
-                  .from('children')
-                  .insert({
-                    parent_id: parentData.id,
-                    name: 'Demo Player',
-                    age: 10,
-                    level: 1,
-                    weekly_schedule: JSON.stringify({}),
-                    points: 0,
-                  });
-
-                if (childError) {
-                  console.log('[AuthFix] Demo child creation error:', childError.message);
-                } else {
-                  console.log('[AuthFix] Demo profile setup completed successfully');
-                }
-              } catch (error) {
-                console.log('[AuthFix] Error creating demo data:', error);
-              }
-            }, 100);
+             }, 100);
           }
         }
         
@@ -187,22 +119,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setUser(session.user);
           setLoading(false);
         } else {
-          // Only create anonymous user if we're not on the auth page
+          // No session found - user needs to authenticate
+          console.log('[AuthFix] No session found, user needs to sign up/login');
+          setLoading(false);
+          
+          // Redirect to auth page if not already there
           if (window.location.pathname !== '/auth') {
-            console.log('[AuthFix] No session found, creating anonymous user');
-            const { data: anonData, error: anonError } = await supabase.auth.signInAnonymously();
-            
-            if (anonError) {
-              console.log('[AuthFix] Anonymous signin error:', anonError.message);
-              setLoading(false);
-            } else {
-              // Anonymous user created successfully
-              // The auth state change listener will handle the rest
-            }
-          } else {
-            // On auth page, just set loading to false without creating anonymous user
-            console.log('[AuthFix] On auth page, not creating anonymous user');
-            setLoading(false);
+            window.location.href = '/auth';
           }
         }
       } catch (error) {
