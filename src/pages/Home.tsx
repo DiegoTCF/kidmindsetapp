@@ -944,9 +944,8 @@ export default function Home() {
   };
   return <div className="min-h-screen bg-[#ff0066]">
       <div className="w-full max-w-sm mx-auto p-4">
-        {/* Top Navigation */}
-        <div className="flex justify-between items-center mb-4">
-          <TopNavigation />
+        {/* Logout Button - Top Left */}
+        <div className="flex justify-start mb-4">
           <Button
             variant="outline"
             size="sm"
@@ -957,6 +956,9 @@ export default function Home() {
             Logout
           </Button>
         </div>
+
+        {/* Top Navigation */}
+        <TopNavigation />
 
         {/* Level Progress Card */}
         <div className="mb-6">
