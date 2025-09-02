@@ -611,7 +611,7 @@ const Auth = () => {
             <img 
               src="/lovable-uploads/620c4617-1719-4bc3-ba59-eeaa7cc63a8d.png" 
               alt="The Confident Footballer Logo" 
-              className="h-16 w-auto"
+              className="h-48 w-auto"
             />
           </div>
           <CardTitle className="text-center">Welcome Back</CardTitle>
