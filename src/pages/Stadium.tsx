@@ -467,7 +467,16 @@ export default function Stadium() {
                 <Button
                   variant="outline"
                   className="w-full h-auto p-4 text-left border-2 hover:border-primary/30 hover:opacity-80 transition-opacity"
-                  onClick={() => window.open('https://www.youtube.com/watch?v=3lfBP1OdoG0', '_blank')}
+                  onClick={() => {
+                    // Force opening in external browser
+                    const link = document.createElement('a');
+                    link.href = 'https://www.youtube.com/watch?v=3lfBP1OdoG0';
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">🧘</span>
@@ -480,7 +489,16 @@ export default function Stadium() {
                 <Button
                   variant="outline"
                   className="w-full h-auto p-4 text-left border-2 hover:border-primary/30 hover:opacity-80 transition-opacity"
-                  onClick={() => window.open('https://drive.google.com/file/d/12tItFhl7cqpjuPpjDwO_WRHDy_9ZOOK0/view?usp=sharing', '_blank')}
+                  onClick={() => {
+                    // Force opening in external browser
+                    const link = document.createElement('a');
+                    link.href = 'https://drive.google.com/file/d/12tItFhl7cqpjuPpjDwO_WRHDy_9ZOOK0/view?usp=sharing';
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">🎧</span>
@@ -493,7 +511,16 @@ export default function Stadium() {
                 <Button
                   variant="outline"
                   className="w-full h-auto p-4 text-left border-2 hover:border-primary/30 hover:opacity-80 transition-opacity"
-                  onClick={() => window.open('https://drive.google.com/file/d/1UnpaPW8N4QzZfUTcukITMoaIVPoiZxR4/view?usp=sharing', '_blank')}
+                  onClick={() => {
+                    // Force opening in external browser
+                    const link = document.createElement('a');
+                    link.href = 'https://drive.google.com/file/d/1UnpaPW8N4QzZfUTcukITMoaIVPoiZxR4/view?usp=sharing';
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">🦁</span>
