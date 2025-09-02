@@ -132,7 +132,7 @@ export default function ConfidenceRating({
             
             <div className="space-y-4 mt-6">
               <div className="flex justify-between items-center">
-                <span className="text-xs text-muted-foreground">1</span>
+                <span className="text-xs text-muted-foreground">0</span>
                 <span className="text-lg font-bold text-primary">
                   {ratings[currentQuestion.key]}/10
                 </span>
@@ -140,7 +140,7 @@ export default function ConfidenceRating({
               </div>
               
               <div className="px-2">
-                <Slider value={[ratings[currentQuestion.key]]} onValueChange={value => handleRatingChange(currentQuestion.key, value[0])} max={10} min={1} step={1} className={cn("transition-all duration-200", `[&_.slider-range]:${getSliderColor(ratings[currentQuestion.key])}`)} />
+                <Slider value={[ratings[currentQuestion.key]]} onValueChange={value => handleRatingChange(currentQuestion.key, value[0])} max={10} min={0} step={1} className={cn("transition-all duration-200", `[&_.slider-range]:${getSliderColor(ratings[currentQuestion.key])}`)} />
               </div>
               
               <div className="flex justify-between text-xs text-muted-foreground">
