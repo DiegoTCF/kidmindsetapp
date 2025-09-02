@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useUserLogging } from "@/hooks/useUserLogging";
 import { useAuth } from "@/hooks/useAuth";
 import { useChildData } from "@/hooks/useChildData";
+import { useAdminPlayerView } from "@/hooks/useAdminPlayerView";
 import { cn } from "@/lib/utils";
 import { CustomIcon } from "@/components/ui/custom-emoji";
 import { supabase } from "@/integrations/supabase/client";
@@ -170,6 +171,7 @@ export default function ActivityForm({
     session
   } = useAuth();
   const { childId, loading: childDataLoading } = useChildData();
+  const { isViewingAsPlayer } = useAdminPlayerView();
   const {
     logActivity,
     logActivityCompletion,
@@ -266,11 +268,12 @@ export default function ActivityForm({
         loadExistingActivityData();
       }
     }
-  }, [existingActivityId, isResumingActivity, childId, childDataLoading]);
+  }, [existingActivityId, isResumingActivity, childId, childDataLoading, isViewingAsPlayer]);
   const loadChildData = async () => {
     try {
-      // Use child ID from context (admin player view) or get current user's child
-      if (childId) {
+      // Use child ID from context (admin player view) only if admin is actually viewing as a player
+      if (childId && isViewingAsPlayer) {
+        console.log('[ActivityForm] Using admin player view child ID:', childId);
         setCurrentChildId(childId);
         return;
       }
@@ -290,7 +293,7 @@ export default function ActivityForm({
         return;
       }
 
-      // Setting child ID
+      console.log('[ActivityForm] Using regular user child ID:', childIdResult);
       setCurrentChildId(childIdResult);
     } catch (error) {
       console.error('[ActivityForm] Error loading child data');
