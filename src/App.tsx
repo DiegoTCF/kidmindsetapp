@@ -23,6 +23,7 @@ import PlayerIdentity from "./pages/PlayerIdentity";
 import DNAYou from "./pages/DNAYou";
 import DNAYouQuiz from "./pages/DNAYouQuiz";
 import ReflectionTest from "./pages/ReflectionTest";
+import ConfidenceCheck from "./pages/ConfidenceCheck";
 
 const queryClient = new QueryClient();
 
@@ -141,6 +142,15 @@ const App = () => {
                 <ProtectedRoute>
                   <AppLayout>
                     <ReflectionTest />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+
+              {/* Confidence Check route - with navigation */}
+              <Route path="/confidence-check" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <ConfidenceCheck />
                   </AppLayout>
                 </ProtectedRoute>
               } />
