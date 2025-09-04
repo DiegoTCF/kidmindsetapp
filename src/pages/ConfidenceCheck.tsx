@@ -145,7 +145,7 @@ export default function ConfidenceCheck() {
             </div>
             <Progress 
               value={stats.confidencePct} 
-              className="h-3 transition-all duration-300 ease-out"
+              className="h-3 transition-all duration-300 ease-out [&>div]:bg-lime-500"
             />
             
             <div className="flex items-center justify-between">
