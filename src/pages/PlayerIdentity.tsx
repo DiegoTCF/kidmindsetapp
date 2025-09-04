@@ -244,9 +244,9 @@ export default function PlayerIdentity() {
     }
   };
 
-  // Show form if editing OR if no DNA data exists yet
-  const showForm = editing || (!existing && !profile?.role);
-  const showDNA = !editing && existing && profile?.role;
+  // Show form when editing, otherwise show DNA if any data exists
+  const showForm = editing;
+  const showDNA = !editing && (existing || profile?.role);
 
   return (
     <div className="max-w-2xl mx-auto px-4 pt-20 pb-8 bg-sky-400">
