@@ -145,7 +145,7 @@ export default function ConfidenceCheck() {
             </div>
             <Progress 
               value={stats.confidencePct} 
-              className="h-3 transition-all duration-300 ease-out [&>div]:bg-lime-500"
+              className="h-6 transition-all duration-300 ease-out [&>div]:bg-lime-500"
             />
             
             <div className="flex items-center justify-between">
@@ -156,9 +156,9 @@ export default function ConfidenceCheck() {
                 Nerves drop as you prepare and stick to your behaviours
               </span>
             </div>
-            <div className="w-full bg-secondary rounded-full h-3 transition-all duration-300 ease-out">
+            <div className="w-full bg-secondary rounded-full h-6 transition-all duration-300 ease-out">
               <div 
-                className="h-3 bg-destructive rounded-full transition-all duration-300 ease-out"
+                className="h-6 bg-destructive rounded-full transition-all duration-300 ease-out"
                 style={{ width: `${stats.nervesPct}%` }}
               />
             </div>
