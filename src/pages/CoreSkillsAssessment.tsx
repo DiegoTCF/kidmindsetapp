@@ -383,13 +383,21 @@ const CoreSkillsAssessment = () => {
 
   const handleViewExistingResults = () => {
     if (existingAssessment) {
+      // Convert existing scores (might be in 0-4 scale) to 0-100 scale
+      const convertScore = (score: number) => {
+        // If score is already > 4, assume it's already in 0-100 scale
+        if (score > 4) return score;
+        // Otherwise convert from 1-4 scale to 0-100 scale
+        return Math.round(((score - 1) / 3) * 100);
+      };
+
       const scores: Record<number, number> = {
-        1: existingAssessment.skill_1_score,
-        2: existingAssessment.skill_2_score,
-        3: existingAssessment.skill_3_score,
-        4: existingAssessment.skill_4_score,
-        5: existingAssessment.skill_5_score,
-        6: existingAssessment.skill_6_score,
+        1: convertScore(existingAssessment.skill_1_score),
+        2: convertScore(existingAssessment.skill_2_score),
+        3: convertScore(existingAssessment.skill_3_score),
+        4: convertScore(existingAssessment.skill_4_score),
+        5: convertScore(existingAssessment.skill_5_score),
+        6: convertScore(existingAssessment.skill_6_score),
       };
       setSkillScores(scores);
       setAnswers(existingAssessment.raw_answers || {});
@@ -399,10 +407,10 @@ const CoreSkillsAssessment = () => {
   };
 
   const getLevelLabel = (score: number) => {
-    if (score >= 1.0 && score <= 1.9) return { label: "🔴 Struggle", color: "text-red-500" };
-    if (score >= 2.0 && score <= 2.9) return { label: "🟡 Emerging", color: "text-yellow-500" };
-    if (score >= 3.0 && score <= 3.9) return { label: "🔵 Supported", color: "text-blue-500" };
-    if (score === 4.0) return { label: "🟢 Independent", color: "text-green-500" };
+    if (score >= 0 && score <= 49) return { label: "🔴 Struggle", color: "text-red-500" };
+    if (score >= 50 && score <= 74) return { label: "🟡 Emerging", color: "text-yellow-500" };
+    if (score >= 75 && score <= 99) return { label: "🔵 Supported", color: "text-blue-500" };
+    if (score === 100) return { label: "🟢 Independent", color: "text-green-500" };
     return { label: "N/A", color: "text-gray-500" };
   };
 
@@ -414,7 +422,9 @@ const CoreSkillsAssessment = () => {
     if (skillAnswers.length === 0) return 0;
 
     const average = skillAnswers.reduce((sum, score) => sum + score, 0) / skillAnswers.length;
-    return Math.round(average * 10) / 10; // Round to 1 decimal place
+    // Convert 0-4 scale to 0-100 scale
+    const percentageScore = ((average - 1) / 3) * 100; // Maps 1-4 to 0-100
+    return Math.round(percentageScore);
   };
 
   const isSkillComplete = (skillId: number) => {
@@ -530,8 +540,8 @@ const CoreSkillsAssessment = () => {
                     <p className={`text-sm font-medium ${level.color}`}>{level.label}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold">{score.toFixed(1)}</p>
-                    <p className="text-sm text-muted-foreground">out of 4.0</p>
+                    <p className="text-2xl font-bold">{score}/100</p>
+                    <p className="text-sm text-muted-foreground">percentage score</p>
                   </div>
                 </div>
               );
