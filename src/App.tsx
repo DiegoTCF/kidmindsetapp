@@ -24,6 +24,7 @@ import DNAYou from "./pages/DNAYou";
 import DNAYouQuiz from "./pages/DNAYouQuiz";
 import ReflectionTest from "./pages/ReflectionTest";
 import ConfidenceCheck from "./pages/ConfidenceCheck";
+import CoreSkillsAssessment from "./pages/CoreSkillsAssessment";
 
 const queryClient = new QueryClient();
 
@@ -152,6 +153,13 @@ const App = () => {
                   <AppLayout>
                     <ConfidenceCheck />
                   </AppLayout>
+                </ProtectedRoute>
+              } />
+
+              {/* Core Skills Assessment route - admin only, no navigation */}
+              <Route path="/core-skills/assessment" element={
+                <ProtectedRoute>
+                  <CoreSkillsAssessment />
                 </ProtectedRoute>
               } />
               

@@ -268,6 +268,54 @@ export type Database = {
         }
         Relationships: []
       }
+      core_skills_assessments: {
+        Row: {
+          admin_id: string
+          assessment_date: string
+          child_id: string
+          created_at: string
+          id: string
+          raw_answers: Json
+          skill_1_score: number
+          skill_2_score: number
+          skill_3_score: number
+          skill_4_score: number
+          skill_5_score: number
+          skill_6_score: number
+          updated_at: string
+        }
+        Insert: {
+          admin_id: string
+          assessment_date?: string
+          child_id: string
+          created_at?: string
+          id?: string
+          raw_answers: Json
+          skill_1_score: number
+          skill_2_score: number
+          skill_3_score: number
+          skill_4_score: number
+          skill_5_score: number
+          skill_6_score: number
+          updated_at?: string
+        }
+        Update: {
+          admin_id?: string
+          assessment_date?: string
+          child_id?: string
+          created_at?: string
+          id?: string
+          raw_answers?: Json
+          skill_1_score?: number
+          skill_2_score?: number
+          skill_3_score?: number
+          skill_4_score?: number
+          skill_5_score?: number
+          skill_6_score?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       course_content: {
         Row: {
           bucket_name: string
