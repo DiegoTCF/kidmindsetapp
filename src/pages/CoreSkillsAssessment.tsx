@@ -35,6 +35,8 @@ const CoreSkillsAssessment = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [skillScores, setSkillScores] = useState<Record<number, number>>({});
+  const [existingAssessment, setExistingAssessment] = useState<any>(null);
+  const [showRetakeDialog, setShowRetakeDialog] = useState(false);
 
   const skills: Skill[] = [
     {
@@ -338,6 +340,64 @@ const CoreSkillsAssessment = () => {
     loadChildren();
   }, []);
 
+  // Check for existing assessment when child is selected
+  React.useEffect(() => {
+    const checkExistingAssessment = async () => {
+      if (!selectedChild) {
+        setExistingAssessment(null);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('core_skills_assessments')
+        .select('*')
+        .eq('child_id', selectedChild)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.error('Error checking existing assessment:', error);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        setExistingAssessment(data[0]);
+        setShowRetakeDialog(true);
+      } else {
+        setExistingAssessment(null);
+        setShowRetakeDialog(false);
+      }
+    };
+
+    checkExistingAssessment();
+  }, [selectedChild]);
+
+  const handleStartNewAssessment = () => {
+    setExistingAssessment(null);
+    setShowRetakeDialog(false);
+    setAnswers({});
+    setCurrentSkill(0);
+    setShowResults(false);
+    setSkillScores({});
+  };
+
+  const handleViewExistingResults = () => {
+    if (existingAssessment) {
+      const scores: Record<number, number> = {
+        1: existingAssessment.skill_1_score,
+        2: existingAssessment.skill_2_score,
+        3: existingAssessment.skill_3_score,
+        4: existingAssessment.skill_4_score,
+        5: existingAssessment.skill_5_score,
+        6: existingAssessment.skill_6_score,
+      };
+      setSkillScores(scores);
+      setAnswers(existingAssessment.raw_answers || {});
+      setShowResults(true);
+      setShowRetakeDialog(false);
+    }
+  };
+
   const getLevelLabel = (score: number) => {
     if (score >= 1.0 && score <= 1.9) return { label: "🔴 Struggle", color: "text-red-500" };
     if (score >= 2.0 && score <= 2.9) return { label: "🟡 Emerging", color: "text-yellow-500" };
@@ -530,7 +590,40 @@ const CoreSkillsAssessment = () => {
           </Card>
         )}
 
-        {selectedChild && (
+        {/* Existing Assessment Dialog */}
+        {showRetakeDialog && existingAssessment && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Assessment Already Exists</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground">
+                A core skills assessment for this child was completed on{' '}
+                {new Date(existingAssessment.created_at).toLocaleDateString()}.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Would you like to view the existing results or start a new assessment?
+              </p>
+              <div className="flex gap-4">
+                <Button
+                  onClick={handleViewExistingResults}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  View Existing Results
+                </Button>
+                <Button
+                  onClick={handleStartNewAssessment}
+                  className="flex-1"
+                >
+                  Start New Assessment
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {selectedChild && !showRetakeDialog && (
           <>
             {/* Progress */}
             <div className="space-y-2">
