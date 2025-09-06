@@ -592,15 +592,26 @@ export default function Admin() {
                 Admin
               </Badge>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={signOut}
-              className="flex items-center gap-2 bg-destructive/10 border-destructive/20 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-            >
-              <LogOut className="h-4 w-4" />
-              Logout
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/core-skills/assessment')}
+                className="flex items-center gap-2"
+              >
+                <FileText className="h-4 w-4" />
+                Core Skills Assessment
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={signOut}
+                className="flex items-center gap-2 bg-destructive/10 border-destructive/20 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </Button>
+            </div>
           </div>
           
           {/* Breadcrumb */}
