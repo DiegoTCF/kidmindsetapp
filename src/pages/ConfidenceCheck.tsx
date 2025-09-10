@@ -151,7 +151,7 @@ export default function ConfidenceCheck() {
   const handleBackClick = () => {
     navigate('/stadium');
   };
-  return <div className="min-h-screen bg-background">
+  return <div className="bg-background">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="max-w-4xl mx-auto px-4 py-6">
@@ -248,7 +248,7 @@ export default function ConfidenceCheck() {
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 py-8 pb-32">
+      <div className="max-w-4xl mx-auto px-4 py-8 pb-32 overflow-y-auto">
         {sections.map((section, sectionIndex) => <div key={sectionIndex} className="mb-8">
             <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
               {section.title}
