@@ -10,6 +10,7 @@ import { TopNavigation } from "@/components/nav/TopNavigation";
 import { CustomIcon } from "@/components/ui/custom-emoji";
 import { LevelProgressCard } from "@/components/Progress/LevelProgressCard";
 import { LevelUpNotification } from "@/components/Progress/LevelUpNotification";
+import { LatestCoreSkillsCard } from "@/components/Home/LatestCoreSkillsCard";
 interface MoodOption {
   iconType: 'sad' | 'not-great' | 'okay' | 'good' | 'amazing';
   label: string;
@@ -1016,6 +1017,11 @@ export default function Home() {
               </div>}
           </CardContent>
         </Card>
+
+        {/* Core Skills Assessment */}
+        <div className="mb-6">
+          <LatestCoreSkillsCard />
+        </div>
 
         {/* Daily Tasks */}
         <Card className="mb-6 shadow-soft rounded-sm bg-sky-500">
