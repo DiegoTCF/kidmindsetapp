@@ -426,18 +426,11 @@ export function WeeklyScheduleCard() {
                     </SelectContent>
                   </Select>
 
-                  <Select value={newActivity.activity} onValueChange={(value) => setNewActivity(prev => ({ ...prev, activity: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select activity" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {activityOptions.map(activity => (
-                        <SelectItem key={activity} value={activity}>
-                          {activity}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Input
+                    placeholder="Activity name (e.g. Team Training, Match vs Arsenal)"
+                    value={newActivity.activity}
+                    onChange={(e) => setNewActivity(prev => ({ ...prev, activity: e.target.value }))}
+                  />
 
                   <Input
                     placeholder="Time (optional) e.g. 6:00pm"
