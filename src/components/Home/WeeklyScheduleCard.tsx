@@ -52,6 +52,83 @@ export function WeeklyScheduleCard() {
   const parseSchedule = (scheduleText: string): ScheduleDay[] => {
     if (!scheduleText) return [];
     
+    try {
+      // Try to parse as JSON first
+      let scheduleData;
+      if (scheduleText.startsWith('{') || scheduleText.startsWith('[')) {
+        scheduleData = JSON.parse(scheduleText);
+      } else {
+        // If not JSON, try to parse as plain text
+        return parseTextSchedule(scheduleText);
+      }
+      
+      const schedule: ScheduleDay[] = [];
+      const dayMapping: Record<string, string> = {
+        'monday': 'Mon',
+        'tuesday': 'Tue', 
+        'wednesday': 'Wed',
+        'thursday': 'Thu',
+        'friday': 'Fri',
+        'saturday': 'Sat',
+        'sunday': 'Sun'
+      };
+      
+      // Handle different JSON formats
+      if (Array.isArray(scheduleData)) {
+        // Array format
+        scheduleData.forEach(item => {
+          if (item.day && item.activity) {
+            schedule.push({
+              day: dayMapping[item.day.toLowerCase()] || item.day.substring(0, 3),
+              activity: item.activity,
+              time: item.time
+            });
+          }
+        });
+      } else if (typeof scheduleData === 'object') {
+        // Object format - keys are days, values are activities
+        Object.entries(scheduleData).forEach(([key, value]) => {
+          if (value) {
+            const dayKey = dayMapping[key.toLowerCase()] || key.substring(0, 3);
+            let activity = '';
+            let time = '';
+            
+            if (typeof value === 'string') {
+              activity = value;
+            } else if (typeof value === 'object' && value !== null) {
+              // Handle nested objects
+              if ('activity' in value) {
+                activity = (value as any).activity;
+                time = (value as any).time || '';
+              } else {
+                // Convert object to string representation
+                activity = Object.values(value).join(', ');
+              }
+            }
+            
+            // Clean up activity names
+            activity = activity.replace(/[{}"]/g, '').replace(/_/g, ' ');
+            
+            if (activity && activity !== 'null' && activity !== '') {
+              schedule.push({
+                day: dayKey,
+                activity: activity,
+                time: time
+              });
+            }
+          }
+        });
+      }
+      
+      return schedule;
+    } catch (error) {
+      console.error('Error parsing schedule JSON:', error);
+      // Fallback to text parsing
+      return parseTextSchedule(scheduleText);
+    }
+  };
+
+  const parseTextSchedule = (scheduleText: string): ScheduleDay[] => {
     // Parse the schedule text - assuming format like:
     // "Monday: Training 6pm, Wednesday: Match 7pm, Friday: Training 5:30pm"
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
