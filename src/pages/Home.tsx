@@ -11,6 +11,7 @@ import { CustomIcon } from "@/components/ui/custom-emoji";
 import { LevelProgressCard } from "@/components/Progress/LevelProgressCard";
 import { LevelUpNotification } from "@/components/Progress/LevelUpNotification";
 import { LatestCoreSkillsCard } from "@/components/Home/LatestCoreSkillsCard";
+import { WeeklyScheduleCard } from "@/components/Home/WeeklyScheduleCard";
 interface MoodOption {
   iconType: 'sad' | 'not-great' | 'okay' | 'good' | 'amazing';
   label: string;
@@ -961,9 +962,9 @@ export default function Home() {
         {/* Top Navigation */}
         <TopNavigation />
 
-        {/* Level Progress Card */}
+        {/* Weekly Schedule */}
         <div className="mb-6">
-          <LevelProgressCard currentLevel={playerData.level} totalPoints={playerData.points} playerName={playerData.name} />
+          <WeeklyScheduleCard />
         </div>
 
         {/* Mood Check */}
