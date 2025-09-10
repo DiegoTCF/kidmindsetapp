@@ -802,12 +802,34 @@ export default function ActivityForm({
           <CardContent className="p-6 text-center">
             <div className="text-6xl mb-4">🏆</div>
             <h2 className="text-2xl font-bold mb-2">Congratulations!</h2>
-            <p className="text-muted-foreground mb-4">
+            <p className="text-muted-foreground mb-6">
               You've completed your full activity session. Great work on your football journey!
             </p>
-            <Button onClick={onComplete} className="w-full">
-              Back to Stadium
-            </Button>
+            
+            <div className="space-y-3">
+              <Button 
+                onClick={() => {
+                  navigate('/confidence-check', { 
+                    state: { 
+                      performanceRating: postActivityData.performance,
+                      confidenceRating: postActivityData.confidence
+                    }
+                  });
+                }}
+                className="w-full"
+                variant="default"
+              >
+                Check Your Preparation & Confidence 🎯
+              </Button>
+              
+              <Button 
+                onClick={onComplete} 
+                className="w-full"
+                variant="outline"
+              >
+                Back to Stadium
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>;

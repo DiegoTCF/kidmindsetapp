@@ -162,6 +162,55 @@ export default function ConfidenceCheck() {
             </p>
           </div>
 
+          {/* Performance and Confidence Bars */}
+          {(performanceRating > 0 || confidenceRating > 0) && (
+            <div className="space-y-4 mb-6 p-4 bg-card rounded-lg border border-border">
+              <h3 className="text-lg font-semibold text-foreground mb-4">
+                Today's Activity Results
+              </h3>
+              
+              {performanceRating > 0 && (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-foreground">
+                      Performance Rating: {performanceRating}/10
+                    </span>
+                    <Badge variant="secondary" className="text-xs">
+                      How you performed today
+                    </Badge>
+                  </div>
+                  <Progress value={performanceRating * 10} className="h-4 [&>div]:bg-blue-500" />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Your performance level during the activity
+                  </p>
+                </div>
+              )}
+              
+              {confidenceRating > 0 && (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-foreground">
+                      Confidence During Activity: {confidenceRating}/10
+                    </span>
+                    <Badge variant="secondary" className="text-xs">
+                      How confident you felt
+                    </Badge>
+                  </div>
+                  <Progress value={confidenceRating * 10} className="h-4 [&>div]:bg-green-500" />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Your confidence level during the session
+                  </p>
+                </div>
+              )}
+              
+              <div className="pt-2 border-t border-border">
+                <p className="text-xs text-muted-foreground text-center">
+                  Compare these with your preparation confidence below
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Progress Bars */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
