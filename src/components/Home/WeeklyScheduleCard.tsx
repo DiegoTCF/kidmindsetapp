@@ -213,6 +213,17 @@ export function WeeklyScheduleCard() {
     return parsedSchedule.filter(item => item.day === todayName);
   };
 
+  const sortScheduleByDay = (schedule: ScheduleDay[]) => {
+    const dayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    return schedule.sort((a, b) => dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day));
+  };
+
+  const getCurrentDay = () => {
+    const today = new Date().getDay();
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return dayNames[today];
+  };
+
   const handleSaveSchedule = async () => {
     if (!childId) return;
     
@@ -304,7 +315,9 @@ export function WeeklyScheduleCard() {
   }
 
   const parsedSchedule = parseSchedule(schedule);
+  const sortedSchedule = sortScheduleByDay(parsedSchedule);
   const todayActivities = getCurrentDayActivities(parsedSchedule);
+  const currentDay = getCurrentDay();
   const hasActivitiesToday = todayActivities.length > 0;
 
   return (
@@ -350,15 +363,28 @@ export function WeeklyScheduleCard() {
           <h4 className="text-sm font-medium text-muted-foreground mb-2">
             Weekly Schedule
           </h4>
-          {parsedSchedule.length > 0 ? (
+          {sortedSchedule.length > 0 ? (
             <div className="space-y-2">
-              {parsedSchedule.map((item, index) => (
-                <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded">
+              {sortedSchedule.map((item, index) => (
+                <div 
+                  key={index} 
+                  className={`flex items-center justify-between p-2 rounded ${
+                    item.day === currentDay 
+                      ? 'bg-primary/20 border border-primary/30' 
+                      : 'bg-muted/50'
+                  }`}
+                >
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-primary w-8">
+                    <span className={`text-xs font-medium w-8 ${
+                      item.day === currentDay ? 'text-primary font-bold' : 'text-primary'
+                    }`}>
                       {item.day}
                     </span>
-                    <span className="text-sm">{item.activity}</span>
+                    <span className={`text-sm ${
+                      item.day === currentDay ? 'font-medium' : ''
+                    }`}>
+                      {item.activity}
+                    </span>
                   </div>
                   {item.time && (
                     <span className="text-xs text-muted-foreground">{item.time}</span>
