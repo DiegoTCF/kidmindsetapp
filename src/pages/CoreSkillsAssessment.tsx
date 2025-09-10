@@ -407,10 +407,10 @@ const CoreSkillsAssessment = () => {
   };
 
   const getLevelLabel = (score: number) => {
-    if (score >= 0 && score <= 49) return { label: "🔴 Struggle", color: "text-red-500" };
-    if (score >= 50 && score <= 74) return { label: "🟡 Emerging", color: "text-yellow-500" };
-    if (score >= 75 && score <= 99) return { label: "🔵 Supported", color: "text-blue-500" };
-    if (score === 100) return { label: "🟢 Independent", color: "text-green-500" };
+    if (score >= 0 && score <= 24) return { label: "🔴 Struggle", color: "text-red-500" };
+    if (score >= 25 && score <= 49) return { label: "🟡 Emerging", color: "text-yellow-500" };
+    if (score >= 50 && score <= 74) return { label: "🔵 Supported", color: "text-blue-500" };
+    if (score >= 75 && score <= 100) return { label: "🟢 Independent", color: "text-green-500" };
     return { label: "N/A", color: "text-gray-500" };
   };
 
