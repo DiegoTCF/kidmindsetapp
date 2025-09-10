@@ -421,10 +421,14 @@ const CoreSkillsAssessment = () => {
     const skillAnswers = skill.questions.map(q => answers[q.id]).filter(Boolean);
     if (skillAnswers.length === 0) return 0;
 
+    console.log(`Skill ${skillId} answers:`, skillAnswers);
     const average = skillAnswers.reduce((sum, score) => sum + score, 0) / skillAnswers.length;
-    // Convert 0-4 scale to 0-100 scale
-    const percentageScore = ((average - 1) / 3) * 100; // Maps 1-4 to 0-100
-    return Math.round(percentageScore);
+    console.log(`Skill ${skillId} average:`, average);
+    // Convert 1-4 scale to 0-100 scale properly
+    // 1 → 0%, 2 → 33%, 3 → 67%, 4 → 100%
+    const percentageScore = ((average - 1) / 3) * 100;
+    console.log(`Skill ${skillId} percentage score:`, percentageScore);
+    return Math.max(0, Math.min(100, Math.round(percentageScore)));
   };
 
   const isSkillComplete = (skillId: number) => {
