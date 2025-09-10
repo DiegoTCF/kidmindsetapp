@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar, Clock, Edit, Plus, X, Save } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface ScheduleDay {
   day: string;
@@ -11,10 +16,39 @@ interface ScheduleDay {
   time?: string;
 }
 
+const activityOptions = [
+  'Team Training',
+  '1-to-1 Session', 
+  'Match',
+  'Small Group',
+  'Futsal',
+  'Skills Training',
+  'Fitness Training',
+  'Rest Day',
+  'Other'
+];
+
+const dayOptions = [
+  { value: 'monday', label: 'Monday' },
+  { value: 'tuesday', label: 'Tuesday' },
+  { value: 'wednesday', label: 'Wednesday' },
+  { value: 'thursday', label: 'Thursday' },
+  { value: 'friday', label: 'Friday' },
+  { value: 'saturday', label: 'Saturday' },
+  { value: 'sunday', label: 'Sunday' }
+];
+
 export function WeeklyScheduleCard() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [schedule, setSchedule] = useState<string | null>(null);
+  const [playerName, setPlayerName] = useState<string>('');
+  const [childId, setChildId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingSchedule, setEditingSchedule] = useState<Record<string, string>>({});
+  const [newActivity, setNewActivity] = useState({ day: '', activity: '', time: '' });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     loadSchedule();
@@ -31,16 +65,31 @@ export function WeeklyScheduleCard() {
       if (error) throw error;
       
       if (childData && childData.length > 0) {
+        const child = childData[0];
+        setPlayerName(child.child_name || '');
+        setChildId(child.child_id);
+        
         // Get the weekly schedule from children table
         const { data: childInfo, error: childError } = await supabase
           .from('children')
           .select('weekly_schedule')
-          .eq('id', childData[0].child_id)
+          .eq('id', child.child_id)
           .single();
 
         if (childError) throw childError;
         
-        setSchedule(childInfo?.weekly_schedule || null);
+        const scheduleData = childInfo?.weekly_schedule || null;
+        setSchedule(scheduleData);
+        
+        // Initialize editing schedule
+        if (scheduleData) {
+          try {
+            const parsed = JSON.parse(scheduleData);
+            setEditingSchedule(parsed);
+          } catch {
+            setEditingSchedule({});
+          }
+        }
       }
     } catch (error) {
       console.error('Error loading schedule:', error);
@@ -164,6 +213,61 @@ export function WeeklyScheduleCard() {
     return parsedSchedule.filter(item => item.day === todayName);
   };
 
+  const handleSaveSchedule = async () => {
+    if (!childId) return;
+    
+    setSaving(true);
+    try {
+      const scheduleJson = JSON.stringify(editingSchedule);
+      
+      const { error } = await supabase
+        .from('children')
+        .update({ weekly_schedule: scheduleJson })
+        .eq('id', childId);
+        
+      if (error) throw error;
+      
+      setSchedule(scheduleJson);
+      setIsEditing(false);
+      
+      toast({
+        title: "Schedule Updated! 🎉",
+        description: "Your weekly schedule has been saved successfully."
+      });
+      
+    } catch (error) {
+      console.error('Error saving schedule:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save schedule. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleRemoveActivity = (day: string) => {
+    const updated = { ...editingSchedule };
+    delete updated[day];
+    setEditingSchedule(updated);
+  };
+
+  const handleAddActivity = () => {
+    if (newActivity.day && newActivity.activity) {
+      const activityText = newActivity.time 
+        ? `${newActivity.activity} ${newActivity.time}`
+        : newActivity.activity;
+        
+      setEditingSchedule(prev => ({
+        ...prev,
+        [newActivity.day]: activityText
+      }));
+      
+      setNewActivity({ day: '', activity: '', time: '' });
+    }
+  };
+
   if (loading) {
     return (
       <Card className="shadow-soft">
@@ -183,13 +287,17 @@ export function WeeklyScheduleCard() {
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2 text-muted-foreground">
             <Calendar className="w-5 h-5" />
-            Weekly Schedule
+            {playerName ? `${playerName}'s Schedule` : 'Weekly Schedule'}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
-            No schedule set up yet. Ask your parent to add your training and match times.
+          <p className="text-sm text-muted-foreground mb-4">
+            No schedule set up yet. Click "Edit Schedule" to add your training and match times.
           </p>
+          <Button onClick={() => setIsEditing(true)} className="w-full">
+            <Plus className="w-4 h-4 mr-2" />
+            Create Schedule
+          </Button>
         </CardContent>
       </Card>
     );
@@ -202,10 +310,21 @@ export function WeeklyScheduleCard() {
   return (
     <Card className="shadow-soft">
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-primary" />
-          This Week
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-primary" />
+            {playerName ? `${playerName}'s Week` : 'This Week'}
+          </CardTitle>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsEditing(true)}
+            className="flex items-center gap-1"
+          >
+            <Edit className="w-3 h-3" />
+            Edit
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
         {/* Today's Activities */}
@@ -253,6 +372,129 @@ export function WeeklyScheduleCard() {
             </div>
           )}
         </div>
+
+        {/* Edit Schedule Dialog */}
+        <Dialog open={isEditing} onOpenChange={setIsEditing}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Edit Weekly Schedule</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              {/* Current Activities */}
+              <div>
+                <h4 className="text-sm font-medium mb-2">Current Activities</h4>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {Object.entries(editingSchedule).map(([day, activity]) => (
+                    <div key={day} className="flex items-center justify-between p-2 bg-muted rounded">
+                      <div>
+                        <span className="text-sm font-medium capitalize">{day}:</span>
+                        <span className="text-sm ml-2">{activity}</span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveActivity(day)}
+                        className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  ))}
+                  {Object.keys(editingSchedule).length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No activities added yet
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Add New Activity */}
+              <div className="border-t pt-4">
+                <h4 className="text-sm font-medium mb-2">Add Activity</h4>
+                <div className="space-y-3">
+                  <Select value={newActivity.day} onValueChange={(value) => setNewActivity(prev => ({ ...prev, day: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select day" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {dayOptions.map(day => (
+                        <SelectItem key={day.value} value={day.value}>
+                          {day.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={newActivity.activity} onValueChange={(value) => setNewActivity(prev => ({ ...prev, activity: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select activity" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {activityOptions.map(activity => (
+                        <SelectItem key={activity} value={activity}>
+                          {activity}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Input
+                    placeholder="Time (optional) e.g. 6:00pm"
+                    value={newActivity.time}
+                    onChange={(e) => setNewActivity(prev => ({ ...prev, time: e.target.value }))}
+                  />
+
+                  <Button
+                    onClick={handleAddActivity}
+                    disabled={!newActivity.day || !newActivity.activity}
+                    className="w-full"
+                    size="sm"
+                  >
+                    <Plus className="w-3 h-3 mr-1" />
+                    Add Activity
+                  </Button>
+                </div>
+              </div>
+
+              {/* Save/Cancel */}
+              <div className="flex gap-2 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditing(false);
+                    // Reset editing schedule to current
+                    if (schedule) {
+                      try {
+                        const parsed = JSON.parse(schedule);
+                        setEditingSchedule(parsed);
+                      } catch {
+                        setEditingSchedule({});
+                      }
+                    }
+                  }}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSaveSchedule}
+                  disabled={saving}
+                  className="flex-1"
+                >
+                  {saving ? (
+                    <>Saving...</>
+                  ) : (
+                    <>
+                      <Save className="w-3 h-3 mr-1" />
+                      Save
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
