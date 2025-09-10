@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ChevronLeft, ChevronRight, CheckCircle, ArrowLeft } from 'lucide-react';
 
 interface Question {
   id: string;
@@ -28,6 +29,7 @@ interface Skill {
 
 const CoreSkillsAssessment = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [selectedChild, setSelectedChild] = useState<string>('');
   const [children, setChildren] = useState<any[]>([]);
   const [currentSkill, setCurrentSkill] = useState(0);
@@ -575,6 +577,18 @@ const CoreSkillsAssessment = () => {
 
   return (
     <div className="container mx-auto py-8 px-4 space-y-6">
+      <div className="flex items-center gap-4 mb-6">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => navigate('/admin')}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Players
+        </Button>
+      </div>
+      
       <div className="space-y-4">
         <h1 className="text-3xl font-bold text-center">Core Skills Assessment</h1>
         <p className="text-center text-muted-foreground">
