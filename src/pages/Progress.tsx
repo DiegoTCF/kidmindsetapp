@@ -8,6 +8,7 @@ import { PlayerViewIndicator } from "@/components/layout/PlayerViewIndicator";
 import ActivityLog from "@/components/Progress/ActivityLog";
 import Charts from "@/components/Progress/Charts";
 import BehaviourCharts from "@/components/Progress/BehaviourCharts";
+import { CoreSkillsHistory } from "@/components/Progress/CoreSkillsHistory";
 const activityFilters = ["All", "Match", "Training", "1to1", "Futsal", "Small Group", "Other"];
 
 export default function Progress() {
@@ -44,10 +45,11 @@ export default function Progress() {
       </div>
 
       <Tabs defaultValue="activities" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="activities">Activity Log</TabsTrigger>
           <TabsTrigger value="behaviours">Super Behaviours</TabsTrigger>
           <TabsTrigger value="stats">Your Stats</TabsTrigger>
+          <TabsTrigger value="core-skills">Core Skills</TabsTrigger>
         </TabsList>
 
         <TabsContent value="activities" className="space-y-6">
@@ -74,6 +76,10 @@ export default function Progress() {
           </div>
           
           <Charts selectedFilter={selectedFilter} childId={childId} />
+        </TabsContent>
+
+        <TabsContent value="core-skills" className="space-y-6">
+          <CoreSkillsHistory />
         </TabsContent>
       </Tabs>
     </div>

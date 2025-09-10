@@ -316,6 +316,51 @@ export type Database = {
         }
         Relationships: []
       }
+      core_skills_results: {
+        Row: {
+          beating_mind_score: number
+          created_at: string
+          dealing_with_failure_score: number
+          focus_behaviours_score: number
+          id: string
+          know_who_you_are_score: number
+          overall_score: number
+          preparation_score: number
+          raw_answers: Json
+          set_goals_score: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          beating_mind_score: number
+          created_at?: string
+          dealing_with_failure_score: number
+          focus_behaviours_score: number
+          id?: string
+          know_who_you_are_score: number
+          overall_score: number
+          preparation_score: number
+          raw_answers: Json
+          set_goals_score: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          beating_mind_score?: number
+          created_at?: string
+          dealing_with_failure_score?: number
+          focus_behaviours_score?: number
+          id?: string
+          know_who_you_are_score?: number
+          overall_score?: number
+          preparation_score?: number
+          raw_answers?: Json
+          set_goals_score?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       course_content: {
         Row: {
           bucket_name: string

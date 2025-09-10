@@ -25,6 +25,7 @@ import DNAYouQuiz from "./pages/DNAYouQuiz";
 import ReflectionTest from "./pages/ReflectionTest";
 import ConfidenceCheck from "./pages/ConfidenceCheck";
 import CoreSkillsAssessment from "./pages/CoreSkillsAssessment";
+import CoreSkillsSelfAssessment from "./pages/CoreSkillsSelfAssessment";
 
 const queryClient = new QueryClient();
 
@@ -160,6 +161,13 @@ const App = () => {
               <Route path="/core-skills/assessment" element={
                 <ProtectedRoute>
                   <CoreSkillsAssessment />
+                </ProtectedRoute>
+              } />
+
+              {/* Core Skills Self Assessment route - player access, with navigation */}
+              <Route path="/core-skills/self-assessment" element={
+                <ProtectedRoute>
+                  <CoreSkillsSelfAssessment />
                 </ProtectedRoute>
               } />
               

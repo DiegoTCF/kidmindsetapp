@@ -9,7 +9,8 @@ import { useProfile } from "@/hooks/useProfile";
 import { useChildData } from "@/hooks/useChildData";
 import { useAdmin } from "@/hooks/useAdmin";
 import { supabase } from "@/integrations/supabase/client";
-import { Dna } from "lucide-react";
+import { Dna, Target } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { MAIN_ROLES, ROLE_TYPES, STRENGTHS_BY_ROLE_TYPE, UNIVERSAL_STRENGTHS_OUTFIELD, GOALKEEPER_STRENGTHS, HELPS_TEAM_GK, HELPS_TEAM_OUTFIELD, MOTTO_SUGGESTIONS, type MainRole } from "@/data/playerIdentityOptions";
 import { RoleBoxSelector } from "@/components/PlayerIdentity/RoleBoxSelector";
 import { RoleTypeGrid } from "@/components/PlayerIdentity/RoleTypeGrid";
@@ -31,6 +32,7 @@ interface PlayerIdentityRow {
 }
 
 export default function PlayerIdentity() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const { profile, updateProfile, refetchProfile } = useProfile();
@@ -262,6 +264,30 @@ export default function PlayerIdentity() {
         {/* Show YOUR DNA card if data exists and not editing */}
         {showDNA && (
           <DNADisplay onEdit={() => setEditing(true)} />
+        )}
+
+        {/* Core Skills Assessment Card */}
+        {!editing && (
+          <Card className="shadow-sm border-2 border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-primary">
+                <Target className="w-5 h-5" />
+                Core Skills Assessment
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Test your mental skills across 6 key areas and track your progress over time.
+              </p>
+              <Button 
+                onClick={() => navigate('/core-skills/self-assessment')}
+                className="w-full"
+                size="lg"
+              >
+                Take Assessment 🎯
+              </Button>
+            </CardContent>
+          </Card>
         )}
 
         {loading ? (
