@@ -4,8 +4,9 @@ import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Check, X, RotateCcw, Save, Share2 } from 'lucide-react';
+import { Check, X, RotateCcw, Save, Share2, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useNavigate, useLocation } from 'react-router-dom';
 interface CheckItem {
   key: string;
   label: string;
@@ -74,6 +75,13 @@ const sections: Section[] = [{
 }];
 const totalItems = sections.reduce((acc, section) => acc + section.items.length, 0);
 export default function ConfidenceCheck() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const state = location.state as { performanceRating?: number; confidenceRating?: number } | null;
+  
+  const performanceRating = state?.performanceRating || 0;
+  const confidenceRating = state?.confidenceRating || 0;
+  
   const [answers, setAnswers] = useState<Record<string, boolean>>({});
   const [notes, setNotes] = useState<Record<string, string>>({});
   const stats = useMemo(() => {
@@ -138,6 +146,10 @@ export default function ConfidenceCheck() {
       stats
     });
     // TODO: Implement share functionality
+  };
+
+  const handleBackClick = () => {
+    navigate('/stadium');
   };
   return <div className="min-h-screen bg-background">
       {/* Header */}

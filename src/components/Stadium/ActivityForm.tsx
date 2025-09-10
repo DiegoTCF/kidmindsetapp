@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { CheckCircle, Clock, Target, Heart, Brain, Activity, Play, Music, Video, ArrowLeft, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -163,6 +164,7 @@ export default function ActivityForm({
   existingActivityId,
   isResumingActivity = false
 }: ActivityFormProps) {
+  const navigate = useNavigate();
   const {
     toast
   } = useToast();
@@ -671,9 +673,14 @@ export default function ActivityForm({
           description: "Amazing work! You've completed your full activity session."
         });
 
-        // Auto-close after celebration
+        // Navigate to confidence check with performance and confidence data
         setTimeout(() => {
-          onComplete();
+          navigate('/confidence-check', { 
+            state: { 
+              performanceRating: postActivityData.performance,
+              confidenceRating: postActivityData.confidence
+            }
+          });
         }, 3000);
       }
     } catch (error) {
