@@ -23,7 +23,7 @@ interface CoreSkillsResult {
 
 const getScoreLabel = (score: number) => {
   if (score >= 85) return { emoji: '🟢', label: 'Independent', color: 'bg-green-100 text-green-800' };
-  if (score >= 70) return { emoji: '🔵', label: 'Supported', color: 'bg-blue-100 text-blue-800' };
+  if (score >= 70) return { emoji: '🔴', label: 'Supported', color: 'bg-destructive/10 text-destructive' };
   if (score >= 50) return { emoji: '🟡', label: 'Emerging', color: 'bg-yellow-100 text-yellow-800' };
   return { emoji: '🔴', label: 'Struggling', color: 'bg-red-100 text-red-800' };
 };

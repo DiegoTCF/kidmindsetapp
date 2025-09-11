@@ -612,7 +612,7 @@ export default function Charts({
       {worryStats.length > 0 && <Card className="shadow-soft">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              💙 Mindset Insights
+              ❤️ Mindset Insights
             </CardTitle>
           </CardHeader>
           <CardContent>

@@ -330,7 +330,7 @@ export default function ActivityLog({
             {/* Mindset Support Section */}
             {selectedActivity.worry_reason && <div className="space-y-2">
                 <h4 className="font-medium text-primary flex items-center gap-2">
-                  💙 Mindset Support
+                  ❤️ Mindset Support
                 </h4>
                 <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg space-y-3">
                   <div>
@@ -572,10 +572,10 @@ export default function ActivityLog({
       </Card>;
   }
   return <Card className="shadow-soft">
-      <CardHeader className="bg-violet-500">
-        <CardTitle className="text-2xl text-white">Your Sessions &amp; Matches</CardTitle>
+      <CardHeader className="bg-primary">
+        <CardTitle className="text-2xl text-primary-foreground">Your Sessions &amp; Matches</CardTitle>
       </CardHeader>
-      <CardContent className="bg-violet-500">
+      <CardContent className="bg-primary">
         {activities.length > 0 ? <div className="space-y-3">
             {activities.map(activity => <div key={activity.id} className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => setSelectedActivity(activity)}>
                 <div className="flex items-center gap-3">

@@ -755,7 +755,7 @@ export default function ActivityForm({
     });
     setShowMindsetFlow(false);
     toast({
-      title: "💙 Mindset Support Complete",
+      title: "❤️ Mindset Support Complete",
       description: "Great work addressing your worries! You're ready to continue."
     });
   };
@@ -1001,13 +1001,13 @@ export default function ActivityForm({
 
               {/* Set Intention */}
           <Card className="shadow-soft">
-            <CardHeader className="bg-violet-500">
-              <CardTitle className="text-center text-2xl text-white">What's your plan for the session/match ?</CardTitle>
-              <p className="text-center text-sm text-white/90 mt-2 italic">
+            <CardHeader className="bg-primary">
+              <CardTitle className="text-center text-2xl text-primary-foreground">What's your plan for the session/match ?</CardTitle>
+              <p className="text-center text-sm text-primary-foreground/90 mt-2 italic">
                 "If you don't have a plan, your mind will take over. And it will choose the easiest way out." Diego Pagliuso
               </p>
             </CardHeader>
-            <CardContent className="space-y-4 bg-violet-500">
+            <CardContent className="space-y-4 bg-primary">
               {/* DNA Reminder */}
               <DNAReminder />
               

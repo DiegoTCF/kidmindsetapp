@@ -37,37 +37,37 @@ const skills: Skill[] = [
         options: [
           { emoji: '🔴', text: "I feel like I'm not a good player anymore.", score: 25 },
           { emoji: '🟡', text: "I take mistakes hard & sometimes doubt my abilities.", score: 50 },
-          { emoji: '🔵', text: "I need help to be reminded that a bad game doesn't define me.", score: 75 },
-          { emoji: '🟢', text: "I believe I'm still the same good player, no matter what happens.", score: 100 }
+          { emoji: '🔴', text: "I need help to be reminded that a bad game doesn't define me.", score: 75 },
+          { emoji: '🟢', text: "\"Bad day or good day, I'm still a good player.\"", score: 100 }
         ]
       },
       {
         id: 'q2',
-        text: 'When you\'ve had a tough session or match recently, what did you think?',
+        text: 'How do you feel after making a mistake in a game?',
         options: [
-          { emoji: '🔴', text: "\"I'm not good enough… maybe I'll never be.\"", score: 25 },
-          { emoji: '🟡', text: "\"I know I can do better, but that really got to me.\"", score: 50 },
-          { emoji: '🔵', text: "\"I know it doesn't define me — but I need a reminder from coaches or parents.\"", score: 75 },
-          { emoji: '🟢', text: "\"It's just one session. I learn from it and move on.\"", score: 100 }
+          { emoji: '🔴', text: "\"I'm not good at this.\"", score: 25 },
+          { emoji: '🟡', text: "\"I try, but sometimes I say 'I can't.'\"", score: 50 },
+          { emoji: '🔴', text: "\"I know it doesn't define me — but I need a reminder from coaches or parents.\"", score: 75 },
+          { emoji: '🟢', text: "\"It's fine, one mistake doesn't define me.\"", score: 100 }
         ]
       },
       {
         id: 'q3',
-        text: 'How do you know if you\'ve had a good game?',
+        text: 'When judging your performances lately, what do you focus on?',
         options: [
-          { emoji: '🔴', text: "\"Only if I scored or won the game.\"", score: 25 },
-          { emoji: '🟡', text: "\"Mostly by the result, but I try to remember it's not just that.\"", score: 50 },
-          { emoji: '🔵', text: "\"I need reminding of the good things I did, and to remember my behaviours.\"", score: 75 },
-          { emoji: '🟢', text: "\"I focus on how I behaved & my own actions and effort regardless of the outcome.\"", score: 100 }
+          { emoji: '🔴', text: "\"I judge based on results only.\"", score: 25 },
+          { emoji: '🟡', text: "\"I try, but sometimes I say 'I can't.'\"", score: 50 },
+          { emoji: '🔴', text: "\"I need reminding of the good things I did, and to remember my behaviours.\"", score: 75 },
+          { emoji: '🟢', text: "\"Bad day or good day, I'm still a good player.\"", score: 100 }
         ]
       },
       {
         id: 'q4',
-        text: 'What have you told yourself on bad days lately?',
+        text: 'After a bad performance, what do you tell yourself?',
         options: [
-          { emoji: '🔴', text: "\"Maybe I'm not good enough & feel like quitting.\"", score: 25 },
+          { emoji: '🔴', text: "\"Maybe I'm not good enough.\"", score: 25 },
           { emoji: '🟡', text: "\"I try, but sometimes I say 'I can't.'\"", score: 50 },
-          { emoji: '🔵', text: "\"It's not the end of the world\" (when someone tells me).", score: 75 },
+          { emoji: '🔴', text: "\"It's not the end of the world\" (when someone tells me).", score: 75 },
           { emoji: '🟢', text: "\"Bad day or good day, I'm still a good player.\"", score: 100 }
         ]
       }
@@ -83,221 +83,221 @@ const skills: Skill[] = [
         options: [
           { emoji: '🔴', text: "I don't set goals, I just play.", score: 25 },
           { emoji: '🟡', text: "I set goals sometimes but forget them.", score: 50 },
-          { emoji: '🔵', text: "I set goals if someone reminds me.", score: 75 },
+          { emoji: '🔴', text: "I set goals if someone reminds me.", score: 75 },
           { emoji: '🟢', text: "I set my own goals and remember them.", score: 100 }
         ]
       },
       {
         id: 'q2',
-        text: 'What have you thought before recent matches?',
+        text: 'When things go wrong in a game, what do you think?',
         options: [
-          { emoji: '🔴', text: "\"I'll just see what happens.\"", score: 25 },
-          { emoji: '🟡', text: "\"I want to do well\" but with no clear plan.", score: 50 },
-          { emoji: '🔵', text: "\"I'll try my behaviours\" (if someone tells me).", score: 75 },
-          { emoji: '🟢', text: "\"I know my plan and what behaviours to show.\"", score: 100 }
+          { emoji: '🔴', text: "\"This isn't working.\"", score: 25 },
+          { emoji: '🟡', text: "\"I'll try harder.\"", score: 50 },
+          { emoji: '🔴', text: "\"I'll try my behaviours\" (if someone tells me).", score: 75 },
+          { emoji: '🟢', text: "\"I'll trust my plan and focus on behaviours.\"", score: 100 }
         ]
       },
       {
         id: 'q3',
-        text: 'In difficult moments recently, have you remembered your plan?',
+        text: 'Do you visualise success before performing?',
         options: [
-          { emoji: '🔴', text: "No, I just freeze or forget.", score: 25 },
-          { emoji: '🟡', text: "Sometimes, but I lose it when pressured.", score: 50 },
-          { emoji: '🔵', text: "Yes, if a coach/parent reminds me.", score: 75 },
-          { emoji: '🟢', text: "Yes, I stick to my plan myself.", score: 100 }
+          { emoji: '🔴', text: "No, I don't think about it.", score: 25 },
+          { emoji: '🟡', text: "Sometimes I try to.", score: 50 },
+          { emoji: '🔴', text: "Yes, if a coach/parent reminds me.", score: 75 },
+          { emoji: '🟢', text: "Yes, it's part of my routine.", score: 100 }
         ]
       },
       {
         id: 'q4',
-        text: 'Who made your goals recently?',
+        text: 'Who sets your goals?',
         options: [
-          { emoji: '🔴', text: "Nobody.", score: 25 },
-          { emoji: '🟡', text: "I sometimes do, but not clearly.", score: 50 },
-          { emoji: '🔵', text: "Someone else (coach/parent).", score: 75 },
-          { emoji: '🟢', text: "I do, and I stick to them.", score: 100 }
+          { emoji: '🔴', text: "I don't really have goals.", score: 25 },
+          { emoji: '🟡', text: "I set some goals but forget them.", score: 50 },
+          { emoji: '🔴', text: "Someone else (coach/parent).", score: 75 },
+          { emoji: '🟢', text: "I set them myself.", score: 100 }
         ]
       }
     ]
   },
   {
-    id: 'preparation',
-    title: '3. Preparation / Autonomy / Habits',
+    id: 'prepare',
+    title: '3. Prepare to Perform',
     questions: [
       {
         id: 'q1',
-        text: 'How have you gotten ready before sessions?',
+        text: 'Do you prepare mentally before performing?',
         options: [
-          { emoji: '🔴', text: "I need others to remind me (kit, warm-up, etc.).", score: 25 },
-          { emoji: '🟡', text: "I sometimes prepare but not always.", score: 50 },
-          { emoji: '🔵', text: "I prepare if someone reminds me.", score: 75 },
-          { emoji: '🟢', text: "I prepare fully on my own.", score: 100 }
+          { emoji: '🔴', text: "I don't prepare at all.", score: 25 },
+          { emoji: '🟡', text: "I try but often forget.", score: 50 },
+          { emoji: '🔴', text: "I prepare if someone reminds me.", score: 75 },
+          { emoji: '🟢', text: "I have my own preparation routine.", score: 100 }
         ]
       },
       {
         id: 'q2',
-        text: 'On game days recently…',
+        text: 'How do you feel before performing?',
         options: [
-          { emoji: '🔴', text: "I wait for others to organise me.", score: 25 },
-          { emoji: '🟡', text: "I prepare sometimes but forget things.", score: 50 },
-          { emoji: '🔵', text: "I get ready if guided.", score: 75 },
-          { emoji: '🟢', text: "I have my own routine and stick to it.", score: 100 }
+          { emoji: '🔴', text: "Nervous and unprepared.", score: 25 },
+          { emoji: '🟡', text: "A bit anxious but okay.", score: 50 },
+          { emoji: '🔴', text: "I get ready if guided.", score: 75 },
+          { emoji: '🟢', text: "I feel ready and excited.", score: 100 }
         ]
       },
       {
         id: 'q3',
-        text: 'If no one reminds you, do you still prepare?',
+        text: 'Do you do breathing exercises?',
         options: [
-          { emoji: '🔴', text: "No, I forget.", score: 25 },
-          { emoji: '🟡', text: "Sometimes, but not every time.", score: 50 },
-          { emoji: '🔵', text: "Yes, if I know someone will check me.", score: 75 },
-          { emoji: '🟢', text: "Yes, I always prepare alone.", score: 100 }
+          { emoji: '🔴', text: "No, I don't know how.", score: 25 },
+          { emoji: '🟡', text: "I try sometimes.", score: 50 },
+          { emoji: '🔴', text: "Yes, if I know someone will check me.", score: 75 },
+          { emoji: '🟢', text: "Yes, it's part of my routine.", score: 100 }
         ]
       },
       {
         id: 'q4',
-        text: 'How have your warm-ups been lately?',
+        text: 'Do you prepare physically?',
         options: [
-          { emoji: '🔴', text: "Only if told.", score: 25 },
-          { emoji: '🟡', text: "Sometimes I try, but not well.", score: 50 },
-          { emoji: '🔵', text: "If guided, I do it.", score: 75 },
-          { emoji: '🟢', text: "I warm up by myself, I know my routine.", score: 100 }
+          { emoji: '🔴', text: "No preparation needed.", score: 25 },
+          { emoji: '🟡', text: "Basic warm-up sometimes.", score: 50 },
+          { emoji: '🔴', text: "If guided, I do it.", score: 75 },
+          { emoji: '🟢', text: "Yes, I warm up properly myself.", score: 100 }
         ]
       }
     ]
   },
   {
-    id: 'focus_behaviours',
-    title: '4. Focus on Super Behaviours',
+    id: 'focus_control',
+    title: '4. Focus on What You Control',
     questions: [
       {
         id: 'q1',
-        text: 'What have you focused on in recent matches?',
+        text: 'What do you focus on during the game?',
         options: [
-          { emoji: '🔴', text: "Only the score/winning.", score: 25 },
-          { emoji: '🟡', text: "Behaviours sometimes, but I go back to results.", score: 50 },
-          { emoji: '🔵', text: "Behaviours, if reminded.", score: 75 },
-          { emoji: '🟢', text: "Always behaviours, even under pressure.", score: 100 }
+          { emoji: '🔴', text: "Results and what others think.", score: 25 },
+          { emoji: '🟡', text: "Mix of results and behaviours.", score: 50 },
+          { emoji: '🔴', text: "Behaviours, if reminded.", score: 75 },
+          { emoji: '🟢', text: "My behaviours and effort.", score: 100 }
         ]
       },
       {
         id: 'q2',
-        text: 'After a mistake recently, what went through your mind?',
+        text: 'When you make a mistake, what do you think?',
         options: [
-          { emoji: '🔴', text: "\"We're losing, I'm rubbish.\"", score: 25 },
-          { emoji: '🟡', text: "\"I should focus, but I can't stop thinking of results.\"", score: 50 },
-          { emoji: '🔵', text: "\"Focus on my behaviours\" (if someone reminds me).", score: 75 },
-          { emoji: '🟢', text: "\"Forget results, focus on my behaviours.\"", score: 100 }
+          { emoji: '🔴', text: "\"That was terrible.\"", score: 25 },
+          { emoji: '🟡', text: "\"I need to do better.\"", score: 50 },
+          { emoji: '🔴', text: "\"Focus on my behaviours\" (if someone reminds me).", score: 75 },
+          { emoji: '🟢', text: "\"Focus on the next play and my behaviours.\"", score: 100 }
         ]
       },
       {
         id: 'q3',
-        text: 'When a coach asked about your game, what did you talk about?',
+        text: 'During challenges, where is your focus?',
         options: [
-          { emoji: '🔴', text: "Only results (goals, score).", score: 25 },
-          { emoji: '🟡', text: "Results first, behaviours second.", score: 50 },
-          { emoji: '🔵', text: "Behaviours if someone guides me.", score: 75 },
-          { emoji: '🟢', text: "Behaviours first, results second.", score: 100 }
+          { emoji: '🔴', text: "On the problem or outcome.", score: 25 },
+          { emoji: '🟡', text: "Mix of problem and solution.", score: 50 },
+          { emoji: '🔴', text: "Behaviours if someone guides me.", score: 75 },
+          { emoji: '🟢', text: "Always on my behaviours.", score: 100 }
         ]
       },
       {
         id: 'q4',
-        text: 'In a close game recently, what have you done?',
+        text: 'How do you handle pressure situations?',
         options: [
-          { emoji: '🔴', text: "Panic about winning/losing.", score: 25 },
-          { emoji: '🟡', text: "Try to focus but drift to results.", score: 50 },
-          { emoji: '🔵', text: "Refocus on behaviours when reminded.", score: 75 },
-          { emoji: '🟢', text: "Lock onto behaviours no matter the score.", score: 100 }
+          { emoji: '🔴', text: "I get overwhelmed.", score: 25 },
+          { emoji: '🟡', text: "I try to stay calm.", score: 50 },
+          { emoji: '🔴', text: "Refocus on behaviours when reminded.", score: 75 },
+          { emoji: '🟢', text: "I automatically focus on my behaviours.", score: 100 }
         ]
       }
     ]
   },
   {
-    id: 'beating_mind',
-    title: '5. Beating Your Mind (ANTs / Thinking Traps)',
+    id: 'beat_mind',
+    title: '5. Beat Your Mind (ANTs)',
     questions: [
       {
         id: 'q1',
-        text: 'When you\'ve thought "I can\'t do it," what happened?',
+        text: 'Can you change negative thoughts when they come up?',
         options: [
-          { emoji: '🔴', text: "I believed it and gave up.", score: 25 },
-          { emoji: '🟡', text: "I noticed it but couldn't change it.", score: 50 },
-          { emoji: '🔵', text: "I could change it with help.", score: 75 },
-          { emoji: '🟢', text: "I replaced it with a positive thought.", score: 100 }
+          { emoji: '🔴', text: "No, they're too strong.", score: 25 },
+          { emoji: '🟡', text: "Sometimes I can.", score: 50 },
+          { emoji: '🔴', text: "I could change it with help.", score: 75 },
+          { emoji: '🟢', text: "Yes, I can change them myself.", score: 100 }
         ]
       },
       {
         id: 'q2',
-        text: 'If a negative thought came during a game recently…',
+        text: 'How quickly did you catch negative thoughts in your last game?',
         options: [
-          { emoji: '🔴', text: "It controlled me.", score: 25 },
-          { emoji: '🟡', text: "I saw it but still froze.", score: 50 },
-          { emoji: '🔵', text: "I changed it when someone reminded me.", score: 75 },
-          { emoji: '🟢', text: "I flipped it into something positive.", score: 100 }
+          { emoji: '🔴', text: "I didn't notice them.", score: 25 },
+          { emoji: '🟡', text: "I noticed some of them.", score: 50 },
+          { emoji: '🔴', text: "I changed it when someone reminded me.", score: 75 },
+          { emoji: '🟢', text: "I caught them quickly myself.", score: 100 }
         ]
       },
       {
         id: 'q3',
-        text: 'What have you said to yourself under pressure lately?',
+        text: 'What do you say to yourself to refocus?',
         options: [
-          { emoji: '🔴', text: "\"I can't.\"", score: 25 },
-          { emoji: '🟡', text: "\"Maybe I can, maybe not.\"", score: 50 },
-          { emoji: '🔵', text: "\"Come on, focus\" (if told).", score: 75 },
-          { emoji: '🟢', text: "\"I can handle this.\"", score: 100 }
+          { emoji: '🔴', text: "\"Stop being stupid.\"", score: 25 },
+          { emoji: '🟡', text: "\"Come on, concentrate.\"", score: 50 },
+          { emoji: '🔴', text: "\"Come on, focus\" (if told).", score: 75 },
+          { emoji: '🟢', text: "\"Focus on my behaviours.\"", score: 100 }
         ]
       },
       {
         id: 'q4',
-        text: 'After a mistake recently, what did you think?',
+        text: 'After a mistake, what is your self-talk like?',
         options: [
-          { emoji: '🔴', text: "\"I'm rubbish.\"", score: 25 },
-          { emoji: '🟡', text: "\"I might recover… but probably not.\"", score: 50 },
-          { emoji: '🔵', text: "\"I'll recover\" (if reminded).", score: 75 },
-          { emoji: '🟢', text: "\"Reset, next action, I'm fine.\"", score: 100 }
+          { emoji: '🔴', text: "\"I'm useless.\"", score: 25 },
+          { emoji: '🟡', text: "\"That was bad.\"", score: 50 },
+          { emoji: '🔴', text: "\"I'll recover\" (if reminded).", score: 75 },
+          { emoji: '🟢', text: "\"Next play, trust my behaviours.\"", score: 100 }
         ]
       }
     ]
   },
   {
-    id: 'dealing_with_failure',
-    title: '6. Dealing with Failure & Challenges',
+    id: 'deal_challenges',
+    title: '6. Deal with Challenges',
     questions: [
       {
         id: 'q1',
-        text: 'After a mistake recently, what did you do?',
+        text: 'How do you handle setbacks during a game?',
         options: [
-          { emoji: '🔴', text: "I collapsed, sulked, or gave up.", score: 25 },
-          { emoji: '🟡', text: "I recovered, but slowly and weakly.", score: 50 },
-          { emoji: '🔵', text: "I recovered if someone reminded me.", score: 75 },
-          { emoji: '🟢', text: "I reset quickly by myself.", score: 100 }
+          { emoji: '🔴', text: "I give up or get frustrated.", score: 25 },
+          { emoji: '🟡', text: "I try to keep going.", score: 50 },
+          { emoji: '🔴', text: "I recovered if someone reminded me.", score: 75 },
+          { emoji: '🟢', text: "I bounce back quickly myself.", score: 100 }
         ]
       },
       {
         id: 'q2',
-        text: 'In tough recent matches, how did you react?',
+        text: 'When things get tough, do you keep going?',
         options: [
-          { emoji: '🔴', text: "I gave up.", score: 25 },
-          { emoji: '🟡', text: "I tried again, but felt fragile.", score: 50 },
-          { emoji: '🔵', text: "I kept going if someone pushed me.", score: 75 },
-          { emoji: '🟢', text: "I kept going no matter what.", score: 100 }
+          { emoji: '🔴', text: "I usually give up.", score: 25 },
+          { emoji: '🟡', text: "I try but struggle.", score: 50 },
+          { emoji: '🔴', text: "I kept going if someone pushed me.", score: 75 },
+          { emoji: '🟢', text: "I keep going because I trust my plan.", score: 100 }
         ]
       },
       {
         id: 'q3',
-        text: 'After losing recently, how did you feel?',
+        text: 'How did you feel after your last poor performance?',
         options: [
-          { emoji: '🔴', text: "Angry, sulky, worthless.", score: 25 },
-          { emoji: '🟡', text: "Sad, but slowly moved on.", score: 50 },
-          { emoji: '🔵', text: "Better if someone comforted me.", score: 75 },
-          { emoji: '🟢', text: "Bounced back, ready for the next game.", score: 100 }
+          { emoji: '🔴', text: "Terrible about myself.", score: 25 },
+          { emoji: '🟡', text: "Disappointed but okay.", score: 50 },
+          { emoji: '🔴', text: "Better if someone comforted me.", score: 75 },
+          { emoji: '🟢', text: "\"I tried my best, I'll learn from this.\"", score: 100 }
         ]
       },
       {
         id: 'q4',
-        text: 'When things have gone wrong lately…',
+        text: 'How quickly do you reset after mistakes?',
         options: [
-          { emoji: '🔴', text: "I stopped trying.", score: 25 },
-          { emoji: '🟡', text: "I tried, but struggled.", score: 50 },
-          { emoji: '🔵', text: "I reset if told to.", score: 75 },
+          { emoji: '🔴', text: "I dwell on them.", score: 25 },
+          { emoji: '🟡', text: "It takes a while.", score: 50 },
+          { emoji: '🔴', text: "I reset if told to.", score: 75 },
           { emoji: '🟢', text: "I reset by myself and continued.", score: 100 }
         ]
       }

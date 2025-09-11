@@ -456,8 +456,8 @@ export default function AdminPlayerView() {
 
           {/* Progress Tab */}
           <TabsContent value="progress" className="space-y-6">
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
-              <p className="text-purple-800 text-sm">
+            <div className="bg-card border border-border rounded-lg p-4 mb-4">
+              <p className="text-foreground text-sm">
                 <strong>Progress Overview:</strong> Monitor {child.name}'s activity history and development patterns.
               </p>
             </div>

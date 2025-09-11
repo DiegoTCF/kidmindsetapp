@@ -51,7 +51,7 @@ const CoreSkillsAssessment = () => {
           answers: [
             { text: "I feel like I'm not a good player anymore.", score: 1, emoji: "🔴", color: "text-red-500" },
             { text: "I know I'm still okay, but I take mistakes hard.", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "I remind myself a bad game doesn't define me (if someone tells me).", score: 3, emoji: "🔵", color: "text-blue-500" },
+            { text: "I remind myself a bad game doesn't define me (if someone tells me).", score: 3, emoji: "🔴", color: "text-destructive" },
             { text: "I believe I'm still the same good player, no matter what happens.", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         },
@@ -61,27 +61,24 @@ const CoreSkillsAssessment = () => {
           answers: [
             { text: "\"I'm rubbish.\"", score: 1, emoji: "🔴", color: "text-red-500" },
             { text: "\"I know I'm better, but this mistake hurts.\"", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "\"It's fine, one mistake doesn't define me\" (if someone reminds me).", score: 3, emoji: "🔵", color: "text-blue-500" },
-            { text: "\"It's just a mistake, I can move on. I'm still me.\"", score: 4, emoji: "🟢", color: "text-green-500" }
+            { text: "\"It's fine, one mistake doesn't define me\" (if someone reminds me).", score: 3, emoji: "🔴", color: "text-destructive" },
+            { text: "\"I know it doesn't define me — but I need a reminder from coaches or parents.\"", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         },
         {
           id: "1_3",
-          text: "How do you judge if you're a good player?",
+          text: "How would you judge your performances lately?",
           answers: [
-            { text: "Only if I play well.", score: 1, emoji: "🔴", color: "text-red-500" },
-            { text: "Mostly by results, but I sometimes know it's not everything.", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "By effort and behaviours, if someone reminds me.", score: 3, emoji: "🔵", color: "text-blue-500" },
-            { text: "By who I am and how I play, not just results.", score: 4, emoji: "🟢", color: "text-green-500" }
+            { text: "By effort and behaviours, if someone reminds me.", score: 3, emoji: "🔴", color: "text-destructive" },
+            { text: "By effort and behaviours (I remind myself).", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         },
         {
           id: "1_4",
-          text: "What do you say to yourself on bad days?",
+          text: "What do you tell yourself after a bad performance?",
           answers: [
-            { text: "\"I'm not good.\"", score: 1, emoji: "🔴", color: "text-red-500" },
             { text: "\"Maybe I'm not good enough.\"", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "\"It's not the end of the world\" (when someone tells me).", score: 3, emoji: "🔵", color: "text-blue-500" },
+            { text: "\"It's not the end of the world\" (when someone tells me).", score: 3, emoji: "🔴", color: "text-destructive" },
             { text: "\"Bad day or good day, I'm still a good player.\"", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         }
@@ -97,221 +94,187 @@ const CoreSkillsAssessment = () => {
           answers: [
             { text: "I don't set goals, I just play.", score: 1, emoji: "🔴", color: "text-red-500" },
             { text: "I set goals sometimes but forget them.", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "I set goals if someone reminds me.", score: 3, emoji: "🔵", color: "text-blue-500" },
+            { text: "I set goals if someone reminds me.", score: 3, emoji: "🔴", color: "text-destructive" },
             { text: "I set my own goals and remember them.", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         },
         {
           id: "2_2",
-          text: "How do you think before a match?",
+          text: "What's your reaction when things go wrong?",
           answers: [
-            { text: "\"I'll just see what happens.\"", score: 1, emoji: "🔴", color: "text-red-500" },
-            { text: "\"I want to do well\" but with no clear plan.", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "\"I'll try my behaviours\" (if someone tells me).", score: 3, emoji: "🔵", color: "text-blue-500" },
-            { text: "\"I know my plan and what behaviours to show.\"", score: 4, emoji: "🟢", color: "text-green-500" }
+            { text: "\"I'll try my behaviours\" (if someone tells me).", score: 3, emoji: "🔴", color: "text-destructive" },
+            { text: "\"I'll trust my plan and focus on behaviours.\"", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         },
         {
           id: "2_3",
-          text: "In tough moments, do you remember your plan?",
+          text: "Do you visualise success before performing?",
           answers: [
-            { text: "No, I just freeze or forget.", score: 1, emoji: "🔴", color: "text-red-500" },
-            { text: "Sometimes, but I lose it when pressured.", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "Yes, if a coach/parent reminds me.", score: 3, emoji: "🔵", color: "text-blue-500" },
-            { text: "Yes, I stick to my plan myself.", score: 4, emoji: "🟢", color: "text-green-500" }
+            { text: "Yes, if a coach/parent reminds me.", score: 3, emoji: "🔴", color: "text-destructive" },
+            { text: "Yes, it's part of my routine.", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         },
         {
           id: "2_4",
-          text: "Who makes your match goals?",
+          text: "Who sets your goals?",
           answers: [
-            { text: "Nobody.", score: 1, emoji: "🔴", color: "text-red-500" },
-            { text: "I sometimes do, but not clearly.", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "Someone else (coach/parent).", score: 3, emoji: "🔵", color: "text-blue-500" },
-            { text: "I do, and I stick to them.", score: 4, emoji: "🟢", color: "text-green-500" }
+            { text: "Someone else (coach/parent).", score: 3, emoji: "🔴", color: "text-destructive" },
+            { text: "I set them myself.", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         }
       ]
     },
     {
       id: 3,
-      name: "Preparation / Autonomy / Habits",
+      name: "Prepare to Perform",
       questions: [
         {
           id: "3_1",
-          text: "Before training, how do you get ready?",
+          text: "Do you prepare mentally before performing?",
           answers: [
-            { text: "I need others to remind me (kit, warm-up, etc.).", score: 1, emoji: "🔴", color: "text-red-500" },
-            { text: "I sometimes prepare but not always.", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "I prepare if someone reminds me.", score: 3, emoji: "🔵", color: "text-blue-500" },
-            { text: "I prepare fully on my own.", score: 4, emoji: "🟢", color: "text-green-500" }
+            { text: "I don't prepare at all.", score: 1, emoji: "🔴", color: "text-red-500" },
+            { text: "I prepare if someone reminds me.", score: 3, emoji: "🔴", color: "text-destructive" },
+            { text: "I have my own preparation routine.", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         },
         {
           id: "3_2",
-          text: "When it's game day…",
+          text: "How do you feel before performing?",
           answers: [
-            { text: "I wait for others to organise me.", score: 1, emoji: "🔴", color: "text-red-500" },
-            { text: "I prepare sometimes but forget things.", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "I get ready if guided.", score: 3, emoji: "🔵", color: "text-blue-500" },
-            { text: "I have my own routine and stick to it.", score: 4, emoji: "🟢", color: "text-green-500" }
+            { text: "I get ready if guided.", score: 3, emoji: "🔴", color: "text-destructive" },
+            { text: "I feel ready and excited.", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         },
         {
           id: "3_3",
-          text: "If no one reminds you, do you prepare?",
+          text: "Do you do breathing exercises?",
           answers: [
-            { text: "No, I forget.", score: 1, emoji: "🔴", color: "text-red-500" },
-            { text: "Sometimes, but not every time.", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "Yes, if I know someone will check me.", score: 3, emoji: "🔵", color: "text-blue-500" },
-            { text: "Yes, I always prepare alone.", score: 4, emoji: "🟢", color: "text-green-500" }
+            { text: "Yes, if I know someone will check me.", score: 3, emoji: "🔴", color: "text-destructive" },
+            { text: "Yes, it's part of my routine.", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         },
         {
           id: "3_4",
-          text: "How do you warm up?",
+          text: "Do you prepare physically?",
           answers: [
-            { text: "Only if told.", score: 1, emoji: "🔴", color: "text-red-500" },
-            { text: "Sometimes I try, but not well.", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "If guided, I do it.", score: 3, emoji: "🔵", color: "text-blue-500" },
-            { text: "I warm up by myself, I know my routine.", score: 4, emoji: "🟢", color: "text-green-500" }
+            { text: "If guided, I do it.", score: 3, emoji: "🔴", color: "text-destructive" },
+            { text: "Yes, I warm up properly myself.", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         }
       ]
     },
     {
       id: 4,
-      name: "Focus on Super Behaviours",
+      name: "Focus on What You Control",
       questions: [
         {
           id: "4_1",
-          text: "What do you focus on in matches?",
+          text: "What do you focus on during the game?",
           answers: [
-            { text: "Only the score/winning.", score: 1, emoji: "🔴", color: "text-red-500" },
-            { text: "Behaviours sometimes, but I go back to results.", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "Behaviours, if reminded.", score: 3, emoji: "🔵", color: "text-blue-500" },
-            { text: "Always behaviours, even under pressure.", score: 4, emoji: "🟢", color: "text-green-500" }
+            { text: "Results and what others think.", score: 1, emoji: "🔴", color: "text-red-500" },
+            { text: "Behaviours, if reminded.", score: 3, emoji: "🔴", color: "text-destructive" },
+            { text: "My behaviours and effort.", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         },
         {
           id: "4_2",
-          text: "After a mistake, what do you think?",
+          text: "When you make a mistake, what do you think?",
           answers: [
-            { text: "\"We're losing, I'm rubbish.\"", score: 1, emoji: "🔴", color: "text-red-500" },
-            { text: "\"I should focus, but I can't stop thinking of results.\"", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "\"Focus on my behaviours\" (if someone reminds me).", score: 3, emoji: "🔵", color: "text-blue-500" },
-            { text: "\"Forget results, focus on my behaviours.\"", score: 4, emoji: "🟢", color: "text-green-500" }
+            { text: "\"Focus on my behaviours\" (if someone reminds me).", score: 3, emoji: "🔴", color: "text-destructive" },
+            { text: "\"Focus on the next play and my behaviours.\"", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         },
         {
           id: "4_3",
-          text: "When a coach asks about your performance, what do you talk about?",
+          text: "During challenges, where's your focus?",
           answers: [
-            { text: "Only results (goals, score).", score: 1, emoji: "🔴", color: "text-red-500" },
-            { text: "Results first, behaviours second.", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "Behaviours if someone guides me.", score: 3, emoji: "🔵", color: "text-blue-500" },
-            { text: "Behaviours first, results second.", score: 4, emoji: "🟢", color: "text-green-500" }
+            { text: "Behaviours if someone guides me.", score: 3, emoji: "🔴", color: "text-destructive" },
+            { text: "Always on my behaviours.", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         },
         {
           id: "4_4",
-          text: "In a close game, what do you do?",
+          text: "How do you handle pressure situations?",
           answers: [
-            { text: "Panic about winning/losing.", score: 1, emoji: "🔴", color: "text-red-500" },
-            { text: "Try to focus but drift to results.", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "Refocus on behaviours when reminded.", score: 3, emoji: "🔵", color: "text-blue-500" },
-            { text: "Lock onto behaviours no matter the score.", score: 4, emoji: "🟢", color: "text-green-500" }
+            { text: "Refocus on behaviours when reminded.", score: 3, emoji: "🔴", color: "text-destructive" },
+            { text: "I automatically focus on my behaviours.", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         }
       ]
     },
     {
       id: 5,
-      name: "Beating Your Mind (ANTs / Thinking Traps)",
+      name: "Beat Your Mind (ANTs)",
       questions: [
         {
           id: "5_1",
-          text: "When you think \"I can't do it,\" what happens?",
+          text: "Can you change negative thoughts?",
           answers: [
-            { text: "I believe it and give up.", score: 1, emoji: "🔴", color: "text-red-500" },
-            { text: "I notice it but can't change it.", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "I can change it with help.", score: 3, emoji: "🔵", color: "text-blue-500" },
-            { text: "I replace it with a positive thought.", score: 4, emoji: "🟢", color: "text-green-500" }
+            { text: "No, they're too strong.", score: 1, emoji: "🔴", color: "text-red-500" },
+            { text: "I can change it with help.", score: 3, emoji: "🔴", color: "text-destructive" },
+            { text: "Yes, I can change them myself.", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         },
         {
           id: "5_2",
-          text: "If a negative thought comes during a game…",
+          text: "How quickly do you catch negative thoughts?",
           answers: [
-            { text: "It controls me.", score: 1, emoji: "🔴", color: "text-red-500" },
-            { text: "I see it but still freeze.", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "I change it when someone reminds me.", score: 3, emoji: "🔵", color: "text-blue-500" },
-            { text: "I flip it into something positive.", score: 4, emoji: "🟢", color: "text-green-500" }
+            { text: "I change it when someone reminds me.", score: 3, emoji: "🔴", color: "text-destructive" },
+            { text: "I catch them quickly myself.", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         },
         {
           id: "5_3",
-          text: "What do you say to yourself under pressure?",
+          text: "What do you say to refocus?",
           answers: [
-            { text: "\"I can't.\"", score: 1, emoji: "🔴", color: "text-red-500" },
-            { text: "\"Maybe I can, maybe not.\"", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "\"Come on, focus\" (if told).", score: 3, emoji: "🔵", color: "text-blue-500" },
-            { text: "\"I can handle this.\"", score: 4, emoji: "🟢", color: "text-green-500" }
+            { text: "\"Come on, focus\" (if told).", score: 3, emoji: "🔴", color: "text-destructive" },
+            { text: "\"Focus on my behaviours.\"", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         },
         {
           id: "5_4",
-          text: "After a mistake, how do you think?",
+          text: "After a mistake, what's your self-talk?",
           answers: [
-            { text: "\"I'm rubbish.\"", score: 1, emoji: "🔴", color: "text-red-500" },
-            { text: "\"I might recover… but probably not.\"", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "\"I'll recover\" (if reminded).", score: 3, emoji: "🔵", color: "text-blue-500" },
-            { text: "\"Reset, next action, I'm fine.\"", score: 4, emoji: "🟢", color: "text-green-500" }
+            { text: "\"I'll recover\" (if reminded).", score: 3, emoji: "🔴", color: "text-destructive" },
+            { text: "\"Next play, trust my behaviours.\"", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         }
       ]
     },
     {
       id: 6,
-      name: "Dealing with Failure & Challenges",
+      name: "Deal with Challenges",
       questions: [
         {
           id: "6_1",
-          text: "After a mistake, what happens?",
+          text: "How do you handle setbacks?",
           answers: [
-            { text: "I collapse, sulk, or give up.", score: 1, emoji: "🔴", color: "text-red-500" },
-            { text: "I recover, but slowly and weakly.", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "I recover if someone reminds me.", score: 3, emoji: "🔵", color: "text-blue-500" },
-            { text: "I reset quickly by myself.", score: 4, emoji: "🟢", color: "text-green-500" }
+            { text: "I give up or get frustrated.", score: 1, emoji: "🔴", color: "text-red-500" },
+            { text: "I recover if someone reminds me.", score: 3, emoji: "🔴", color: "text-destructive" },
+            { text: "I bounce back quickly myself.", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         },
         {
           id: "6_2",
-          text: "In a tough game, how do you react?",
+          text: "When things get tough, do you keep going?",
           answers: [
-            { text: "I give up.", score: 1, emoji: "🔴", color: "text-red-500" },
-            { text: "I try again, but fragile.", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "I keep going if someone pushes me.", score: 3, emoji: "🔵", color: "text-blue-500" },
-            { text: "I keep going no matter what.", score: 4, emoji: "🟢", color: "text-green-500" }
+            { text: "I keep going if someone pushes me.", score: 3, emoji: "🔴", color: "text-destructive" },
+            { text: "I keep going because I trust my plan.", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         },
         {
           id: "6_3",
-          text: "After losing, how do you feel?",
+          text: "How do you feel after a poor performance?",
           answers: [
-            { text: "Angry, sulky, worthless.", score: 1, emoji: "🔴", color: "text-red-500" },
-            { text: "Sad, but slowly move on.", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "Better if someone comforts me.", score: 3, emoji: "🔵", color: "text-blue-500" },
-            { text: "Bounce back, ready for the next game.", score: 4, emoji: "🟢", color: "text-green-500" }
+            { text: "Better if someone comforts me.", score: 3, emoji: "🔴", color: "text-destructive" },
+            { text: "\"I tried my best, I'll learn from this.\"", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         },
         {
           id: "6_4",
-          text: "When things go wrong…",
+          text: "How quickly do you reset after mistakes?",
           answers: [
-            { text: "I stop trying.", score: 1, emoji: "🔴", color: "text-red-500" },
-            { text: "I try, but struggle.", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "I reset if told to.", score: 3, emoji: "🔵", color: "text-blue-500" },
+            { text: "I reset if told to.", score: 3, emoji: "🔴", color: "text-destructive" },
             { text: "I reset by myself and continue.", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         }
@@ -411,7 +374,7 @@ const CoreSkillsAssessment = () => {
   const getLevelLabel = (score: number) => {
     if (score >= 0 && score <= 24) return { label: "🔴 Struggle", color: "text-red-500" };
     if (score >= 25 && score <= 49) return { label: "🟡 Emerging", color: "text-yellow-500" };
-    if (score >= 50 && score <= 74) return { label: "🔵 Supported", color: "text-blue-500" };
+    if (score >= 50 && score <= 74) return { label: "🔴 Supported", color: "text-destructive" };
     if (score >= 75 && score <= 100) return { label: "🟢 Independent", color: "text-green-500" };
     return { label: "N/A", color: "text-gray-500" };
   };
