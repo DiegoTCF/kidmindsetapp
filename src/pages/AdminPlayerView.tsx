@@ -16,6 +16,7 @@ import BehaviourCharts from '@/components/Progress/BehaviourCharts';
 import NewActivity from '@/components/Stadium/NewActivity';
 import ActivityForm from '@/components/Stadium/ActivityForm';
 import CoreSkillsEvaluation from '@/components/Admin/CoreSkillsEvaluation';
+import AdminCoreSkillsAssessment from '@/components/Admin/AdminCoreSkillsAssessment';
 
 interface Child {
   id: string;
@@ -337,7 +338,7 @@ export default function AdminPlayerView() {
 
         {/* Navigation Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="home" className="flex items-center gap-2">
               <HomeIcon className="w-4 h-4" />
               Home
@@ -352,7 +353,11 @@ export default function AdminPlayerView() {
             </TabsTrigger>
             <TabsTrigger value="evaluation" className="flex items-center gap-2">
               <Brain className="w-4 h-4" />
-              Core Skills
+              Core Skills Eval
+            </TabsTrigger>
+            <TabsTrigger value="assessment" className="flex items-center gap-2">
+              <Brain className="w-4 h-4" />
+              Assessment
             </TabsTrigger>
           </TabsList>
 
@@ -495,6 +500,17 @@ export default function AdminPlayerView() {
               childId={child.id} 
               childName={child.name} 
             />
+          </TabsContent>
+
+          {/* Core Skills Assessment Tab */}
+          <TabsContent value="assessment" className="space-y-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <p className="text-blue-800 text-sm">
+                <strong>Assessment Mode:</strong> Take the Core Skills Assessment for {child.name} during your session. This will help track their progress over time.
+              </p>
+            </div>
+            
+            <AdminCoreSkillsAssessment childId={child.id} childName={child.name} />
           </TabsContent>
         </Tabs>
       </div>
