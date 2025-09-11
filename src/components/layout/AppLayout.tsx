@@ -21,7 +21,7 @@ export function AppLayout({ children, hideNavigation = false }: AppLayoutProps) 
     <div className="min-h-screen bg-background">
       {/* Header with logo and logout button */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-gray-800/90 backdrop-blur-sm border-b border-border/40">
-        <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center justify-between px-4 py-1">
           <div className="w-8" /> {/* Spacer for balance */}
           <img 
             src="/lovable-uploads/12821ebd-705b-4e17-b537-45a7e96dd74f.png" 
@@ -41,7 +41,7 @@ export function AppLayout({ children, hideNavigation = false }: AppLayoutProps) 
 
       {/* Main Content */}
       <main className={cn(
-        "min-h-screen pt-28", // Increased padding to account for larger logo header
+        "min-h-screen pt-20", // Reduced padding to account for smaller header
         !hideNavigation && "pb-20" // Account for bottom nav
       )}>
         {children}
