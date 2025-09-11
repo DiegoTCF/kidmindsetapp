@@ -202,7 +202,7 @@ export default function AdminNotifications({ className, onNavigateToChild }: Adm
   const getNotificationColor = (type: string) => {
     switch (type) {
       case 'user_signup':
-        return 'bg-blue-500/10 text-blue-600 border-blue-200';
+        return 'bg-primary/10 text-primary border-primary/20';
       case 'activity_created':
         return 'bg-green-500/10 text-green-600 border-green-200';
       default:

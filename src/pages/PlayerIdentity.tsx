@@ -251,13 +251,13 @@ export default function PlayerIdentity() {
   const showDNA = !editing && (existing || profile?.role);
 
   return (
-    <div className="max-w-2xl mx-auto px-4 pt-20 pb-8 bg-sky-400">
+    <div className="max-w-2xl mx-auto px-4 pt-20 pb-8 bg-background">
       <PlayerViewIndicator />
       <header className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <Dna className="w-6 h-6" /> DNA
         </h1>
-        <p className="text-white">What kind of player are you?</p>
+        <p className="text-foreground">What kind of player are you?</p>
       </header>
 
       <div className="space-y-4">
@@ -432,7 +432,7 @@ export default function PlayerIdentity() {
           </>
         ) : (
           <div className="text-center py-8">
-            <p className="text-white">DNA saved! Your player identity is ready.</p>
+            <p className="text-foreground">DNA saved! Your player identity is ready.</p>
           </div>
         )}
       </div>

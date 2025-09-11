@@ -52,7 +52,7 @@ export const LevelProgressCard: React.FC<LevelProgressCardProps> = ({
         {/* Level Badge */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-full bg-sky-200 shadow-lg">
+            <div className="p-3 rounded-full bg-card shadow-lg">
               {getLevelIcon(currentLevel)}
             </div>
             <div>

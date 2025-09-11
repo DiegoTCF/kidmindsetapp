@@ -338,7 +338,7 @@ export default function CoreSkillsEvaluation({ childId, childName }: CoreSkillsE
 
   const getSkillColor = (level: number) => {
     if (level === 4) return 'text-success';
-    if (level === 3) return 'text-blue-600';
+    if (level === 3) return 'text-destructive';
     if (level === 2) return 'text-warning';
     if (level === 1) return 'text-destructive';
     return 'text-muted-foreground';
@@ -386,14 +386,14 @@ export default function CoreSkillsEvaluation({ childId, childName }: CoreSkillsE
         <CardContent className="p-6 space-y-6">
           {/* Last Updated Date Box */}
           {evaluation.updated_at && (
-            <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+            <Card className="bg-card border-border">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 text-blue-700">
+                  <div className="flex items-center gap-2 text-foreground">
                     <Calendar className="w-4 h-4" />
                     <span className="font-medium text-sm">Last updated on:</span>
                   </div>
-                  <div className="flex items-center gap-2 text-blue-800">
+                  <div className="flex items-center gap-2 text-foreground">
                     <span className="font-semibold">
                       {new Date(evaluation.updated_at).toLocaleDateString('en-US', {
                         weekday: 'long',
@@ -485,7 +485,7 @@ export default function CoreSkillsEvaluation({ childId, childName }: CoreSkillsE
                     <th className="text-center p-4 font-semibold text-warning min-w-[200px]">
                       Level 2 - Emerging
                     </th>
-                    <th className="text-center p-4 font-semibold text-blue-600 min-w-[200px]">
+                    <th className="text-center p-4 font-semibold text-destructive min-w-[200px]">
                       Level 3 - Supported
                     </th>
                     <th className="text-center p-4 font-semibold text-success min-w-[200px]">

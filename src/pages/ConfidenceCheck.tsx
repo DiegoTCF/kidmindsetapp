@@ -179,7 +179,7 @@ export default function ConfidenceCheck() {
                       How you performed today
                     </Badge>
                   </div>
-                  <Progress value={performanceRating * 10} className="h-4 [&>div]:bg-blue-500" />
+                  <Progress value={performanceRating * 10} className="h-4 [&>div]:bg-primary" />
                   <p className="text-xs text-muted-foreground mt-1">
                     Your performance level during the activity
                   </p>

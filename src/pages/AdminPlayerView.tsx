@@ -399,8 +399,8 @@ export default function AdminPlayerView() {
                     </Card>
                   </div>
                   
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p className="text-blue-800 text-sm">
+                  <div className="bg-card border border-border rounded-lg p-4">
+                    <p className="text-foreground text-sm">
                       <strong>Mentorship View:</strong> This is how {child.name} sees their dashboard. 
                       Use this to guide them through their football journey during 1-on-1 sessions.
                     </p>

@@ -29,8 +29,8 @@ const reflectionQuestions = [
       {
         value: 'level_3',
         text: 'I reminded myself that mistakes don\'t define me – with some help.',
-        emoji: '🔵',
-        color: 'text-blue-600'
+        emoji: '🔴',
+        color: 'text-destructive'
       },
       {
         value: 'level_4',
@@ -60,8 +60,8 @@ const reflectionQuestions = [
       {
         value: 'level_3',
         text: 'I needed a reminder to focus on my goal.',
-        emoji: '🔵',
-        color: 'text-blue-600'
+        emoji: '🔴',
+        color: 'text-destructive'
       },
       {
         value: 'level_4',
@@ -91,101 +91,98 @@ const reflectionQuestions = [
       {
         value: 'level_3',
         text: 'I got ready mostly on my own with a little help.',
-        emoji: '🔵',
-        color: 'text-blue-600'
-      },
-      {
-        value: 'level_4',
-        text: 'I prepared fully by myself.',
-        emoji: '✅',
-        color: 'text-success'
-      }
-    ]
-  },
-  {
-    key: 'focus_behaviours',
-    title: 'Focus & Behaviors',
-    question: 'What were you focused on during the game?',
-    answers: [
-      {
-        value: 'level_1',
-        text: 'I only cared about the result.',
         emoji: '🔴',
         color: 'text-destructive'
       },
       {
-        value: 'level_2',
-        text: 'I tried to focus on behaviours but kept thinking about winning.',
-        emoji: '🟡',
-        color: 'text-warning'
+        value: 4,
+        text: 'I got ready completely on my own.',
+        emoji: '🟢',
+        color: 'text-green-600'
+      }
+    ]
+  },
+  {
+    id: 4,
+    question: 'During challenges, did you focus on what you could control?',
+    options: [
+      {
+        value: 1,
+        text: 'I got distracted by things I couldn\'t control.',
+        emoji: '🔴',
+        color: 'text-red-600'
       },
       {
-        value: 'level_3',
+        value: 2,
+        text: 'I tried but got distracted sometimes.',
+        emoji: '🟡',
+        color: 'text-yellow-600'
+      },
+      {
+        value: 3,
         text: 'I needed reminders but focused better.',
-        emoji: '🔵',
-        color: 'text-blue-600'
-      },
-      {
-        value: 'level_4',
-        text: 'I locked in on my super behaviours the whole time.',
-        emoji: '✅',
-        color: 'text-success'
-      }
-    ]
-  },
-  {
-    key: 'beating_mind',
-    title: 'Beating Your Mind',
-    question: 'How did you handle negative thoughts?',
-    answers: [
-      {
-        value: 'level_1',
-        text: 'They took over my mind.',
         emoji: '🔴',
         color: 'text-destructive'
       },
       {
-        value: 'level_2',
-        text: 'I noticed them but couldn\'t stop them.',
-        emoji: '🟡',
-        color: 'text-warning'
+        value: 4,
+        text: 'I stayed focused on my behaviours the whole time.',
+        emoji: '🟢',
+        color: 'text-green-600'
+      }
+    ]
+  },
+  {
+    id: 5,
+    question: 'When negative thoughts came up, did you use your mindset tools?',
+    options: [
+      {
+        value: 1,
+        text: 'No, the thoughts took over.',
+        emoji: '🔴',
+        color: 'text-red-600'
       },
       {
-        value: 'level_3',
+        value: 2,
+        text: 'I tried but it was difficult.',
+        emoji: '🟡',
+        color: 'text-yellow-600'
+      },
+      {
+        value: 3,
         text: 'I used a mindset tool when reminded.',
-        emoji: '🔵',
-        color: 'text-blue-600'
-      },
-      {
-        value: 'level_4',
-        text: 'I caught and flipped them myself.',
-        emoji: '✅',
-        color: 'text-success'
-      }
-    ]
-  },
-  {
-    key: 'dealing_failure',
-    title: 'Dealing with Setbacks',
-    question: 'How did you respond when things didn\'t go your way?',
-    answers: [
-      {
-        value: 'level_1',
-        text: 'I gave up or sulked.',
         emoji: '🔴',
         color: 'text-destructive'
       },
       {
-        value: 'level_2',
-        text: 'I tried to bounce back but it was hard.',
-        emoji: '🟡',
-        color: 'text-warning'
+        value: 4,
+        text: 'I caught the thoughts and changed them quickly.',
+        emoji: '🟢',
+        color: 'text-green-600'
+      }
+    ]
+  },
+  {
+    id: 6,
+    question: 'How well did you bounce back from mistakes or setbacks?',
+    options: [
+      {
+        value: 1,
+        text: 'I struggled to recover and it affected me.',
+        emoji: '🔴',
+        color: 'text-red-600'
       },
       {
-        value: 'level_3',
+        value: 2,
+        text: 'It took me a while to get back on track.',
+        emoji: '🟡',
+        color: 'text-yellow-600'
+      },
+      {
+        value: 3,
         text: 'I bounced back with some support.',
-        emoji: '🔵',
-        color: 'text-blue-600'
+        emoji: '🔴',
+        color: 'text-destructive'
       },
       {
         value: 'level_4',
@@ -335,8 +332,8 @@ export default function ReflectionTest() {
           >
             {question.answers.map((option) => (
               <div key={option.value} className="flex items-start space-x-3 p-4 rounded-lg border hover:bg-muted/50 transition-colors">
-                <RadioGroupItem value={option.value} id={option.value} className="mt-1" />
-                <Label htmlFor={option.value} className="flex-1 cursor-pointer">
+                <RadioGroupItem value={option.value.toString()} id={option.value.toString()} className="mt-1" />
+                <Label htmlFor={option.value.toString()} className="flex-1 cursor-pointer">
                   <div className="flex items-start space-x-2">
                     <span className="text-lg">{option.emoji}</span>
                     <span className={`${option.color} font-medium`}>
