@@ -957,9 +957,9 @@ export default function Home() {
         </div>
 
         {/* Mood Check */}
-        <Card className="mb-6 shadow-soft">
-          <CardHeader className="bg-slate-50">
-            <CardTitle className="flex items-center gap-2 text-xl text-slate-800">
+        <Card className="mb-6 shadow-soft bg-card border-border">
+          <CardHeader className="bg-card">
+            <CardTitle className="flex items-center gap-2 text-xl text-foreground">
               How are you feeling today?
               <CustomIcon type="good" size="sm" />
             </CardTitle>
@@ -1014,10 +1014,10 @@ export default function Home() {
         </div>
 
         {/* Daily Tasks */}
-        <Card className="mb-6 shadow-soft rounded-sm bg-sky-500">
-          <CardHeader className="bg-sky-500">
+        <Card className="mb-6 shadow-soft bg-card border-border">
+          <CardHeader className="bg-card">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-2xl text-gray-50">
+              <CardTitle className="flex items-center gap-2 text-2xl text-foreground">
                 <CustomIcon type="target" size="md" />
                 Daily Tasks
               </CardTitle>
