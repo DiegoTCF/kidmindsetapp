@@ -20,7 +20,7 @@ export function AppLayout({ children, hideNavigation = false }: AppLayoutProps) 
   return (
     <div className="min-h-screen bg-background">
       {/* Header with logo and logout button */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-gray-800/90 backdrop-blur-sm border-b border-border/40">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-card/90 backdrop-blur-sm border-b border-border/40">
         <div className="flex items-center justify-between px-4 py-1">
           <div className="w-8" /> {/* Spacer for balance */}
           <img 
