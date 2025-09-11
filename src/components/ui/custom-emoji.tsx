@@ -53,7 +53,7 @@ export function CustomIcon({ type, size = 'md', className }: CustomIconProps) {
   return (
     <IconComponent 
       className={cn(
-        "transition-all duration-200 text-white",
+        "transition-all duration-200 text-primary",
         iconSizes[size],
         className
       )}
