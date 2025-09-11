@@ -32,7 +32,7 @@ interface AdminCoreSkillsAssessmentProps {
 
 const AdminCoreSkillsAssessment: React.FC<AdminCoreSkillsAssessmentProps> = ({ childId, childName }) => {
   const { toast } = useToast();
-  const [currentSkill, setCurrentSkill] = useState(0);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showResults, setShowResults] = useState(false);
@@ -319,6 +319,15 @@ const AdminCoreSkillsAssessment: React.FC<AdminCoreSkillsAssessmentProps> = ({ c
     }
   ];
 
+  // Create a flat array of all questions with skill info
+  const allQuestions = skills.flatMap(skill => 
+    skill.questions.map(question => ({
+      ...question,
+      skillId: skill.id,
+      skillName: skill.name
+    }))
+  );
+
   // Check for existing assessment when component mounts
   useEffect(() => {
     const checkExistingAssessment = async () => {
@@ -349,7 +358,7 @@ const AdminCoreSkillsAssessment: React.FC<AdminCoreSkillsAssessmentProps> = ({ c
     setExistingAssessment(null);
     setShowRetakeDialog(false);
     setAnswers({});
-    setCurrentSkill(0);
+    setCurrentQuestionIndex(0);
     setShowResults(false);
     setSkillScores({});
   };
@@ -396,24 +405,28 @@ const AdminCoreSkillsAssessment: React.FC<AdminCoreSkillsAssessmentProps> = ({ c
     return Math.max(0, Math.min(100, Math.round(percentageScore)));
   };
 
-  const isSkillComplete = (skillId: number) => {
-    const skill = skills.find(s => s.id === skillId);
-    if (!skill) return false;
-    return skill.questions.every(q => answers[q.id]);
+  const getCurrentSkillProgress = () => {
+    const currentQuestion = allQuestions[currentQuestionIndex];
+    if (!currentQuestion) return { answered: 0, total: 0 };
+    
+    const skillQuestions = allQuestions.filter(q => q.skillId === currentQuestion.skillId);
+    const answered = skillQuestions.filter(q => answers[q.id]).length;
+    return { answered, total: skillQuestions.length };
   };
 
   const canProceedToNext = () => {
-    return isSkillComplete(skills[currentSkill].id);
+    const currentQuestion = allQuestions[currentQuestionIndex];
+    return currentQuestion && answers[currentQuestion.id];
   };
 
-  const allSkillsComplete = () => {
-    return skills.every(skill => isSkillComplete(skill.id));
+  const allQuestionsComplete = () => {
+    return allQuestions.every(question => answers[question.id]);
   };
 
   const handleNext = () => {
-    if (currentSkill < skills.length - 1) {
-      setCurrentSkill(currentSkill + 1);
-    } else if (allSkillsComplete()) {
+    if (currentQuestionIndex < allQuestions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else if (allQuestionsComplete()) {
       const scores: Record<number, number> = {};
       skills.forEach(skill => {
         scores[skill.id] = calculateSkillScore(skill.id);
@@ -424,8 +437,8 @@ const AdminCoreSkillsAssessment: React.FC<AdminCoreSkillsAssessmentProps> = ({ c
   };
 
   const handlePrevious = () => {
-    if (currentSkill > 0) {
-      setCurrentSkill(currentSkill - 1);
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
   };
 
@@ -456,7 +469,7 @@ const AdminCoreSkillsAssessment: React.FC<AdminCoreSkillsAssessmentProps> = ({ c
 
       // Reset form
       setAnswers({});
-      setCurrentSkill(0);
+      setCurrentQuestionIndex(0);
       setShowResults(false);
       setSkillScores({});
 
@@ -560,8 +573,9 @@ const AdminCoreSkillsAssessment: React.FC<AdminCoreSkillsAssessmentProps> = ({ c
   }
 
   // Main assessment interface
-  const currentSkillData = skills[currentSkill];
-  const progressPercentage = ((currentSkill + 1) / skills.length) * 100;
+  const currentQuestion = allQuestions[currentQuestionIndex];
+  const progressPercentage = ((currentQuestionIndex + 1) / allQuestions.length) * 100;
+  const skillProgress = getCurrentSkillProgress();
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -569,54 +583,62 @@ const AdminCoreSkillsAssessment: React.FC<AdminCoreSkillsAssessmentProps> = ({ c
       <div className="mb-6">
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm font-medium">
-            Skill {currentSkill + 1} of {skills.length}
+            Question {currentQuestionIndex + 1} of {allQuestions.length}
           </span>
           <span className="text-sm text-muted-foreground">
             {Math.round(progressPercentage)}% Complete
           </span>
         </div>
         <Progress value={progressPercentage} className="h-2" />
+        
+        {/* Skill progress indicator */}
+        <div className="mt-2 text-xs text-muted-foreground">
+          {currentQuestion?.skillName}: {skillProgress.answered}/{skillProgress.total} questions answered
+        </div>
       </div>
 
-      {/* Current skill */}
+      {/* Current question */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="text-xl text-center">
-            {currentSkillData.name}
+          <CardTitle className="text-lg text-center text-muted-foreground mb-2">
+            {currentQuestion?.skillName}
           </CardTitle>
+          <h2 className="text-xl font-semibold text-center">
+            {currentQuestion?.text}
+          </h2>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {currentSkillData.questions.map((question, index) => (
-            <div key={question.id} className="space-y-4">
-              <h3 className="font-medium">
-                {index + 1}. {question.text}
-              </h3>
-              
-              <RadioGroup
-                value={answers[question.id]?.toString() || ""}
-                onValueChange={(value) => {
-                  setAnswers(prev => ({
-                    ...prev,
-                    [question.id]: parseInt(value)
-                  }));
-                }}
-                className="space-y-2"
-              >
-                {question.answers.map((answer) => (
-                  <div key={answer.score} className="flex items-center space-x-2">
-                    <RadioGroupItem value={answer.score.toString()} id={`${question.id}_${answer.score}`} />
-                    <Label 
-                      htmlFor={`${question.id}_${answer.score}`}
-                      className={`flex-1 cursor-pointer p-2 rounded border hover:bg-accent/50 ${answers[question.id] === answer.score ? 'bg-accent border-primary' : 'border-border'}`}
-                    >
-                      <span className="mr-2">{answer.emoji}</span>
-                      {answer.text}
-                    </Label>
+        <CardContent className="space-y-4">
+          <RadioGroup
+            value={answers[currentQuestion?.id || ""]?.toString() || ""}
+            onValueChange={(value) => {
+              if (currentQuestion) {
+                setAnswers(prev => ({
+                  ...prev,
+                  [currentQuestion.id]: parseInt(value)
+                }));
+              }
+            }}
+            className="space-y-3"
+          >
+            {currentQuestion?.answers.map((answer) => (
+              <div key={answer.score} className="flex items-center space-x-3">
+                <RadioGroupItem value={answer.score.toString()} id={`${currentQuestion.id}_${answer.score}`} />
+                <Label 
+                  htmlFor={`${currentQuestion.id}_${answer.score}`}
+                  className={`flex-1 cursor-pointer p-4 rounded-lg border-2 transition-all hover:bg-accent/50 ${
+                    answers[currentQuestion.id] === answer.score 
+                      ? 'bg-accent border-primary shadow-sm' 
+                      : 'border-border hover:border-accent'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl">{answer.emoji}</span>
+                    <span className="text-sm leading-relaxed">{answer.text}</span>
                   </div>
-                ))}
-              </RadioGroup>
-            </div>
-          ))}
+                </Label>
+              </div>
+            ))}
+          </RadioGroup>
         </CardContent>
       </Card>
 
@@ -624,7 +646,7 @@ const AdminCoreSkillsAssessment: React.FC<AdminCoreSkillsAssessmentProps> = ({ c
       <div className="flex justify-between items-center">
         <Button
           onClick={handlePrevious}
-          disabled={currentSkill === 0}
+          disabled={currentQuestionIndex === 0}
           variant="outline"
         >
           <ChevronLeft className="w-4 h-4 mr-2" />
@@ -635,10 +657,10 @@ const AdminCoreSkillsAssessment: React.FC<AdminCoreSkillsAssessmentProps> = ({ c
           {canProceedToNext() ? (
             <span className="text-green-600 flex items-center">
               <CheckCircle className="w-4 h-4 mr-1" />
-              Skill Complete
+              Question Complete
             </span>
           ) : (
-            <span>Answer all questions to proceed</span>
+            <span>Select an answer to proceed</span>
           )}
         </div>
 
@@ -646,7 +668,7 @@ const AdminCoreSkillsAssessment: React.FC<AdminCoreSkillsAssessmentProps> = ({ c
           onClick={handleNext}
           disabled={!canProceedToNext()}
         >
-          {currentSkill === skills.length - 1 ? "View Results" : "Next"}
+          {currentQuestionIndex === allQuestions.length - 1 ? "View Results" : "Next"}
           <ChevronRight className="w-4 h-4 ml-2" />
         </Button>
       </div>
