@@ -97,7 +97,7 @@ const AdminCoreSkillsAssessment: React.FC<AdminCoreSkillsAssessmentProps> = ({ c
           answers: [
             { text: "I don't set goals, I just play.", score: 1, emoji: "🔴", color: "text-red-500" },
             { text: "I set goals sometimes but forget them.", score: 2, emoji: "🟡", color: "text-yellow-500" },
-            { text: "I set goals if someone reminds me.", score: 3, emoji: "🔴", color: "text-destructive" },
+            { text: "I set goals if someone reminds me.", score: 3, emoji: "🔵", color: "text-blue-500" },
             { text: "I set my own goals and remember them.", score: 4, emoji: "🟢", color: "text-green-500" }
           ]
         },
@@ -574,53 +574,57 @@ const AdminCoreSkillsAssessment: React.FC<AdminCoreSkillsAssessmentProps> = ({ c
 
   // Main assessment interface
   const currentQuestion = allQuestions[currentQuestionIndex];
+  if (!currentQuestion) {
+    return <div>Loading...</div>;
+  }
+  
   const progressPercentage = ((currentQuestionIndex + 1) / allQuestions.length) * 100;
   const skillProgress = getCurrentSkillProgress();
 
   return (
     <div className="max-w-4xl mx-auto">
+      {/* Blue info banner */}
+      <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <p className="text-blue-800 text-sm">
+          <span className="font-semibold">Assessment Mode:</span> Take the Core Skills Assessment for {childName} during your session. This will help track their progress over time.
+        </p>
+      </div>
+
       {/* Progress bar */}
       <div className="mb-6">
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm font-medium">
-            Question {currentQuestionIndex + 1} of {allQuestions.length}
+            Skill {Math.floor(currentQuestionIndex / 4) + 1} of {skills.length}
           </span>
           <span className="text-sm text-muted-foreground">
             {Math.round(progressPercentage)}% Complete
           </span>
         </div>
         <Progress value={progressPercentage} className="h-2" />
-        
-        {/* Skill progress indicator */}
-        <div className="mt-2 text-xs text-muted-foreground">
-          {currentQuestion?.skillName}: {skillProgress.answered}/{skillProgress.total} questions answered
-        </div>
       </div>
 
       {/* Current question */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="text-lg text-center text-muted-foreground mb-2">
-            {currentQuestion?.skillName}
+          <CardTitle className="text-xl text-center mb-4">
+            {currentQuestion.skillName}
           </CardTitle>
-          <h2 className="text-xl font-semibold text-center">
-            {currentQuestion?.text}
+          <h2 className="text-lg font-medium text-center">
+            {currentQuestion.text}
           </h2>
         </CardHeader>
         <CardContent className="space-y-4">
           <RadioGroup
-            value={answers[currentQuestion?.id || ""]?.toString() || ""}
+            value={answers[currentQuestion.id]?.toString() || ""}
             onValueChange={(value) => {
-              if (currentQuestion) {
-                setAnswers(prev => ({
-                  ...prev,
-                  [currentQuestion.id]: parseInt(value)
-                }));
-              }
+              setAnswers(prev => ({
+                ...prev,
+                [currentQuestion.id]: parseInt(value)
+              }));
             }}
-            className="space-y-3"
+            className="space-y-4"
           >
-            {currentQuestion?.answers.map((answer) => (
+            {currentQuestion.answers.map((answer) => (
               <div key={answer.score} className="flex items-center space-x-3">
                 <RadioGroupItem value={answer.score.toString()} id={`${currentQuestion.id}_${answer.score}`} />
                 <Label 
