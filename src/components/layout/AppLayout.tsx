@@ -41,7 +41,7 @@ export function AppLayout({ children, hideNavigation = false }: AppLayoutProps) 
 
       {/* Main Content */}
       <main className={cn(
-        "min-h-screen pt-20", // Reduced padding to account for smaller header
+        "min-h-screen pt-56", // Increased padding to account for the full header height with large logo
         !hideNavigation && "pb-20" // Account for bottom nav
       )}>
         {children}
