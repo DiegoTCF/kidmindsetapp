@@ -53,12 +53,11 @@ export function CustomIcon({ type, size = 'md', className }: CustomIconProps) {
   return (
     <IconComponent 
       className={cn(
-        "transition-all duration-200",
+        "transition-all duration-200 text-primary",
         iconSizes[size],
         className
       )}
       style={{
-        color: '#ff0066',
         strokeWidth: '2.5'
       }}
       aria-label={type}

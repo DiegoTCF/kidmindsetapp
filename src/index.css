@@ -129,3 +129,9 @@ All colors MUST be HSL.
     font-weight: 800 !important;
   }
 }
+
+@layer utilities {
+  .bg-gradient-primary {
+    background: var(--gradient-primary);
+  }
+}
