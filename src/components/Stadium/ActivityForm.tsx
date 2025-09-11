@@ -970,10 +970,10 @@ export default function ActivityForm({
 
           {/* Checklist */}
           <Card className="shadow-soft">
-            <CardHeader className="bg-[fff] bg-[#ff0066]">
+            <CardHeader className="bg-primary">
               <CardTitle className="text-white text-center text-2xl">Preparation is key... Have you:</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 px-4 bg-[ff0066] bg-[#ff0066]">
+            <CardContent className="space-y-2 px-4 bg-card">
               {preActivityItems.map(item => <div key={item.id} className={cn("flex items-center justify-between p-3 rounded-xl border-2 transition-all duration-200", item.completed ? "bg-success/10 border-success/30" : item.skipped ? "bg-muted/50 border-muted" : "bg-card border-border")}>
                   <div className="flex items-center gap-3">
                     {item.completed ? <CheckCircle className="w-5 h-5 text-success" /> : item.skipped ? <X className="w-5 h-5 text-muted-foreground" /> : <Clock className="w-5 h-5 text-muted-foreground" />}
