@@ -76,9 +76,13 @@ const defaultTasks: DailyTask[] = [{
   streak: 0
 }];
 export default function Home() {
-  const { toast } = useToast();
-  const { user, signOut } = useAuth();
-
+  const {
+    toast
+  } = useToast();
+  const {
+    user,
+    signOut
+  } = useAuth();
   const handleLogout = async () => {
     try {
       await signOut();
@@ -843,16 +847,14 @@ export default function Home() {
       throw error;
     }
   };
-
   const handleRemoveCustomTask = async (taskId: string) => {
     try {
       // Remove task from daily_tasks table
-      const { error: deleteError } = await supabase
-        .from('daily_tasks')
-        .update({ active: false })
-        .eq('id', taskId)
-        .eq('user_id', user?.id);
-
+      const {
+        error: deleteError
+      } = await supabase.from('daily_tasks').update({
+        active: false
+      }).eq('id', taskId).eq('user_id', user?.id);
       if (deleteError) {
         console.error('[KidMindset] Error deactivating task:', deleteError);
         throw deleteError;
@@ -868,12 +870,10 @@ export default function Home() {
       // Update localStorage
       const today = new Date().toDateString();
       localStorage.setItem(`kidmindset_tasks_${today}`, JSON.stringify(updatedTasks));
-
       toast({
         title: "Task removed",
         description: "Custom task has been removed from your daily list."
       });
-
     } catch (error) {
       console.error('[KidMindset] Error removing task:', error);
       toast({
@@ -885,22 +885,19 @@ export default function Home() {
   };
   const handleAddCustomTask = async () => {
     if (!newTaskName.trim()) return;
-    
     try {
       console.log('[KidMindset] Adding custom task to Supabase...');
-      
-      // Save task to Supabase daily_tasks table first
-      const { data: insertedTask, error: insertError } = await supabase
-        .from('daily_tasks')
-        .insert({
-          label: newTaskName.trim(),
-          user_id: user?.id,
-          order: dailyTasks.length + 1,
-          active: true
-        })
-        .select()
-        .single();
 
+      // Save task to Supabase daily_tasks table first
+      const {
+        data: insertedTask,
+        error: insertError
+      } = await supabase.from('daily_tasks').insert({
+        label: newTaskName.trim(),
+        user_id: user?.id,
+        order: dailyTasks.length + 1,
+        active: true
+      }).select().single();
       if (insertError) {
         console.error('[KidMindset] Error saving task to Supabase:', insertError);
         toast({
@@ -919,18 +916,15 @@ export default function Home() {
         streak: 0,
         isCustom: true
       };
-      
       const updatedTasks = [...dailyTasks, newTask];
       setDailyTasks(updatedTasks);
-      
+
       // Also save to localStorage for immediate persistence
       const today = new Date().toDateString();
       localStorage.setItem(`kidmindset_tasks_${today}`, JSON.stringify(updatedTasks));
-      
       setNewTaskName("");
       setShowAddTask(false);
       console.log('[KidMindset] Custom task added successfully:', newTask.name);
-      
       toast({
         title: "Task added!",
         description: "Your custom task has been saved and added to today's list."
@@ -944,16 +938,11 @@ export default function Home() {
       });
     }
   };
-  return <div className="min-h-screen bg-[#ff0066]">
+  return <div className="min-h-screen bg-neutral-950">
       <div className="w-full max-w-sm mx-auto p-4">
         {/* Logout Button - Top Left */}
         <div className="flex justify-start mb-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleLogout}
-            className="flex items-center gap-2 bg-card/90 border-border text-foreground hover:bg-card hover:text-foreground font-medium shadow-md"
-          >
+          <Button variant="outline" size="sm" onClick={handleLogout} className="flex items-center gap-2 bg-white/90 border-white text-gray-800 hover:bg-white hover:text-black font-medium shadow-md">
             <LogOut className="h-4 w-4" />
             Logout
           </Button>
@@ -969,8 +958,8 @@ export default function Home() {
 
         {/* Mood Check */}
         <Card className="mb-6 shadow-soft">
-          <CardHeader className="bg-card">
-            <CardTitle className="flex items-center gap-2 text-xl text-foreground">
+          <CardHeader className="bg-slate-50">
+            <CardTitle className="flex items-center gap-2 text-xl text-slate-800">
               How are you feeling today?
               <CustomIcon type="good" size="sm" />
             </CardTitle>
@@ -981,7 +970,7 @@ export default function Home() {
                 </span>
               </div>}
           </CardHeader>
-          <CardContent className="bg-card">
+          <CardContent className="bg-slate-50">
             {!moodSubmitted || showMoodReview ? <div className="space-y-4">
                 <div className="grid grid-cols-5 gap-2">
                   {moodOptions.map(mood => <button key={mood.value} onClick={() => showMoodReview ? handleMoodChange(mood.value) : handleMoodSubmit(mood.value)} className={cn("flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all duration-200", "active:scale-95 touch-manipulation", showMoodReview && todayMood === mood.value ? "border-primary bg-primary/10" : "border-transparent hover:border-primary/30 hover:bg-primary/5")}>
@@ -1025,10 +1014,10 @@ export default function Home() {
         </div>
 
         {/* Daily Tasks */}
-        <Card className="mb-6 shadow-soft rounded-sm bg-primary">
-          <CardHeader className="bg-primary">
+        <Card className="mb-6 shadow-soft rounded-sm bg-sky-500">
+          <CardHeader className="bg-sky-500">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-2xl text-primary-foreground">
+              <CardTitle className="flex items-center gap-2 text-2xl text-gray-50">
                 <CustomIcon type="target" size="md" />
                 Daily Tasks
               </CardTitle>
@@ -1038,7 +1027,7 @@ export default function Home() {
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="space-y-3 bg-card">
+          <CardContent className="space-y-3 bg-slate-50">
             {/* Add Custom Task */}
             {showAddTask && <div className="flex gap-2 p-3 bg-muted/50 rounded-lg">
                 <Input placeholder="Enter custom task..." value={newTaskName} onChange={e => setNewTaskName(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleAddCustomTask()} className="flex-1" />
@@ -1100,17 +1089,9 @@ export default function Home() {
                     </div> : null}
                   
                   {/* Remove button for custom tasks */}
-                  {task.isCustom && (
-                    <Button 
-                      onClick={() => handleRemoveCustomTask(task.id)} 
-                      size="sm" 
-                      variant="ghost" 
-                      className="w-6 h-6 p-0 text-xs text-muted-foreground hover:text-destructive ml-1" 
-                      title="Remove custom task"
-                    >
+                  {task.isCustom && <Button onClick={() => handleRemoveCustomTask(task.id)} size="sm" variant="ghost" className="w-6 h-6 p-0 text-xs text-muted-foreground hover:text-destructive ml-1" title="Remove custom task">
                       🗑️
-                    </Button>
-                  )}
+                    </Button>}
                 </div>
               </div>)}
 
