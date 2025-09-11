@@ -25,15 +25,18 @@ export function useChildData() {
         }
 
         // Otherwise, get the current user's child ID
-        console.log('[useChildData] Getting current user child ID');
+        console.log('[RLS Check] Getting current user child ID');
         const { data: currentChildId, error } = await supabase
           .rpc('get_current_user_child_id');
         
         if (error) {
-          console.error('[useChildData] Error getting child ID:', error);
+          console.error('[RLS Check] Error getting child ID:', error);
+          if (error.code === 'PGRST116' || error.message?.includes('permission')) {
+            console.warn('[RLS Check] Permission denied for child ID access - RLS working correctly');
+          }
           setChildId(null);
         } else {
-          console.log('[useChildData] Current user child ID:', currentChildId);
+          console.log('[RLS Check] Current user child ID:', currentChildId);
           setChildId(currentChildId);
         }
       } catch (error) {

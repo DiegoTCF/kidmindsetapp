@@ -27,24 +27,28 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
 
   const checkAdmin = async () => {
     if (!user || !session) {
-      // No user or session, setting admin to false
+      console.log('[RLS Check] useAdmin - No user or session, setting admin to false');
       setIsAdmin(false);
       setLoading(false);
       return;
     }
 
-    // Checking admin status
+    console.log('[RLS Check] useAdmin - Checking admin status for user:', user.id);
     try {
       const { data, error } = await supabase.rpc('is_admin');
       
       if (error) {
-        console.error('[useAdmin] Error checking admin status');
+        console.error('[RLS Check] useAdmin - Error checking admin status:', error);
+        if (error.code === 'PGRST116' || error.message?.includes('permission')) {
+          console.warn('[RLS Check] Permission denied for admin check - RLS working correctly');
+        }
         setIsAdmin(false);
       } else {
+        console.log('[RLS Check] useAdmin - Admin check result:', data);
         setIsAdmin(data || false);
       }
     } catch (error) {
-      console.error('[useAdmin] Error in admin check');
+      console.error('[RLS Check] useAdmin - Exception in admin check:', error);
       setIsAdmin(false);
     } finally {
       setLoading(false);

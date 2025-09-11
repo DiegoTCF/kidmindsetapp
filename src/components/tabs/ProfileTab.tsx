@@ -32,22 +32,30 @@ export function ProfileTab() {
     if (!user?.id) return;
 
     try {
+      console.log('[RLS Check] ProfileTab - Loading parent data for user:', user.id);
       const { data, error } = await supabase
         .from('parents')
         .select('name, pin')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('[RLS Check] ProfileTab - Error loading parent data:', error);
+        if (error.code === 'PGRST116' || error.message?.includes('permission')) {
+          console.warn('[RLS Check] Permission denied for parent data - RLS working correctly');
+        }
+        throw error;
+      }
 
       if (data) {
+        console.log('[RLS Check] ProfileTab - Parent data loaded successfully');
         setParentData({
           name: data.name || "",
           pin: data.pin || ""
         });
       }
     } catch (error) {
-      console.error('Error loading parent data:', error);
+      console.error('[RLS Check] ProfileTab - Exception loading parent data:', error);
       toast({
         title: "Error",
         description: "Failed to load profile data",

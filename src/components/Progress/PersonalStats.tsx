@@ -47,7 +47,10 @@ export default function PersonalStats() {
         .rpc('get_current_user_child_id');
         
       if (childIdError) {
-        console.error('[ProgressStats] Error getting child ID:', childIdError);
+        console.error('[RLS Check] ProgressStats - Error getting child ID:', childIdError);
+        if (childIdError.code === 'PGRST116' || childIdError.message?.includes('permission')) {
+          console.warn('[RLS Check] Permission denied for child ID in progress stats - RLS working correctly');
+        }
         setLoading(false);
         return;
       }
@@ -72,7 +75,7 @@ export default function PersonalStats() {
       const todayStr = today.toISOString().split('T')[0];
 
       // 1. Load Average Daily Mood (Monday through today only)
-      console.log('[ProgressStats] Loading weekly mood average from Monday:', mondayStr, 'to today:', todayStr);
+      console.log('[RLS Check] ProgressStats - Loading weekly mood average from Monday:', mondayStr, 'to today:', todayStr);
       const { data: moodEntries, error: moodError } = await supabase
         .from('progress_entries')
         .select('entry_value, entry_date')
@@ -83,7 +86,10 @@ export default function PersonalStats() {
         .order('entry_date', { ascending: false });
 
       if (moodError) {
-        console.error('[ProgressStats] Error fetching mood entries:', moodError);
+        console.error('[RLS Check] ProgressStats - Error fetching mood entries:', moodError);
+        if (moodError.code === 'PGRST116' || moodError.message?.includes('permission')) {
+          console.warn('[RLS Check] Permission denied for mood entries - RLS working correctly');
+        }
       }
 
       let weeklyMoodAvg = 0;

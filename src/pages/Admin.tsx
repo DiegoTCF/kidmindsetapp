@@ -17,6 +17,7 @@ import AdminNotifications from '@/components/Admin/AdminNotifications';
 import SessionNotes from '@/components/Admin/SessionNotes';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { RLSSecurityTest } from '@/components/Debug/RLSSecurityTest';
 
 interface UserProfile {
   id: string;
@@ -81,6 +82,7 @@ export default function Admin() {
     open: boolean;
     user: UserProfile | null;
   }>({ open: false, user: null });
+  const [showSecurityTest, setShowSecurityTest] = useState(false);
 
   useEffect(() => {
     if (isAdmin) {
@@ -605,6 +607,15 @@ export default function Admin() {
               <Button
                 variant="outline"
                 size="sm"
+                onClick={() => setShowSecurityTest(!showSecurityTest)}
+                className="flex items-center gap-2"
+              >
+                <Shield className="h-4 w-4" />
+                Security Test
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={signOut}
                 className="flex items-center gap-2 bg-destructive/10 border-destructive/20 text-destructive hover:bg-destructive hover:text-destructive-foreground"
               >
@@ -627,6 +638,13 @@ export default function Admin() {
           className="mb-6" 
           onNavigateToChild={navigateToChildFromNotification}
         />
+
+        {/* Security Test */}
+        {showSecurityTest && (
+          <div className="mb-6">
+            <RLSSecurityTest />
+          </div>
+        )}
 
         {/* Users View */}
         {viewMode === 'users' && (

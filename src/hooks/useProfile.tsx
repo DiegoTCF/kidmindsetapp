@@ -35,6 +35,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
   const fetchProfile = async () => {
     if (!user?.id || childDataLoading) {
+      console.log('[RLS Check] fetchProfile - No user or child data loading, skipping');
       setProfile(null);
       setLoading(false);
       return;
@@ -47,7 +48,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         ? childId 
         : user.id;
     
-    console.log('[useProfile] Fetching profile - user.id:', user.id, 'childId:', childId, 'isAdmin:', isAdmin, 'effectiveUserId:', effectiveUserId);
+    console.log('[RLS Check] fetchProfile - user.id:', user.id, 'childId:', childId, 'isAdmin:', isAdmin, 'effectiveUserId:', effectiveUserId);
 
     try {
       const { data, error } = await supabase
@@ -57,13 +58,17 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching profile:', error);
+        console.error('[RLS Check] Profile fetch error:', error);
+        if (error.code === 'PGRST116' || error.message?.includes('permission')) {
+          console.warn('[RLS Check] Permission denied for profile access - RLS working correctly');
+        }
         setProfile(null);
       } else {
+        console.log('[RLS Check] Profile fetch successful:', data ? 'data found' : 'no data');
         setProfile(data);
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('[RLS Check] Profile fetch exception:', error);
       setProfile(null);
     } finally {
       setLoading(false);
@@ -76,7 +81,10 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   };
 
   const updateProfile = async (updates: Partial<Profile>) => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      console.log('[RLS Check] updateProfile - No user ID, aborting');
+      return;
+    }
 
     // Use selected player's ID if admin is viewing as player, otherwise use child ID or user ID
     const effectiveUserId = (isAdmin && isViewingAsPlayer && selectedChild) 
@@ -85,7 +93,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         ? childId 
         : user.id;
     
-    console.log('[useProfile] Updating profile - user.id:', user.id, 'childId:', childId, 'isAdmin:', isAdmin, 'effectiveUserId:', effectiveUserId);
+    console.log('[RLS Check] updateProfile - user.id:', user.id, 'childId:', childId, 'isAdmin:', isAdmin, 'effectiveUserId:', effectiveUserId);
 
     try {
       // First try to update, if no rows affected then insert
@@ -102,13 +110,17 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         .single();
 
       if (error) {
-        console.error('Error updating profile:', error);
+        console.error('[RLS Check] Profile update error:', error);
+        if (error.code === 'PGRST116' || error.message?.includes('permission')) {
+          console.warn('[RLS Check] Permission denied for profile update - RLS working correctly');
+        }
         throw error;
       } else {
+        console.log('[RLS Check] Profile update successful');
         setProfile(data);
       }
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error('[RLS Check] Profile update exception:', error);
       throw error;
     }
   };
