@@ -387,10 +387,10 @@ export default function CoreSkillsSelfAssessment() {
           user_id: user.id,
           know_who_you_are_score: skillScores.know_who_you_are,
           set_goals_score: skillScores.set_goals,
-          preparation_score: skillScores.preparation,
-          focus_behaviours_score: skillScores.focus_behaviours,
-          beating_mind_score: skillScores.beating_mind,
-          dealing_with_failure_score: skillScores.dealing_with_failure,
+          preparation_score: skillScores.prepare,
+          focus_behaviours_score: skillScores.focus_control,
+          beating_mind_score: skillScores.beat_mind,
+          dealing_with_failure_score: skillScores.deal_challenges,
           overall_score: overallScore,
           raw_answers: answers
         });
