@@ -135,3 +135,14 @@ All colors MUST be HSL.
     background: var(--gradient-primary);
   }
 }
+
+/* Hide Lovable badge/sticker */
+#lovable-badge,
+[data-lovable-badge],
+.lovable-badge,
+iframe[src*="lovable"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
