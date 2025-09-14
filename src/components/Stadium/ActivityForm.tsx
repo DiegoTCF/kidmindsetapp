@@ -1209,6 +1209,12 @@ export default function ActivityForm({
             </CardContent>
           </Card>
 
+          {/* Best Self Score */}
+          <BestSelfScore 
+            score={bestSelfScore}
+            onScoreChange={setBestSelfScore}
+          />
+
           {/* Match Performance Fields - Only for Match activities */}
           {activity.type === "Match" && <Card className="shadow-soft">
               <CardHeader>
@@ -1732,12 +1738,6 @@ export default function ActivityForm({
               </div>
             </CardContent>
           </Card>
-
-          {/* Best Self Score */}
-          <BestSelfScore 
-            score={bestSelfScore}
-            onScoreChange={setBestSelfScore}
-          />
 
           {/* Submit Post-Activity */}
           <Button onClick={handlePostActivitySubmit} disabled={!isPostActivityComplete()} className="w-full" size="lg">
