@@ -21,6 +21,7 @@ import { CustomIcon } from "@/components/ui/custom-emoji";
 import { supabase } from "@/integrations/supabase/client";
 import MindsetSupportFlow from "./MindsetSupportFlow";
 import ConfidenceRating from "./ConfidenceRating";
+import { BestSelfScore } from "./BestSelfScore";
 import { DNAReminder } from "@/components/DNA/DNAReminder";
 interface Activity {
   name: string;
@@ -254,6 +255,10 @@ export default function ActivityForm({
     },
     intentionAchieved: null
   });
+
+  // Best self score state
+  const [bestSelfScore, setBestSelfScore] = useState(75);
+  
   const [currentChildId, setCurrentChildId] = useState<string | null>(null);
 
   // Mindset support flow state
@@ -663,6 +668,21 @@ export default function ActivityForm({
         if (postProgressError) {
           console.error('Error saving post-activity progress entry:', postProgressError);
           // Don't throw - activity is already saved, just log the error
+        }
+
+        // Save best self score to database
+        if (user) {
+          try {
+            await supabase
+              .from('best_self_scores')
+              .insert({
+                user_id: user.id,
+                activity_id: activityId,
+                score: bestSelfScore
+              });
+          } catch (error) {
+            console.error('Error saving best self score:', error);
+          }
         }
 
         // Log post-activity completion
@@ -1712,6 +1732,12 @@ export default function ActivityForm({
               </div>
             </CardContent>
           </Card>
+
+          {/* Best Self Score */}
+          <BestSelfScore 
+            score={bestSelfScore}
+            onScoreChange={setBestSelfScore}
+          />
 
           {/* Submit Post-Activity */}
           <Button onClick={handlePostActivitySubmit} disabled={!isPostActivityComplete()} className="w-full" size="lg">

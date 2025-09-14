@@ -49,6 +49,8 @@ export function BestSelfTracker() {
         .order('created_at', { ascending: true })
         .limit(10);
 
+      console.log('Best self scores data:', scoresData, 'Error:', error);
+
       if (error) {
         console.error('Error loading best self scores:', error);
         return;
