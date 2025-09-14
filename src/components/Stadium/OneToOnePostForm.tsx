@@ -10,6 +10,9 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { BestSelfScore } from "./BestSelfScore";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface OneToOnePostFormProps {
   activity: {
@@ -32,6 +35,7 @@ const ratingLabels = {
 
 export default function OneToOnePostForm({ activity, preData, onComplete, onBack }: OneToOnePostFormProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [ratings, setRatings] = useState({
     work_rate: [5],
     performance: [5],
@@ -47,6 +51,7 @@ export default function OneToOnePostForm({ activity, preData, onComplete, onBack
   const [whatToImproveNext, setWhatToImproveNext] = useState("");
   const [coachFeedback, setCoachFeedback] = useState("");
   const [goalAchieved, setGoalAchieved] = useState(false);
+  const [bestSelfScore, setBestSelfScore] = useState(75);
 
   const handleRatingChange = (key: keyof typeof ratings, value: number[]) => {
     setRatings(prev => ({
@@ -55,7 +60,7 @@ export default function OneToOnePostForm({ activity, preData, onComplete, onBack
     }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const postData = {
       one_to_one: {
         ratings: {
@@ -70,9 +75,24 @@ export default function OneToOnePostForm({ activity, preData, onComplete, onBack
         what_to_improve_next: whatToImproveNext,
         coach_feedback: coachFeedback,
         goal_achieved: goalAchieved,
-        evidence_media_urls: []
+        evidence_media_urls: [],
+        best_self_score: bestSelfScore
       }
     };
+
+    // Save best self score to database
+    if (user) {
+      try {
+        await supabase
+          .from('best_self_scores')
+          .insert({
+            user_id: user.id,
+            score: bestSelfScore
+          });
+      } catch (error) {
+        console.error('Error saving best self score:', error);
+      }
+    }
 
     onComplete(postData);
     
@@ -208,6 +228,12 @@ export default function OneToOnePostForm({ activity, preData, onComplete, onBack
               )}
             </CardContent>
           </Card>
+
+          {/* Best Self Score */}
+          <BestSelfScore 
+            score={bestSelfScore}
+            onScoreChange={setBestSelfScore}
+          />
 
           <Button 
             onClick={handleSubmit}

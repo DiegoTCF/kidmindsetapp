@@ -9,6 +9,7 @@ import ActivityLog from "@/components/Progress/ActivityLog";
 import Charts from "@/components/Progress/Charts";
 import BehaviourCharts from "@/components/Progress/BehaviourCharts";
 import { CoreSkillsHistory } from "@/components/Progress/CoreSkillsHistory";
+import { BestSelfTracker } from "@/components/Progress/BestSelfTracker";
 const activityFilters = ["All", "Match", "Training", "1to1", "Futsal", "Small Group", "Other"];
 
 export default function Progress() {
@@ -45,11 +46,12 @@ export default function Progress() {
       </div>
 
       <Tabs defaultValue="activities" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="activities">Activity Log</TabsTrigger>
           <TabsTrigger value="behaviours">Super Behaviours</TabsTrigger>
           <TabsTrigger value="stats">Your Stats</TabsTrigger>
           <TabsTrigger value="core-skills">Core Skills</TabsTrigger>
+          <TabsTrigger value="best-self">Best Self</TabsTrigger>
         </TabsList>
 
         <TabsContent value="activities" className="space-y-6">
@@ -80,6 +82,10 @@ export default function Progress() {
 
         <TabsContent value="core-skills" className="space-y-6">
           <CoreSkillsHistory />
+        </TabsContent>
+
+        <TabsContent value="best-self" className="space-y-6">
+          <BestSelfTracker />
         </TabsContent>
       </Tabs>
     </div>

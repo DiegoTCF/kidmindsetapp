@@ -149,6 +149,66 @@ export type Database = {
         }
         Relationships: []
       }
+      best_self_reflections: {
+        Row: {
+          ball_with_me: string | null
+          ball_without_me: string | null
+          behaviour: string | null
+          body_language: string | null
+          created_at: string
+          id: string
+          noticed_by_others: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ball_with_me?: string | null
+          ball_without_me?: string | null
+          behaviour?: string | null
+          body_language?: string | null
+          created_at?: string
+          id?: string
+          noticed_by_others?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ball_with_me?: string | null
+          ball_without_me?: string | null
+          behaviour?: string | null
+          body_language?: string | null
+          created_at?: string
+          id?: string
+          noticed_by_others?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      best_self_scores: {
+        Row: {
+          activity_id: string | null
+          created_at: string
+          id: string
+          score: number
+          user_id: string
+        }
+        Insert: {
+          activity_id?: string | null
+          created_at?: string
+          id?: string
+          score: number
+          user_id: string
+        }
+        Update: {
+          activity_id?: string | null
+          created_at?: string
+          id?: string
+          score?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       child_goals: {
         Row: {
           child_id: string

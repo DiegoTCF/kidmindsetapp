@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { DNAReminder } from "@/components/DNA/DNAReminder";
 import { supabase } from "@/integrations/supabase/client";
 import { useChildData } from "@/hooks/useChildData";
+import { useAuth } from "@/hooks/useAuth";
 
 interface OneToOnePreFormProps {
   activity: {
@@ -52,6 +53,7 @@ const focusCueOptions = [
 
 export default function OneToOnePreForm({ activity, onComplete, onBack }: OneToOnePreFormProps) {
   const { childId } = useChildData();
+  const { user } = useAuth();
   const [topicPractised, setTopicPractised] = useState("");
   const [customTopic, setCustomTopic] = useState("");
   const [sessionGoal, setSessionGoal] = useState("");
@@ -59,27 +61,43 @@ export default function OneToOnePreForm({ activity, onComplete, onBack }: OneToO
   const [coachPresent, setCoachPresent] = useState(false);
   const [durationMinutes, setDurationMinutes] = useState(60);
   const [goals, setGoals] = useState<any[]>([]);
+  const [bestSelfReflection, setBestSelfReflection] = useState<any>(null);
 
   useEffect(() => {
-    const loadGoals = async () => {
-      if (!childId) return;
+    const loadData = async () => {
+      if (!childId || !user) return;
       
       try {
-        const { data, error } = await supabase
+        // Load goals
+        const { data: goalsData, error: goalsError } = await supabase
           .from('child_goals')
           .select('*')
           .eq('child_id', childId)
           .order('created_at', { ascending: false });
         
-        if (error) throw error;
-        setGoals(data || []);
+        if (goalsError) throw goalsError;
+        setGoals(goalsData || []);
+
+        // Load best self reflection
+        const { data: reflectionData, error: reflectionError } = await supabase
+          .from('best_self_reflections')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        
+        if (reflectionError) {
+          console.error('Error loading best self reflection:', reflectionError);
+        } else if (reflectionData && reflectionData.length > 0) {
+          setBestSelfReflection(reflectionData[0]);
+        }
       } catch (error) {
-        console.error('Error loading goals:', error);
+        console.error('Error loading data:', error);
       }
     };
 
-    loadGoals();
-  }, [childId]);
+    loadData();
+  }, [childId, user]);
 
   const handleTopicChange = (value: string) => {
     setTopicPractised(value);
@@ -143,6 +161,34 @@ export default function OneToOnePreForm({ activity, onComplete, onBack }: OneToO
 
         {/* DNA Reminder */}
         <DNAReminder />
+
+        {/* Best Version of Me Display */}
+        {bestSelfReflection && (
+          <Card className="shadow-soft mb-4 border-primary/20">
+            <CardHeader>
+              <CardTitle className="text-sm flex items-center gap-2">
+                ⭐ Best Version of Me
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {bestSelfReflection.ball_with_me && (
+                <div className="text-sm">
+                  <strong>With ball:</strong> {bestSelfReflection.ball_with_me}
+                </div>
+              )}
+              {bestSelfReflection.ball_without_me && (
+                <div className="text-sm">
+                  <strong>Without ball:</strong> {bestSelfReflection.ball_without_me}
+                </div>
+              )}
+              {bestSelfReflection.behaviour && (
+                <div className="text-sm">
+                  <strong>Behavior:</strong> {bestSelfReflection.behaviour}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Goals Display */}
         {goals.length > 0 && (

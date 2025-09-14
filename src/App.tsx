@@ -26,6 +26,7 @@ import ReflectionTest from "./pages/ReflectionTest";
 import ConfidenceCheck from "./pages/ConfidenceCheck";
 import CoreSkillsAssessment from "./pages/CoreSkillsAssessment";
 import CoreSkillsSelfAssessment from "./pages/CoreSkillsSelfAssessment";
+import { BestSelf } from "./components/mindset/BestSelf";
 
 const queryClient = new QueryClient();
 
@@ -168,6 +169,15 @@ const App = () => {
               <Route path="/core-skills/self-assessment" element={
                 <ProtectedRoute>
                   <CoreSkillsSelfAssessment />
+                </ProtectedRoute>
+              } />
+
+              {/* Best Self route - with navigation */}
+              <Route path="/best-self" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <BestSelf />
+                  </AppLayout>
                 </ProtectedRoute>
               } />
               
