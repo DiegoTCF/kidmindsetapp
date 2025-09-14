@@ -95,14 +95,6 @@ export default function OneToOnePostForm({ activity, preData, onComplete, onBack
     }
 
     onComplete(postData);
-    
-    // Navigate to confidence check with performance and confidence data
-    navigate('/confidence-check', { 
-      state: { 
-        performanceRating: preData?.ratings?.performance || 0,
-        confidenceRating: ratings.confidence_during_session[0]
-      }
-    });
   };
 
   const isFormValid = () => {

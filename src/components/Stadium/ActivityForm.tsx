@@ -693,15 +693,7 @@ export default function ActivityForm({
           description: "Amazing work! You've completed your full activity session."
         });
 
-        // Navigate to confidence check with performance and confidence data
-        setTimeout(() => {
-          navigate('/confidence-check', { 
-            state: { 
-              performanceRating: postActivityData.performance,
-              confidenceRating: postActivityData.confidence
-            }
-          });
-        }, 3000);
+        // Activity completed successfully - no automatic navigation
       }
     } catch (error) {
       console.error('Error saving post-activity:', error);
@@ -828,18 +820,11 @@ export default function ActivityForm({
             
             <div className="space-y-3">
               <Button 
-                onClick={() => {
-                  navigate('/confidence-check', { 
-                    state: { 
-                      performanceRating: postActivityData.performance,
-                      confidenceRating: postActivityData.confidence
-                    }
-                  });
-                }}
+                onClick={() => navigate('/stadium')}
                 className="w-full"
                 variant="default"
               >
-                Check Your Preparation & Confidence 🎯
+                Back to Stadium
               </Button>
               
               <Button 
