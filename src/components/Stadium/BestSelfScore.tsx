@@ -5,6 +5,8 @@ import { Slider } from "@/components/ui/slider";
 import { Star, Target, Users, Eye, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdminPlayerView } from "@/hooks/useAdminPlayerView";
+import { useAdmin } from "@/hooks/useAdmin";
 
 interface BestSelfReflection {
   ball_with_me: string;
@@ -21,6 +23,8 @@ interface BestSelfScoreProps {
 
 export function BestSelfScore({ score, onScoreChange }: BestSelfScoreProps) {
   const { user } = useAuth();
+  const { isAdmin } = useAdmin();
+  const { selectedChild, isViewingAsPlayer } = useAdminPlayerView();
   const [reflection, setReflection] = useState<BestSelfReflection | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -28,16 +32,43 @@ export function BestSelfScore({ score, onScoreChange }: BestSelfScoreProps) {
     if (user) {
       loadBestSelfReflection();
     }
-  }, [user]);
+  }, [user, selectedChild, isViewingAsPlayer]);
 
   const loadBestSelfReflection = async () => {
     if (!user) return;
     
     try {
+      let targetUserId: string;
+
+      // Check if admin is viewing as player
+      if (isAdmin && isViewingAsPlayer && selectedChild) {
+        console.log('[BestSelfScore] Admin viewing player reflection for:', selectedChild.name);
+        // Get the parent user_id for the selected child
+        const { data: parentData, error: parentError } = await supabase
+          .from('children')
+          .select(`
+            parent_id,
+            parents!inner (
+              user_id
+            )
+          `)
+          .eq('id', selectedChild.id)
+          .single();
+
+        if (parentError) {
+          console.error('Error getting parent user ID:', parentError);
+          return;
+        }
+
+        targetUserId = parentData.parents.user_id;
+      } else {
+        targetUserId = user.id;
+      }
+
       const { data, error } = await supabase
         .from('best_self_reflections')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', targetUserId)
         .order('created_at', { ascending: false })
         .limit(1);
 
@@ -48,6 +79,8 @@ export function BestSelfScore({ score, onScoreChange }: BestSelfScoreProps) {
 
       if (data && data.length > 0) {
         setReflection(data[0]);
+      } else {
+        setReflection(null);
       }
     } catch (error) {
       console.error('Error loading reflection:', error);
