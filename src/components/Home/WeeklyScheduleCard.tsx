@@ -9,6 +9,8 @@ import { Calendar, Clock, Edit, Plus, X, Save } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAdminPlayerView } from '@/hooks/useAdminPlayerView';
+import { useAdmin } from '@/hooks/useAdmin';
 
 interface ScheduleDay {
   day: string;
@@ -41,6 +43,8 @@ const dayOptions = [
 export function WeeklyScheduleCard() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { isAdmin } = useAdmin();
+  const { selectedChild, isViewingAsPlayer } = useAdminPlayerView();
   const [schedule, setSchedule] = useState<string | null>(null);
   const [playerName, setPlayerName] = useState<string>('');
   const [childId, setChildId] = useState<string | null>(null);
@@ -52,28 +56,43 @@ export function WeeklyScheduleCard() {
 
   useEffect(() => {
     loadSchedule();
-  }, [user]);
+  }, [user, selectedChild, isViewingAsPlayer]);
 
   const loadSchedule = async () => {
     if (!user) return;
     
     try {
-      // Get current user's child data including schedule
-      const { data: childData, error } = await supabase
-        .rpc('get_current_user_child_data');
+      let targetChildId: string | null = null;
+      let targetPlayerName: string = '';
 
-      if (error) throw error;
-      
-      if (childData && childData.length > 0) {
-        const child = childData[0];
-        setPlayerName(child.child_name || '');
-        setChildId(child.child_id);
+      // Check if admin is viewing as player
+      if (isAdmin && isViewingAsPlayer && selectedChild) {
+        console.log('[WeeklyScheduleCard] Admin viewing player:', selectedChild.name);
+        targetChildId = selectedChild.id;
+        targetPlayerName = selectedChild.name;
+      } else {
+        // Get current user's child data including schedule
+        const { data: childData, error } = await supabase
+          .rpc('get_current_user_child_data');
+
+        if (error) throw error;
+        
+        if (childData && childData.length > 0) {
+          const child = childData[0];
+          targetChildId = child.child_id;
+          targetPlayerName = child.child_name || '';
+        }
+      }
+
+      if (targetChildId) {
+        setPlayerName(targetPlayerName);
+        setChildId(targetChildId);
         
         // Get the weekly schedule from children table
         const { data: childInfo, error: childError } = await supabase
           .from('children')
           .select('weekly_schedule')
-          .eq('id', child.child_id)
+          .eq('id', targetChildId)
           .single();
 
         if (childError) throw childError;
