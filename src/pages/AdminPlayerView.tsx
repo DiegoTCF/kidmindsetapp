@@ -308,7 +308,7 @@ export default function AdminPlayerView() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => navigate('/profile')}
+                onClick={() => navigate('/best-self')}
                 className="flex items-center gap-2"
               >
                 <Brain className="h-4 w-4" />
