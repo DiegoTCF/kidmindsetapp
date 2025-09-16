@@ -305,6 +305,15 @@ export default function AdminPlayerView() {
                 <User className="h-4 w-4" />
                 Edit Identity
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/profile')}
+                className="flex items-center gap-2"
+              >
+                <Brain className="h-4 w-4" />
+                Best Self Vision
+              </Button>
             </div>
             <Badge variant="secondary">Mentorship Mode</Badge>
           </div>
