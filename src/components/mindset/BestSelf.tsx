@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdminPlayerView } from "@/hooks/useAdminPlayerView";
+import { useAdmin } from "@/hooks/useAdmin";
 import { Star, Target, Users, Eye, Heart } from "lucide-react";
 
 interface BestSelfReflection {
@@ -19,6 +21,8 @@ interface BestSelfReflection {
 
 export function BestSelf() {
   const { user } = useAuth();
+  const { isAdmin } = useAdmin();
+  const { selectedChild, isViewingAsPlayer } = useAdminPlayerView();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -34,17 +38,44 @@ export function BestSelf() {
     if (user) {
       loadExistingReflection();
     }
-  }, [user]);
+  }, [user, selectedChild, isViewingAsPlayer]);
 
   const loadExistingReflection = async () => {
     if (!user) return;
     
     setLoading(true);
     try {
+      let targetUserId: string;
+
+      // Check if admin is viewing as player
+      if (isAdmin && isViewingAsPlayer && selectedChild) {
+        console.log('[BestSelf] Admin loading reflection for player:', selectedChild.name);
+        // Get the parent user_id for the selected child
+        const { data: parentData, error: parentError } = await supabase
+          .from('children')
+          .select(`
+            parent_id,
+            parents!inner (
+              user_id
+            )
+          `)
+          .eq('id', selectedChild.id)
+          .single();
+
+        if (parentError) {
+          console.error('Error getting parent user ID:', parentError);
+          return;
+        }
+
+        targetUserId = parentData.parents.user_id;
+      } else {
+        targetUserId = user.id;
+      }
+
       const { data, error } = await supabase
         .from('best_self_reflections')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', targetUserId)
         .order('created_at', { ascending: false })
         .limit(1);
 
@@ -74,7 +105,7 @@ export function BestSelf() {
     if (!user) {
       toast({
         title: "Error",
-        description: "You must be logged in to save your reflection",
+        description: "You must be logged in to save the reflection",
         variant: "destructive"
       });
       return;
@@ -85,7 +116,7 @@ export function BestSelf() {
     if (!hasContent) {
       toast({
         title: "Please fill in at least one field",
-        description: "Your reflection needs some content to be saved",
+        description: "The reflection needs some content to be saved",
         variant: "destructive"
       });
       return;
@@ -93,11 +124,43 @@ export function BestSelf() {
 
     setSaving(true);
     try {
+      let targetUserId: string;
+
+      // Check if admin is viewing as player
+      if (isAdmin && isViewingAsPlayer && selectedChild) {
+        console.log('[BestSelf] Admin saving reflection for player:', selectedChild.name);
+        // Get the parent user_id for the selected child
+        const { data: parentData, error: parentError } = await supabase
+          .from('children')
+          .select(`
+            parent_id,
+            parents!inner (
+              user_id
+            )
+          `)
+          .eq('id', selectedChild.id)
+          .single();
+
+        if (parentError) {
+          console.error('Error getting parent user ID:', parentError);
+          toast({
+            title: "Error",
+            description: "Failed to identify the player's account",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        targetUserId = parentData.parents.user_id;
+      } else {
+        targetUserId = user.id;
+      }
+
       // Check if user already has a reflection
       const { data: existing } = await supabase
         .from('best_self_reflections')
         .select('id')
-        .eq('user_id', user.id)
+        .eq('user_id', targetUserId)
         .limit(1);
 
       if (existing && existing.length > 0) {
@@ -112,7 +175,7 @@ export function BestSelf() {
             noticed_by_others: reflection.noticed_by_others,
             updated_at: new Date().toISOString()
           })
-          .eq('user_id', user.id);
+          .eq('user_id', targetUserId);
 
         if (error) throw error;
       } else {
@@ -120,7 +183,7 @@ export function BestSelf() {
         const { error } = await supabase
           .from('best_self_reflections')
           .insert({
-            user_id: user.id,
+            user_id: targetUserId,
             ball_with_me: reflection.ball_with_me,
             ball_without_me: reflection.ball_without_me,
             behaviour: reflection.behaviour,
@@ -131,9 +194,10 @@ export function BestSelf() {
         if (error) throw error;
       }
 
+      const playerName = isAdmin && isViewingAsPlayer && selectedChild ? selectedChild.name : "your";
       toast({
         title: "✨ Reflection Saved!",
-        description: "Your best self vision has been saved successfully",
+        description: `${playerName === "your" ? "Your" : `${playerName}'s`} best self vision has been saved successfully`,
       });
     } catch (error) {
       console.error('Error saving reflection:', error);
@@ -175,10 +239,10 @@ export function BestSelf() {
             </div>
           </div>
           <h1 className="text-3xl font-bold text-foreground">
-            What Does the Best Version of You Look Like on the Pitch?
+            What Does the Best Version of {isAdmin && isViewingAsPlayer && selectedChild ? selectedChild.name : "You"} Look Like on the Pitch?
           </h1>
           <p className="text-muted-foreground text-lg">
-            Define your ideal self as a player. This will help guide your growth and track your progress.
+            Define {isAdmin && isViewingAsPlayer && selectedChild ? "their" : "your"} ideal self as a player. This will help guide {isAdmin && isViewingAsPlayer && selectedChild ? "their" : "your"} growth and track {isAdmin && isViewingAsPlayer && selectedChild ? "their" : "your"} progress.
           </p>
         </div>
 
@@ -295,7 +359,7 @@ export function BestSelf() {
               size="lg"
               className="px-8"
             >
-              {saving ? "Saving..." : "Save My Best Self Vision"}
+              {saving ? "Saving..." : `Save ${isAdmin && isViewingAsPlayer && selectedChild ? `${selectedChild.name}'s` : "My"} Best Self Vision`}
             </Button>
           </div>
         </div>
