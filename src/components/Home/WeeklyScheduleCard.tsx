@@ -148,6 +148,8 @@ export function WeeklyScheduleCard() {
     try {
       // Get current week's activities - use more inclusive date range
       const today = new Date();
+      console.log('[WeeklyScheduleCard] Today is:', today.toDateString(), 'Day of week:', today.getDay());
+      
       const startOfWeek = new Date(today);
       // Ensure we get Monday as start of week for consistent behavior
       const day = startOfWeek.getDay();
@@ -159,10 +161,13 @@ export function WeeklyScheduleCard() {
       endOfWeek.setDate(endOfWeek.getDate() + 6);
       endOfWeek.setHours(23, 59, 59, 999);
 
-      console.log('[WeeklyScheduleCard] Loading session status for week:', {
-        today: today.toISOString(),
-        startOfWeek: startOfWeek.toISOString().split('T')[0],
-        endOfWeek: endOfWeek.toISOString().split('T')[0],
+      console.log('[WeeklyScheduleCard] Week calculation:', {
+        today: today.toDateString(),
+        todayDay: today.getDay(),
+        startOfWeek: startOfWeek.toDateString(),
+        endOfWeek: endOfWeek.toDateString(),
+        startOfWeekISO: startOfWeek.toISOString().split('T')[0],
+        endOfWeekISO: endOfWeek.toISOString().split('T')[0],
         childId
       });
 
@@ -199,16 +204,26 @@ export function WeeklyScheduleCard() {
       const status: Record<string, 'completed' | 'cancelled' | null> = {};
       
       // Mark completed sessions - check if both pre and post are completed
+      // Only mark as completed if the activity date is today or in the past
+      const currentDate = new Date();
+      currentDate.setHours(23, 59, 59, 999); // End of today
+      
       activities?.forEach(activity => {
+        const activityDate = new Date(activity.activity_date);
+        
         console.log('[WeeklyScheduleCard] Checking activity:', {
           name: activity.activity_name,
           date: activity.activity_date,
+          activityDate: activityDate.toDateString(),
+          currentDate: currentDate.toDateString(),
+          isPastOrToday: activityDate <= currentDate,
           pre: activity.pre_activity_completed,
           post: activity.post_activity_completed
         });
         
-        if (activity.pre_activity_completed && activity.post_activity_completed) {
-          const dayOfWeek = new Date(activity.activity_date).getDay();
+        // Only mark as completed if the activity is today or in the past AND both forms are completed
+        if (activity.pre_activity_completed && activity.post_activity_completed && activityDate <= currentDate) {
+          const dayOfWeek = activityDate.getDay();
           const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
           const dayName = dayNames[dayOfWeek];
           console.log('[WeeklyScheduleCard] Marking day as completed:', dayName);
