@@ -18,7 +18,6 @@ import ActivityForm from '@/components/Stadium/ActivityForm';
 import CoreSkillsEvaluation from '@/components/Admin/CoreSkillsEvaluation';
 import AdminCoreSkillsAssessment from '@/components/Admin/AdminCoreSkillsAssessment';
 import { WeeklyScheduleCard } from '@/components/Home/WeeklyScheduleCard';
-import { AdminSessionStatus } from '@/components/Admin/AdminSessionStatus';
 
 interface Child {
   id: string;
@@ -425,10 +424,22 @@ export default function AdminPlayerView() {
               </CardContent>
             </Card>
 
-            {/* Player Schedule and Session Status */}
+            {/* Player Schedule */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <WeeklyScheduleCard />
-              <AdminSessionStatus childId={child.id} childName={child.name} />
+              <div className="space-y-4">
+                <Card className="bg-muted/30">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Trophy className="w-4 h-4 text-primary" />
+                      <span className="text-sm font-medium">Quick Actions</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Use the navigation buttons above to guide {child.name} through different sections during your session.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </TabsContent>
 

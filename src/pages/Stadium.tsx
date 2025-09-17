@@ -54,77 +54,6 @@ export default function Stadium() {
     }
   }, [currentChildId]);
 
-  // Handle URL parameters for resuming activities or starting pre-forms
-  useEffect(() => {
-    if (!incompleteActivities.length) return;
-    
-    const urlParams = new URLSearchParams(window.location.search);
-    const resumeActivityId = urlParams.get('resumeActivity');
-    const startPreFormId = urlParams.get('startPreForm');
-    
-    if (resumeActivityId) {
-      const activityToResume = incompleteActivities.find(
-        activity => activity.id === resumeActivityId
-      );
-      
-      if (activityToResume) {
-        setResumingActivity(activityToResume);
-        
-        if (activityToResume.activity_type === '1to1') {
-          if (!activityToResume.pre_activity_completed) {
-            setCurrentActivity({
-              name: activityToResume.activity_name,
-              type: activityToResume.activity_type,
-              date: new Date(activityToResume.activity_date)
-            });
-            setShowOneToOnePreForm(true);
-          } else {
-            setCurrentActivity({
-              name: activityToResume.activity_name,
-              type: activityToResume.activity_type,
-              date: new Date(activityToResume.activity_date)
-            });
-            setShowOneToOnePostForm(true);
-          }
-        } else {
-          setCurrentActivity({
-            name: activityToResume.activity_name,
-            type: activityToResume.activity_type,
-            date: new Date(activityToResume.activity_date)
-          });
-          setShowActivityForm(true);
-        }
-        
-        // Clear URL params after handling
-        window.history.replaceState({}, '', window.location.pathname);
-      }
-    }
-    
-    if (startPreFormId) {
-      const activityToStart = incompleteActivities.find(
-        activity => activity.id === startPreFormId
-      );
-      
-      if (activityToStart && !activityToStart.pre_activity_completed) {
-        setResumingActivity(activityToStart);
-        setCurrentActivity({
-          name: activityToStart.activity_name,
-          type: activityToStart.activity_type,
-          date: new Date(activityToStart.activity_date)
-        });
-        
-        if (activityToStart.activity_type === '1to1') {
-          setShowOneToOnePreForm(true);
-        } else {
-          setShowActivityForm(true);
-        }
-        
-        // Clear URL params after handling
-        window.history.replaceState({}, '', window.location.pathname);
-      }
-    }
-  }, [incompleteActivities]);
-
   // Also reload when component becomes visible again (user returns from other pages)
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -211,79 +140,15 @@ export default function Stadium() {
     }
   };
 
-  const handleNewActivitySubmit = async (activity: {
-    name: string;
-    type: string;
-    date: Date;
-    scheduledActivity?: { day: string; activity: string; time?: string; date: Date };
-  }) => {
-    if (activity.scheduledActivity) {
-      // Handle scheduled activity - create and link to session tracking
-      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-      const dayName = dayNames[activity.date.getDay()];
-
-      try {
-        // Create the activity in the database first
-        const { data: newActivity, error: activityError } = await supabase
-          .from('activities')
-          .insert({
-            child_id: currentChildId,
-            activity_name: activity.name,
-            activity_type: activity.type,
-            activity_date: activity.date.toISOString().split('T')[0],
-            day_of_week: dayName,
-            pre_activity_completed: false,
-            post_activity_completed: false
-          })
-          .select()
-          .single();
-
-        if (activityError) throw activityError;
-
-        // Create/update session tracking entry
-        await supabase.rpc('log_session_status', {
-          p_child_id: currentChildId,
-          p_session_date: activity.date.toISOString().split('T')[0],
-          p_status: 'pending',
-          p_activity_name: activity.name,
-          p_activity_type: activity.type,
-          p_day_of_week: dayName
-        });
-
-        // Link the activity to the session
-        await supabase
-          .from('session_tracking')
-          .update({ activity_id: newActivity.id })
-          .eq('child_id', currentChildId)
-          .eq('session_date', activity.date.toISOString().split('T')[0]);
-
-        setCurrentActivity(activity);
-        setShowNewActivity(false);
-        
-        // Route to appropriate forms
-        if (activity.type === '1to1') {
-          setShowOneToOnePreForm(true);
-        } else {
-          setShowActivityForm(true);
-        }
-      } catch (error) {
-        console.error('Error creating scheduled activity:', error);
-        toast({
-          title: "Error",
-          description: "Failed to create activity",
-          variant: "destructive"
-        });
-      }
+  const handleNewActivitySubmit = (activity: ActivityData) => {
+    setCurrentActivity(activity);
+    setShowNewActivity(false);
+    
+    // Route to One-to-One forms if activity type is 1to1
+    if (activity.type === '1to1') {
+      setShowOneToOnePreForm(true);
     } else {
-      // Handle non-scheduled activity (shouldn't happen with new flow, but keep as fallback)
-      setCurrentActivity(activity);
-      setShowNewActivity(false);
-      
-      if (activity.type === '1to1') {
-        setShowOneToOnePreForm(true);
-      } else {
-        setShowActivityForm(true);
-      }
+      setShowActivityForm(true);
     }
   };
 

@@ -11,8 +11,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAdminPlayerView } from '@/hooks/useAdminPlayerView';
 import { useAdmin } from '@/hooks/useAdmin';
-import { useNavigate } from 'react-router-dom';
-import { cn } from '@/lib/utils';
 
 interface ScheduleDay {
   day: string;
@@ -47,7 +45,6 @@ export function WeeklyScheduleCard() {
   const { toast } = useToast();
   const { isAdmin } = useAdmin();
   const { selectedChild, isViewingAsPlayer } = useAdminPlayerView();
-  const navigate = useNavigate();
   const [schedule, setSchedule] = useState<string | null>(null);
   const [playerName, setPlayerName] = useState<string>('');
   const [childId, setChildId] = useState<string | null>(null);
@@ -301,11 +298,6 @@ export function WeeklyScheduleCard() {
     }
   };
 
-  const handleDayClick = (scheduleItem: ScheduleDay) => {
-    // Navigate to stadium with this schedule info
-    navigate('/stadium');
-  };
-
   if (loading) {
     return (
       <Card className="shadow-soft">
@@ -392,44 +384,32 @@ export function WeeklyScheduleCard() {
           </h4>
           {sortedSchedule.length > 0 ? (
             <div className="space-y-2">
-              {sortedSchedule.map((item, index) => {
-                const isClickable = item.day === currentDay || new Date() > new Date(); // Allow clicking on any day
-                
-                return (
-                  <div 
-                    key={index} 
-                    className={cn(
-                      "flex items-center justify-between p-2 rounded transition-colors",
-                      item.day === currentDay 
-                        ? 'bg-primary/20 border border-primary/30' 
-                        : 'bg-muted/50',
-                      isClickable ? 'cursor-pointer hover:bg-primary/10' : ''
-                    )}
-                    onClick={isClickable ? () => handleDayClick(item) : undefined}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className={`text-xs font-medium w-8 ${
-                        item.day === currentDay ? 'text-primary font-bold' : 'text-primary'
-                      }`}>
-                        {item.day}
-                      </span>
-                      <span className={`text-sm ${
-                        item.day === currentDay ? 'font-medium' : ''
-                      }`}>
-                        {item.activity}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {item.time && (
-                        <span className="text-xs text-muted-foreground">{item.time}</span>
-                      )}
-                      {isClickable && item.day === currentDay && (
-                        <span className="text-xs text-primary font-medium">Click to start</span>
-                      )}
-                    </div>
+              {sortedSchedule.map((item, index) => (
+                <div 
+                  key={index} 
+                  className={`flex items-center justify-between p-2 rounded ${
+                    item.day === currentDay 
+                      ? 'bg-primary/20 border border-primary/30' 
+                      : 'bg-muted/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs font-medium w-8 ${
+                      item.day === currentDay ? 'text-primary font-bold' : 'text-primary'
+                    }`}>
+                      {item.day}
+                    </span>
+                    <span className={`text-sm ${
+                      item.day === currentDay ? 'font-medium' : ''
+                    }`}>
+                      {item.activity}
+                    </span>
                   </div>
-                );
-              })}
+                  {item.time && (
+                    <span className="text-xs text-muted-foreground">{item.time}</span>
+                  )}
+                </div>
+              ))}
             </div>
           ) : (
             <div className="text-sm text-muted-foreground bg-muted/30 p-3 rounded">

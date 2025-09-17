@@ -9,7 +9,6 @@ import Stadium from "./pages/Stadium";
 import Progress from "./pages/Progress";
 import Profile from "./pages/Profile";
 import Goals from "./pages/Goals";
-import Schedule from "./pages/Schedule";
 
 import GrownUpZone from "./pages/GrownUpZone";
 import Admin from "./pages/Admin";
@@ -91,13 +90,6 @@ const App = () => {
                 <ProtectedRoute>
                   <AppLayout>
                     <Goals />
-                  </AppLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/schedule" element={
-                <ProtectedRoute>
-                  <AppLayout>
-                    <Schedule />
                   </AppLayout>
                 </ProtectedRoute>
               } />
