@@ -27,6 +27,7 @@ interface Activity {
   name: string;
   type: string;
   date: Date;
+  dayOfWeek?: string;
 }
 interface PreActivityItem {
   id: string;
@@ -197,6 +198,7 @@ export default function ActivityForm({
   const [preActivityItems, setPreActivityItems] = useState<PreActivityItem[]>(defaultPreActivityItems);
   const [preActivityCompleted, setPreActivityCompleted] = useState(isResumingActivity);
   const [postActivityCompleted, setPostActivityCompleted] = useState(false);
+  const [selectedDayOfWeek, setSelectedDayOfWeek] = useState<string>(activity.dayOfWeek || '');
 
   // Match performance fields (for post-activity only)
   const [finalScore, setFinalScore] = useState("");
@@ -482,7 +484,8 @@ export default function ActivityForm({
         pre_confidence_believe_well: confidenceRatings.believeWell,
         points_awarded: prePoints,
         worry_reason: worryData?.reason || null,
-        worry_answers: worryData?.answers || null
+        worry_answers: worryData?.answers || null,
+        day_of_week: selectedDayOfWeek || null
       }).select().single();
       if (activityError) {
         console.error('Failed to save pre-activity data');
@@ -1004,7 +1007,7 @@ export default function ActivityForm({
             </CardContent>
           </Card>
 
-              {/* Set Intention */}
+          {/* Set Intention */}
           <Card className="shadow-soft">
             <CardHeader className="bg-primary">
               <CardTitle className="text-center text-2xl text-primary-foreground">What's your plan for the session/match ?</CardTitle>
@@ -1015,6 +1018,25 @@ export default function ActivityForm({
             <CardContent className="space-y-4 bg-primary">
               {/* DNA Reminder */}
               <DNAReminder />
+
+              {/* Day of Week Selection */}
+              <div className="mb-6">
+                <p className="text-sm font-medium mb-3 text-primary-foreground">What day is this session for?</p>
+                <Select value={selectedDayOfWeek} onValueChange={setSelectedDayOfWeek}>
+                  <SelectTrigger className="bg-background">
+                    <SelectValue placeholder="Select day of week..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="monday">Monday</SelectItem>
+                    <SelectItem value="tuesday">Tuesday</SelectItem>
+                    <SelectItem value="wednesday">Wednesday</SelectItem>
+                    <SelectItem value="thursday">Thursday</SelectItem>
+                    <SelectItem value="friday">Friday</SelectItem>
+                    <SelectItem value="saturday">Saturday</SelectItem>
+                    <SelectItem value="sunday">Sunday</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               
               {/* Goal Selection */}
               {userGoals.length > 0 && <div className="mb-6">

@@ -13,11 +13,12 @@ import {
   PartyPopper,
   Flame,
   Goal,
-  Dna
+  Dna,
+  Calendar
 } from "lucide-react";
 
 interface CustomIconProps {
-  type: 'sad' | 'not-great' | 'okay' | 'good' | 'amazing' | 'target' | 'home' | 'stadium' | 'progress' | 'brain' | 'trophy' | 'party' | 'flame' | 'goals' | 'dna';
+  type: 'sad' | 'not-great' | 'okay' | 'good' | 'amazing' | 'target' | 'home' | 'stadium' | 'progress' | 'schedule' | 'brain' | 'trophy' | 'party' | 'flame' | 'goals' | 'dna';
   size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }
@@ -39,6 +40,7 @@ const iconMap = {
   home: Home,
   stadium: Building2,
   progress: TrendingUp,
+  schedule: Calendar,
   brain: Brain,
   trophy: Trophy,
   party: PartyPopper,
