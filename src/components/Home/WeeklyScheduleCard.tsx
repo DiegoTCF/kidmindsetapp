@@ -626,12 +626,42 @@ export function WeeklyScheduleCard() {
                     <Button
                       variant="outline"
                       onClick={() => {
-                        // Handle edit form
+                        if (!selectedDay) return;
+                        
+                        const dayMap: Record<string, string> = {
+                          'Mon': 'monday', 'Tue': 'tuesday', 'Wed': 'wednesday', 
+                          'Thu': 'thursday', 'Fri': 'friday', 'Sat': 'saturday', 'Sun': 'sunday'
+                        };
+                        
+                        const fullDayName = dayMap[selectedDay];
+                        const parsedSchedule = parseSchedule(schedule || '');
+                        const daySchedule = parsedSchedule.find(s => s.day === selectedDay);
+                        
+                        if (daySchedule) {
+                          // Find the existing activity for this day
+                          const existingActivity = weeklyActivities.find(activity => {
+                            const activityDay = new Date(activity.activity_date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+                            return activityDay === fullDayName;
+                          });
+                          
+                          // Store edit data for Stadium to pick up
+                          const editData = {
+                            name: daySchedule.activity,
+                            type: existingActivity?.activity_type || 'Match',
+                            date: new Date(),
+                            day: fullDayName,
+                            isEdit: true,
+                            activityId: existingActivity?.id
+                          };
+                          
+                          sessionStorage.setItem('scheduledActivity', JSON.stringify(editData));
+                          
+                          // Navigate to Stadium for editing
+                          window.location.href = '/stadium';
+                        }
+                        
                         setShowDayToggle(false);
-                        toast({
-                          title: "Edit Form",
-                          description: "Edit functionality coming soon!"
-                        });
+                        setSelectedDay(null);
                       }}
                       className="flex-1"
                     >
