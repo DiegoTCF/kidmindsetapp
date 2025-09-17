@@ -26,7 +26,7 @@ export function AppLayout({ children, hideNavigation = false }: AppLayoutProps) 
           <img 
             src="/lovable-uploads/12821ebd-705b-4e17-b537-45a7e96dd74f.png" 
             alt="The Confident Footballer Logo" 
-            className="h-48 w-auto"
+            className="h-24 md:h-48 w-auto"
           />
           <Button
             variant="ghost"
@@ -41,7 +41,7 @@ export function AppLayout({ children, hideNavigation = false }: AppLayoutProps) 
 
       {/* Main Content */}
       <main className={cn(
-        "min-h-screen pt-56", // Increased padding to account for the full header height with large logo
+        "min-h-screen pt-32 md:pt-56", // Responsive padding for mobile vs desktop
         !hideNavigation && "pb-20" // Account for bottom nav
       )}>
         {children}

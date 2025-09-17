@@ -948,6 +948,13 @@ export default function Home() {
           </Button>
         </div>
 
+        {/* Welcome Message */}
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-white">
+            Welcome Back, {playerData.name}
+          </h1>
+        </div>
+
         {/* Top Navigation */}
         <TopNavigation />
 
