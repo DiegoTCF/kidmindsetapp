@@ -53,9 +53,11 @@ export function WeeklyScheduleCard() {
   const [editingSchedule, setEditingSchedule] = useState<Record<string, string>>({});
   const [newActivity, setNewActivity] = useState({ day: '', activity: '', time: '' });
   const [saving, setSaving] = useState(false);
+  const [sessionStatus, setSessionStatus] = useState<Record<string, 'completed' | 'cancelled' | null>>({});
 
   useEffect(() => {
     loadSchedule();
+    loadSessionStatus();
   }, [user, selectedChild, isViewingAsPlayer]);
 
   const loadSchedule = async () => {
@@ -114,6 +116,103 @@ export function WeeklyScheduleCard() {
       console.error('Error loading schedule:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadSessionStatus = async () => {
+    if (!childId) return;
+    
+    try {
+      // Get current week's activities to see which sessions are completed
+      const startOfWeek = new Date();
+      startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(endOfWeek.getDate() + 6);
+
+      const { data: activities, error } = await supabase
+        .from('activities')
+        .select('activity_date, post_activity_completed, activity_name')
+        .eq('child_id', childId)
+        .gte('activity_date', startOfWeek.toISOString().split('T')[0])
+        .lte('activity_date', endOfWeek.toISOString().split('T')[0]);
+
+      if (error) throw error;
+
+      // Get session overrides for cancelled sessions
+      const { data: overrides, error: overrideError } = await supabase
+        .from('schedule_overrides')
+        .select('*')
+        .eq('child_id', childId)
+        .eq('override_type', 'cancelled')
+        .gte('override_date', startOfWeek.toISOString().split('T')[0])
+        .lte('override_date', endOfWeek.toISOString().split('T')[0]);
+
+      if (overrideError) throw overrideError;
+
+      const status: Record<string, 'completed' | 'cancelled' | null> = {};
+      
+      // Mark completed sessions
+      activities?.forEach(activity => {
+        if (activity.post_activity_completed) {
+          const dayOfWeek = new Date(activity.activity_date).getDay();
+          const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+          status[dayNames[dayOfWeek]] = 'completed';
+        }
+      });
+
+      // Mark cancelled sessions
+      overrides?.forEach(override => {
+        const dayOfWeek = new Date(override.override_date).getDay();
+        const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        status[dayNames[dayOfWeek]] = 'cancelled';
+      });
+
+      setSessionStatus(status);
+    } catch (error) {
+      console.error('Error loading session status:', error);
+    }
+  };
+
+  const handleSessionCancel = async (day: string) => {
+    if (!childId) return;
+    
+    try {
+      const today = new Date();
+      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const dayIndex = dayNames.indexOf(day.toLowerCase());
+      
+      // Calculate the date for this day of the current week
+      const dayDate = new Date();
+      dayDate.setDate(dayDate.getDate() - dayDate.getDay() + dayIndex);
+
+      const { error } = await supabase
+        .from('schedule_overrides')
+        .insert({
+          child_id: childId,
+          override_date: dayDate.toISOString().split('T')[0],
+          override_type: 'cancelled',
+          note: 'Session cancelled by user'
+        });
+
+      if (error) throw error;
+
+      // Update local status
+      setSessionStatus(prev => ({
+        ...prev,
+        [day.toLowerCase()]: 'cancelled'
+      }));
+
+      toast({
+        title: "Session Cancelled",
+        description: `${day} session has been marked as cancelled.`
+      });
+    } catch (error) {
+      console.error('Error cancelling session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to cancel session. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -384,32 +483,65 @@ export function WeeklyScheduleCard() {
           </h4>
           {sortedSchedule.length > 0 ? (
             <div className="space-y-2">
-              {sortedSchedule.map((item, index) => (
-                <div 
-                  key={index} 
-                  className={`flex items-center justify-between p-2 rounded ${
-                    item.day === currentDay 
-                      ? 'bg-primary/20 border border-primary/30' 
-                      : 'bg-muted/50'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className={`text-xs font-medium w-8 ${
-                      item.day === currentDay ? 'text-primary font-bold' : 'text-primary'
-                    }`}>
-                      {item.day}
-                    </span>
-                    <span className={`text-sm ${
-                      item.day === currentDay ? 'font-medium' : ''
-                    }`}>
-                      {item.activity}
-                    </span>
+              {sortedSchedule.map((item, index) => {
+                const dayKey = item.day.toLowerCase() === 'mon' ? 'monday' :
+                              item.day.toLowerCase() === 'tue' ? 'tuesday' :
+                              item.day.toLowerCase() === 'wed' ? 'wednesday' :
+                              item.day.toLowerCase() === 'thu' ? 'thursday' :
+                              item.day.toLowerCase() === 'fri' ? 'friday' :
+                              item.day.toLowerCase() === 'sat' ? 'saturday' :
+                              'sunday';
+                const status = sessionStatus[dayKey];
+                
+                return (
+                  <div 
+                    key={index} 
+                    className={`flex items-center justify-between p-2 rounded ${
+                      item.day === currentDay 
+                        ? 'bg-primary/20 border border-primary/30' 
+                        : 'bg-muted/50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs font-medium w-8 ${
+                        item.day === currentDay ? 'text-primary font-bold' : 'text-primary'
+                      }`}>
+                        {item.day}
+                      </span>
+                      <span className={`text-sm ${
+                        item.day === currentDay ? 'font-medium' : ''
+                      }`}>
+                        {item.activity}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {status === 'completed' && (
+                        <Badge variant="default" className="text-xs bg-green-500/20 text-green-700 dark:text-green-300">
+                          ✓ Done
+                        </Badge>
+                      )}
+                      {status === 'cancelled' && (
+                        <Badge variant="destructive" className="text-xs">
+                          Cancelled
+                        </Badge>
+                      )}
+                      {!status && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs h-6 px-2 text-muted-foreground hover:text-destructive"
+                          onClick={() => handleSessionCancel(dayKey)}
+                        >
+                          Cancel
+                        </Button>
+                      )}
+                      {item.time && (
+                        <span className="text-xs text-muted-foreground">{item.time}</span>
+                      )}
+                    </div>
                   </div>
-                  {item.time && (
-                    <span className="text-xs text-muted-foreground">{item.time}</span>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="text-sm text-muted-foreground bg-muted/30 p-3 rounded">
