@@ -63,13 +63,23 @@ export function WeeklyScheduleCard() {
   // Listen for activity completions to refresh status
   useEffect(() => {
     const handleActivityCompleted = () => {
+      console.log('[WeeklyScheduleCard] Activity completed event received, refreshing status');
       loadSessionStatus();
     };
 
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('[WeeklyScheduleCard] Page became visible, refreshing status');
+        loadSessionStatus();
+      }
+    };
+
     window.addEventListener('activityCompleted', handleActivityCompleted);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     
     return () => {
       window.removeEventListener('activityCompleted', handleActivityCompleted);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
@@ -136,11 +146,25 @@ export function WeeklyScheduleCard() {
     if (!childId) return;
     
     try {
-      // Get current week's activities to see which sessions are completed
-      const startOfWeek = new Date();
-      startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+      // Get current week's activities - use more inclusive date range
+      const today = new Date();
+      const startOfWeek = new Date(today);
+      // Ensure we get Monday as start of week for consistent behavior
+      const day = startOfWeek.getDay();
+      const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Sunday
+      startOfWeek.setDate(diff);
+      startOfWeek.setHours(0, 0, 0, 0);
+      
       const endOfWeek = new Date(startOfWeek);
       endOfWeek.setDate(endOfWeek.getDate() + 6);
+      endOfWeek.setHours(23, 59, 59, 999);
+
+      console.log('[WeeklyScheduleCard] Loading session status for week:', {
+        today: today.toISOString(),
+        startOfWeek: startOfWeek.toISOString().split('T')[0],
+        endOfWeek: endOfWeek.toISOString().split('T')[0],
+        childId
+      });
 
       const { data: activities, error } = await supabase
         .from('activities')
@@ -149,7 +173,12 @@ export function WeeklyScheduleCard() {
         .gte('activity_date', startOfWeek.toISOString().split('T')[0])
         .lte('activity_date', endOfWeek.toISOString().split('T')[0]);
 
-      if (error) throw error;
+      if (error) {
+        console.error('[WeeklyScheduleCard] Error loading activities:', error);
+        throw error;
+      }
+
+      console.log('[WeeklyScheduleCard] Activities found:', activities);
 
       // Get session overrides for cancelled sessions
       const { data: overrides, error: overrideError } = await supabase
@@ -160,16 +189,30 @@ export function WeeklyScheduleCard() {
         .gte('override_date', startOfWeek.toISOString().split('T')[0])
         .lte('override_date', endOfWeek.toISOString().split('T')[0]);
 
-      if (overrideError) throw overrideError;
+      if (overrideError) {
+        console.error('[WeeklyScheduleCard] Error loading overrides:', overrideError);
+        throw overrideError;
+      }
+
+      console.log('[WeeklyScheduleCard] Overrides found:', overrides);
 
       const status: Record<string, 'completed' | 'cancelled' | null> = {};
       
       // Mark completed sessions - check if both pre and post are completed
       activities?.forEach(activity => {
+        console.log('[WeeklyScheduleCard] Checking activity:', {
+          name: activity.activity_name,
+          date: activity.activity_date,
+          pre: activity.pre_activity_completed,
+          post: activity.post_activity_completed
+        });
+        
         if (activity.pre_activity_completed && activity.post_activity_completed) {
           const dayOfWeek = new Date(activity.activity_date).getDay();
           const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-          status[dayNames[dayOfWeek]] = 'completed';
+          const dayName = dayNames[dayOfWeek];
+          console.log('[WeeklyScheduleCard] Marking day as completed:', dayName);
+          status[dayName] = 'completed';
         }
       });
 
@@ -180,6 +223,7 @@ export function WeeklyScheduleCard() {
         status[dayNames[dayOfWeek]] = 'cancelled';
       });
 
+      console.log('[WeeklyScheduleCard] Final session status:', status);
       setSessionStatus(status);
     } catch (error) {
       console.error('Error loading session status:', error);
@@ -454,21 +498,34 @@ export function WeeklyScheduleCard() {
   return (
     <Card className="shadow-soft">
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-primary" />
-            {playerName ? `${playerName}'s Week` : 'This Week'}
-          </CardTitle>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsEditing(true)}
-            className="flex items-center gap-1"
-          >
-            <Edit className="w-3 h-3" />
-            Edit
-          </Button>
-        </div>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-primary" />
+              {playerName ? `${playerName}'s Week` : 'This Week'}
+            </CardTitle>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  console.log('[WeeklyScheduleCard] Manual refresh triggered');
+                  loadSessionStatus();
+                }}
+                className="text-xs"
+              >
+                🔄
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditing(true)}
+                className="flex items-center gap-1"
+              >
+                <Edit className="w-3 h-3" />
+                Edit
+              </Button>
+            </div>
+          </div>
       </CardHeader>
       <CardContent className="space-y-3">
         {/* Today's Activities */}
