@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, CheckCircle, XCircle, Clock, Calendar, Activity } from "lucide-react";
+import { AlertCircle, CheckCircle, XCircle, Clock, Calendar, Activity, Play } from "lucide-react";
 import { useChildData } from "@/hooks/useChildData";
 import { PlayerViewIndicator } from "@/components/layout/PlayerViewIndicator";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,7 +21,22 @@ interface SessionData {
   activity_id?: string;
 }
 
+interface ScheduleDay {
+  day: string;
+  activity: string;
+  time?: string;
+}
+
 const dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+const dayMapping: Record<string, string> = {
+  'monday': 'Mon',
+  'tuesday': 'Tue', 
+  'wednesday': 'Wed',
+  'thursday': 'Thu',
+  'friday': 'Fri',
+  'saturday': 'Sat',
+  'sunday': 'Sun'
+};
 
 const StatusIcon = ({ status }: { status: string }) => {
   switch (status) {
@@ -56,6 +71,7 @@ export default function Schedule() {
   const [sessions, setSessions] = useState<SessionData[]>([]);
   const [weekOffset, setWeekOffset] = useState(0);
   const [loadingSessions, setLoadingSessions] = useState(true);
+  const [weeklySchedule, setWeeklySchedule] = useState<ScheduleDay[]>([]);
 
   const getWeekDates = (offset: number = 0) => {
     const today = new Date();
@@ -69,6 +85,72 @@ export default function Schedule() {
       weekDates.push(date);
     }
     return weekDates;
+  };
+
+  const parseSchedule = (scheduleText: string): ScheduleDay[] => {
+    if (!scheduleText) return [];
+    
+    try {
+      let scheduleData;
+      if (scheduleText.startsWith('{') || scheduleText.startsWith('[')) {
+        scheduleData = JSON.parse(scheduleText);
+      } else {
+        return [];
+      }
+      
+      const schedule: ScheduleDay[] = [];
+      
+      if (typeof scheduleData === 'object' && !Array.isArray(scheduleData)) {
+        Object.entries(scheduleData).forEach(([key, value]) => {
+          if (value) {
+            const dayKey = dayMapping[key.toLowerCase()] || key.substring(0, 3);
+            let activity = '';
+            let time = '';
+            
+            if (typeof value === 'string') {
+              const timePattern = /(\d{1,2}(?::\d{2})?(?:\s*(?:am|pm))?)/i;
+              const timeMatch = value.match(timePattern);
+              activity = timeMatch ? value.replace(timePattern, '').trim() : value;
+              time = timeMatch ? timeMatch[1] : '';
+            }
+            
+            if (activity && activity !== 'null' && activity !== '') {
+              schedule.push({
+                day: dayKey,
+                activity: activity,
+                time: time
+              });
+            }
+          }
+        });
+      }
+      
+      return schedule;
+    } catch (error) {
+      console.error('Error parsing schedule:', error);
+      return [];
+    }
+  };
+
+  const loadWeeklySchedule = async () => {
+    if (!childId) return;
+    
+    try {
+      const { data: childInfo, error } = await supabase
+        .from('children')
+        .select('weekly_schedule')
+        .eq('id', childId)
+        .single();
+
+      if (error) throw error;
+      
+      if (childInfo?.weekly_schedule) {
+        const parsed = parseSchedule(childInfo.weekly_schedule);
+        setWeeklySchedule(parsed);
+      }
+    } catch (error) {
+      console.error('Error loading weekly schedule:', error);
+    }
   };
 
   const loadSessions = async () => {
@@ -106,6 +188,26 @@ export default function Schedule() {
     }
   };
 
+  const handleStartPreForm = (session: SessionData) => {
+    if (session.activity_id) {
+      navigate(`/stadium?startPreForm=${session.activity_id}`);
+    } else {
+      toast({
+        title: "Error",
+        description: "No activity found for this session",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleCompleteNow = (session: SessionData) => {
+    if (session.activity_id) {
+      navigate(`/stadium?resumeActivity=${session.activity_id}`);
+    } else {
+      navigate('/stadium');
+    }
+  };
+
   const handleCancelSession = async (sessionId: string) => {
     try {
       const { error } = await supabase
@@ -134,28 +236,94 @@ export default function Schedule() {
     }
   };
 
-  const handleStartPreForm = (session: SessionData) => {
-    if (session.activity_id) {
-      navigate(`/stadium?startPreForm=${session.activity_id}`);
-    } else {
+  const handleMarkAsDidntHappen = async (date: Date, dayActivity: ScheduleDay) => {
+    if (!childId) return;
+    
+    try {
+      const dateStr = date.toISOString().split('T')[0];
+      const dayName = dayOrder[date.getDay() === 0 ? 6 : date.getDay() - 1]; // Convert Sunday=0 to Saturday=6
+
+      // Create or update session as "missed"
+      const { error } = await supabase.rpc('log_session_status', {
+        p_child_id: childId,
+        p_session_date: dateStr,
+        p_status: 'missed',
+        p_activity_name: dayActivity.activity,
+        p_activity_type: dayActivity.activity.toLowerCase().includes('training') ? 'training' : 
+                          dayActivity.activity.toLowerCase().includes('match') ? 'match' : 'other',
+        p_day_of_week: dayName
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Session Marked as Missed",
+        description: `${dayActivity.activity} has been marked as didn't happen`
+      });
+
+      loadSessions();
+    } catch (error) {
+      console.error('Error marking session as missed:', error);
       toast({
         title: "Error",
-        description: "No activity found for this session",
+        description: "Failed to mark session as missed",
         variant: "destructive"
       });
     }
   };
 
-  const handleCompleteNow = (session: SessionData) => {
-    if (session.activity_id) {
-      navigate(`/stadium?resumeActivity=${session.activity_id}`);
-    } else {
-      navigate('/stadium');
+  const handleStartActivity = async (date: Date, dayActivity: ScheduleDay) => {
+    if (!childId) return;
+    
+    try {
+      const dateStr = date.toISOString().split('T')[0];
+      const dayName = dayOrder[date.getDay() === 0 ? 6 : date.getDay() - 1]; // Convert Sunday=0 to Saturday=6
+
+      // Create an activity for this session
+      const { data: newActivity, error: activityError } = await supabase
+        .from('activities')
+        .insert({
+          child_id: childId,
+          activity_name: dayActivity.activity,
+          activity_type: dayActivity.activity.toLowerCase().includes('1') || dayActivity.activity.toLowerCase().includes('one') ? '1to1' : 'training',
+          activity_date: dateStr,
+          day_of_week: dayName,
+          pre_activity_completed: false,
+          post_activity_completed: false
+        })
+        .select()
+        .single();
+
+      if (activityError) throw activityError;
+
+      toast({
+        title: "Activity Created! 🎉",
+        description: `Ready to start ${dayActivity.activity}`
+      });
+
+      // Navigate to stadium with the new activity
+      navigate(`/stadium?startPreForm=${newActivity.id}`);
+    } catch (error) {
+      console.error('Error creating activity:', error);
+      toast({
+        title: "Error",
+        description: "Failed to start activity",
+        variant: "destructive"
+      });
     }
+  };
+
+  const getScheduledActivityForDate = (date: Date): ScheduleDay | null => {
+    const dayIndex = date.getDay() === 0 ? 6 : date.getDay() - 1; // Convert Sunday=0 to Saturday=6
+    const dayName = dayOrder[dayIndex];
+    const dayShort = dayMapping[dayName];
+    
+    return weeklySchedule.find(item => item.day === dayShort) || null;
   };
 
   useEffect(() => {
     if (childId) {
+      loadWeeklySchedule();
       loadSessions();
     }
   }, [childId, weekOffset]);
@@ -219,32 +387,32 @@ export default function Schedule() {
                       {new Date(session.session_date).toLocaleDateString()} - {session.day_of_week}
                     </div>
                   </div>
-                   <div className="flex gap-2">
-                     {!session.pre_form_completed ? (
-                       <Button
-                         size="sm"
-                         onClick={() => handleStartPreForm(session)}
-                         className="bg-blue-600 hover:bg-blue-700"
-                       >
-                         Start Pre-Form
-                       </Button>
-                     ) : (
-                       <Button
-                         size="sm"
-                         onClick={() => handleCompleteNow(session)}
-                         className="bg-green-600 hover:bg-green-700"
-                       >
-                         Complete Now
-                       </Button>
-                     )}
-                     <Button
-                       size="sm"
-                       variant="outline"
-                       onClick={() => handleCancelSession(session.id)}
-                     >
-                       Mark as Cancelled
-                     </Button>
-                   </div>
+                  <div className="flex gap-2">
+                    {!session.pre_form_completed ? (
+                      <Button
+                        size="sm"
+                        onClick={() => handleStartPreForm(session)}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        Start Pre-Form
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        onClick={() => handleCompleteNow(session)}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        Complete Now
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleCancelSession(session.id)}
+                    >
+                      Mark as Cancelled
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -310,58 +478,98 @@ export default function Schedule() {
                       </span>
                     </div>
                     
-                     {session.activity_name && (
-                       <div className="text-sm mb-3 p-2 bg-muted/50 rounded-md">
-                         <div className="font-medium text-foreground">{session.activity_name}</div>
-                         <div className="text-muted-foreground text-xs capitalize">{session.activity_type}</div>
-                       </div>
-                     )}
-                     
-                     {session.session_status === 'pending' && !session.pre_form_completed && (
-                       <div className="pt-2 space-y-1">
-                         <Button
-                           size="sm"
-                           className="w-full"
-                           onClick={() => handleStartPreForm(session)}
-                         >
-                           <Activity className="h-3 w-3 mr-1" />
-                           Start Pre-Form
-                         </Button>
-                         <Button
-                           size="sm"
-                           variant="outline"
-                           className="w-full"
-                           onClick={() => handleCancelSession(session.id)}
-                         >
-                           Cancel
-                         </Button>
-                       </div>
-                     )}
-                     
-                     {session.session_status === 'pending' && session.pre_form_completed && !session.post_form_completed && (
-                       <div className="pt-2 space-y-1">
-                         <Button
-                           size="sm"
-                           className="w-full"
-                           onClick={() => handleCompleteNow(session)}
-                         >
-                           <Activity className="h-3 w-3 mr-1" />
-                           Complete Session
-                         </Button>
-                         <Button
-                           size="sm"
-                           variant="outline"
-                           className="w-full"
-                           onClick={() => handleCancelSession(session.id)}
-                         >
-                           Cancel
-                         </Button>
-                       </div>
-                     )}
+                    {session.activity_name && (
+                      <div className="text-sm mb-3 p-2 bg-muted/50 rounded-md">
+                        <div className="font-medium text-foreground">{session.activity_name}</div>
+                        <div className="text-muted-foreground text-xs capitalize">{session.activity_type}</div>
+                      </div>
+                    )}
+                    
+                    {session.session_status === 'pending' && !session.pre_form_completed && (
+                      <div className="pt-2 space-y-1">
+                        <Button
+                          size="sm"
+                          className="w-full"
+                          onClick={() => handleStartPreForm(session)}
+                        >
+                          <Activity className="h-3 w-3 mr-1" />
+                          Start Pre-Form
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => handleCancelSession(session.id)}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    )}
+                    
+                    {session.session_status === 'pending' && session.pre_form_completed && !session.post_form_completed && (
+                      <div className="pt-2 space-y-1">
+                        <Button
+                          size="sm"
+                          className="w-full"
+                          onClick={() => handleCompleteNow(session)}
+                        >
+                          <Activity className="h-3 w-3 mr-1" />
+                          Complete Session
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => handleCancelSession(session.id)}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  <div className="text-center text-muted-foreground">
-                    <div className="text-sm">No session</div>
+                  <div>
+                    {(() => {
+                      const scheduledActivity = getScheduledActivityForDate(date);
+                      
+                      if (scheduledActivity) {
+                        return (
+                          <div className="space-y-3">
+                            <div className="p-2 bg-primary/10 rounded-md border-l-2 border-primary">
+                              <div className="text-sm font-medium text-primary">{scheduledActivity.activity}</div>
+                              {scheduledActivity.time && (
+                                <div className="text-xs text-muted-foreground">{scheduledActivity.time}</div>
+                              )}
+                            </div>
+                            
+                            <div className="space-y-1">
+                              <Button
+                                size="sm"
+                                className="w-full"
+                                onClick={() => handleStartActivity(date, scheduledActivity)}
+                              >
+                                <Play className="h-3 w-3 mr-1" />
+                                Start Activity
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="w-full"
+                                onClick={() => handleMarkAsDidntHappen(date, scheduledActivity)}
+                              >
+                                Didn't Happen
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      } else {
+                        return (
+                          <div className="text-center text-muted-foreground">
+                            <div className="text-sm">No session scheduled</div>
+                          </div>
+                        );
+                      }
+                    })()}
                   </div>
                 )}
               </CardContent>
