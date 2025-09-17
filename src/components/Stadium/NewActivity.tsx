@@ -3,6 +3,8 @@ import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useChildData } from "@/hooks/useChildData";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,9 +27,19 @@ interface ScheduledActivity {
   isCompleted?: boolean;
 }
 
+const activityTypes = [
+  { value: "Match", label: "Match" },
+  { value: "Training", label: "Training" },
+  { value: "1to1", label: "One-to-One (Technical)" },
+  { value: "Futsal", label: "Futsal" },
+  { value: "Small Group", label: "Small Group" },
+  { value: "Other", label: "Other" },
+];
+
 export default function NewActivity({ onSubmit, onCancel }: NewActivityProps) {
   const [weeklySchedule, setWeeklySchedule] = useState<ScheduledActivity[]>([]);
   const [selectedActivity, setSelectedActivity] = useState<ScheduledActivity | null>(null);
+  const [selectedType, setSelectedType] = useState<string>("");
   const { childId } = useChildData();
 
   const dayMapping: Record<string, string> = {
@@ -151,13 +163,11 @@ export default function NewActivity({ onSubmit, onCancel }: NewActivityProps) {
   };
 
   const handleSubmit = () => {
-    if (!selectedActivity) return;
+    if (!selectedActivity || !selectedType) return;
     
     onSubmit({
       name: selectedActivity.activity,
-      type: selectedActivity.activity.toLowerCase().includes('1') || 
-            selectedActivity.activity.toLowerCase().includes('one') ? '1to1' : 
-            selectedActivity.activity.toLowerCase().includes('match') ? 'Match' : 'Training',
+      type: selectedType,
       date: selectedActivity.date,
       scheduledActivity: selectedActivity
     });
@@ -188,7 +198,24 @@ export default function NewActivity({ onSubmit, onCancel }: NewActivityProps) {
                         : "border-muted hover:border-primary/50 hover:shadow-sm",
                       scheduleItem.isCompleted && "opacity-60"
                     )}
-                    onClick={() => !scheduleItem.isCompleted && setSelectedActivity(scheduleItem)}
+                    onClick={() => {
+                      if (!scheduleItem.isCompleted) {
+                        setSelectedActivity(scheduleItem);
+                        // Auto-detect activity type based on name
+                        const activityName = scheduleItem.activity.toLowerCase();
+                        if (activityName.includes('1-to-1') || activityName.includes('1to1') || activityName.includes('one-to-one')) {
+                          setSelectedType('1to1');
+                        } else if (activityName.includes('match')) {
+                          setSelectedType('Match');
+                        } else if (activityName.includes('futsal')) {
+                          setSelectedType('Futsal');
+                        } else if (activityName.includes('small group')) {
+                          setSelectedType('Small Group');
+                        } else {
+                          setSelectedType('Training');
+                        }
+                      }
+                    }}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
@@ -228,6 +255,28 @@ export default function NewActivity({ onSubmit, onCancel }: NewActivityProps) {
               </div>
             )}
 
+            {/* Activity Type Selection */}
+            {selectedActivity && (
+              <div className="space-y-2">
+                <Label htmlFor="activity-type">What type of session is this?</Label>
+                <Select value={selectedType} onValueChange={setSelectedType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select session type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {activityTypes.map((type) => (
+                      <SelectItem key={type.value} value={type.value}>
+                        {type.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Choose the type that best matches your session
+                </p>
+              </div>
+            )}
+
             <div className="flex gap-3 pt-4">
               <Button 
                 variant="outline" 
@@ -238,7 +287,7 @@ export default function NewActivity({ onSubmit, onCancel }: NewActivityProps) {
               </Button>
               <Button 
                 onClick={handleSubmit}
-                disabled={!selectedActivity || selectedActivity.isCompleted}
+                disabled={!selectedActivity || selectedActivity.isCompleted || !selectedType}
                 className="flex-1"
               >
                 Start Session
