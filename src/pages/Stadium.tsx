@@ -211,15 +211,81 @@ export default function Stadium() {
     }
   };
 
-  const handleNewActivitySubmit = (activity: ActivityData) => {
-    setCurrentActivity(activity);
-    setShowNewActivity(false);
-    
-    // Route to One-to-One forms if activity type is 1to1
-    if (activity.type === '1to1') {
-      setShowOneToOnePreForm(true);
+  const handleNewActivitySubmit = async (activity: {
+    name: string;
+    type: string;
+    date: Date;
+    isScheduled?: boolean;
+    scheduledActivity?: { day: string; activity: string; time?: string };
+  }) => {
+    if (activity.isScheduled && activity.scheduledActivity) {
+      // Handle scheduled activity
+      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const dayName = dayNames[activity.date.getDay()];
+
+      try {
+        // Create the activity in the database
+        const { data: newActivity, error: activityError } = await supabase
+          .from('activities')
+          .insert({
+            child_id: currentChildId,
+            activity_name: activity.name,
+            activity_type: activity.type,
+            activity_date: activity.date.toISOString().split('T')[0],
+            day_of_week: dayName,
+            pre_activity_completed: false,
+            post_activity_completed: false
+          })
+          .select()
+          .single();
+
+        if (activityError) throw activityError;
+
+        // Create session tracking entry
+        await supabase.rpc('log_session_status', {
+          p_child_id: currentChildId,
+          p_session_date: activity.date.toISOString().split('T')[0],
+          p_status: 'pending',
+          p_activity_name: activity.name,
+          p_activity_type: activity.type,
+          p_day_of_week: dayName
+        });
+
+        // Update session with activity_id
+        await supabase
+          .from('session_tracking')
+          .update({ activity_id: newActivity.id })
+          .eq('child_id', currentChildId)
+          .eq('session_date', activity.date.toISOString().split('T')[0]);
+
+        setCurrentActivity(activity);
+        setShowNewActivity(false);
+        
+        // Route to appropriate forms
+        if (activity.type === '1to1') {
+          setShowOneToOnePreForm(true);
+        } else {
+          setShowActivityForm(true);
+        }
+      } catch (error) {
+        console.error('Error creating scheduled activity:', error);
+        toast({
+          title: "Error",
+          description: "Failed to create scheduled activity",
+          variant: "destructive"
+        });
+      }
     } else {
-      setShowActivityForm(true);
+      // Handle regular new activity (existing flow)
+      setCurrentActivity(activity);
+      setShowNewActivity(false);
+      
+      // Route to One-to-One forms if activity type is 1to1
+      if (activity.type === '1to1') {
+        setShowOneToOnePreForm(true);
+      } else {
+        setShowActivityForm(true);
+      }
     }
   };
 
