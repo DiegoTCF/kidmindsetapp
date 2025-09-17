@@ -134,6 +134,18 @@ export default function Schedule() {
     }
   };
 
+  const handleStartPreForm = (session: SessionData) => {
+    if (session.activity_id) {
+      navigate(`/stadium?startPreForm=${session.activity_id}`);
+    } else {
+      toast({
+        title: "Error",
+        description: "No activity found for this session",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleCompleteNow = (session: SessionData) => {
     if (session.activity_id) {
       navigate(`/stadium?resumeActivity=${session.activity_id}`);
@@ -207,22 +219,32 @@ export default function Schedule() {
                       {new Date(session.session_date).toLocaleDateString()} - {session.day_of_week}
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={() => handleCompleteNow(session)}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      Complete Now
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleCancelSession(session.id)}
-                    >
-                      Mark as Cancelled
-                    </Button>
-                  </div>
+                   <div className="flex gap-2">
+                     {!session.pre_form_completed ? (
+                       <Button
+                         size="sm"
+                         onClick={() => handleStartPreForm(session)}
+                         className="bg-blue-600 hover:bg-blue-700"
+                       >
+                         Start Pre-Form
+                       </Button>
+                     ) : (
+                       <Button
+                         size="sm"
+                         onClick={() => handleCompleteNow(session)}
+                         className="bg-green-600 hover:bg-green-700"
+                       >
+                         Complete Now
+                       </Button>
+                     )}
+                     <Button
+                       size="sm"
+                       variant="outline"
+                       onClick={() => handleCancelSession(session.id)}
+                     >
+                       Mark as Cancelled
+                     </Button>
+                   </div>
                 </div>
               ))}
             </div>
@@ -288,33 +310,54 @@ export default function Schedule() {
                       </span>
                     </div>
                     
-                    {session.activity_name && (
-                      <div className="text-sm">
-                        <div className="font-medium">{session.activity_name}</div>
-                        <div className="text-muted-foreground">{session.activity_type}</div>
-                      </div>
-                    )}
-                    
-                    {session.session_status === 'pending' && (
-                      <div className="pt-2 space-y-1">
-                        <Button
-                          size="sm"
-                          className="w-full"
-                          onClick={() => handleCompleteNow(session)}
-                        >
-                          <Activity className="h-3 w-3 mr-1" />
-                          Complete
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="w-full"
-                          onClick={() => handleCancelSession(session.id)}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    )}
+                     {session.activity_name && (
+                       <div className="text-sm mb-3 p-2 bg-muted/50 rounded-md">
+                         <div className="font-medium text-foreground">{session.activity_name}</div>
+                         <div className="text-muted-foreground text-xs capitalize">{session.activity_type}</div>
+                       </div>
+                     )}
+                     
+                     {session.session_status === 'pending' && !session.pre_form_completed && (
+                       <div className="pt-2 space-y-1">
+                         <Button
+                           size="sm"
+                           className="w-full"
+                           onClick={() => handleStartPreForm(session)}
+                         >
+                           <Activity className="h-3 w-3 mr-1" />
+                           Start Pre-Form
+                         </Button>
+                         <Button
+                           size="sm"
+                           variant="outline"
+                           className="w-full"
+                           onClick={() => handleCancelSession(session.id)}
+                         >
+                           Cancel
+                         </Button>
+                       </div>
+                     )}
+                     
+                     {session.session_status === 'pending' && session.pre_form_completed && !session.post_form_completed && (
+                       <div className="pt-2 space-y-1">
+                         <Button
+                           size="sm"
+                           className="w-full"
+                           onClick={() => handleCompleteNow(session)}
+                         >
+                           <Activity className="h-3 w-3 mr-1" />
+                           Complete Session
+                         </Button>
+                         <Button
+                           size="sm"
+                           variant="outline"
+                           className="w-full"
+                           onClick={() => handleCancelSession(session.id)}
+                         >
+                           Cancel
+                         </Button>
+                       </div>
+                     )}
                   </div>
                 ) : (
                   <div className="text-center text-muted-foreground">

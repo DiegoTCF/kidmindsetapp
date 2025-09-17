@@ -54,6 +54,77 @@ export default function Stadium() {
     }
   }, [currentChildId]);
 
+  // Handle URL parameters for resuming activities or starting pre-forms
+  useEffect(() => {
+    if (!incompleteActivities.length) return;
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const resumeActivityId = urlParams.get('resumeActivity');
+    const startPreFormId = urlParams.get('startPreForm');
+    
+    if (resumeActivityId) {
+      const activityToResume = incompleteActivities.find(
+        activity => activity.id === resumeActivityId
+      );
+      
+      if (activityToResume) {
+        setResumingActivity(activityToResume);
+        
+        if (activityToResume.activity_type === '1to1') {
+          if (!activityToResume.pre_activity_completed) {
+            setCurrentActivity({
+              name: activityToResume.activity_name,
+              type: activityToResume.activity_type,
+              date: new Date(activityToResume.activity_date)
+            });
+            setShowOneToOnePreForm(true);
+          } else {
+            setCurrentActivity({
+              name: activityToResume.activity_name,
+              type: activityToResume.activity_type,
+              date: new Date(activityToResume.activity_date)
+            });
+            setShowOneToOnePostForm(true);
+          }
+        } else {
+          setCurrentActivity({
+            name: activityToResume.activity_name,
+            type: activityToResume.activity_type,
+            date: new Date(activityToResume.activity_date)
+          });
+          setShowActivityForm(true);
+        }
+        
+        // Clear URL params after handling
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }
+    
+    if (startPreFormId) {
+      const activityToStart = incompleteActivities.find(
+        activity => activity.id === startPreFormId
+      );
+      
+      if (activityToStart && !activityToStart.pre_activity_completed) {
+        setResumingActivity(activityToStart);
+        setCurrentActivity({
+          name: activityToStart.activity_name,
+          type: activityToStart.activity_type,
+          date: new Date(activityToStart.activity_date)
+        });
+        
+        if (activityToStart.activity_type === '1to1') {
+          setShowOneToOnePreForm(true);
+        } else {
+          setShowActivityForm(true);
+        }
+        
+        // Clear URL params after handling
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }
+  }, [incompleteActivities]);
+
   // Also reload when component becomes visible again (user returns from other pages)
   useEffect(() => {
     const handleVisibilityChange = () => {
