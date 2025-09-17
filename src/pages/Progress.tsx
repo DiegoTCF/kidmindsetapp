@@ -11,6 +11,7 @@ import BehaviourCharts from "@/components/Progress/BehaviourCharts";
 import { CoreSkillsHistory } from "@/components/Progress/CoreSkillsHistory";
 import { BestSelfTracker } from "@/components/Progress/BestSelfTracker";
 import { SessionCompletionProgress } from "@/components/Progress/SessionCompletionProgress";
+import { WeeklyCompletionTracker } from "@/components/Progress/WeeklyCompletionTracker";
 const activityFilters = ["All", "Match", "Training", "1to1", "Futsal", "Small Group", "Other"];
 
 export default function Progress() {
@@ -91,7 +92,10 @@ export default function Progress() {
         </TabsContent>
 
         <TabsContent value="schedule" className="space-y-6">
-          <SessionCompletionProgress childId={childId} />
+          <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+            <WeeklyCompletionTracker />
+            <SessionCompletionProgress childId={childId} />
+          </div>
         </TabsContent>
       </Tabs>
     </div>

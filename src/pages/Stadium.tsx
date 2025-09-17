@@ -215,16 +215,15 @@ export default function Stadium() {
     name: string;
     type: string;
     date: Date;
-    isScheduled?: boolean;
-    scheduledActivity?: { day: string; activity: string; time?: string };
+    scheduledActivity?: { day: string; activity: string; time?: string; date: Date };
   }) => {
-    if (activity.isScheduled && activity.scheduledActivity) {
-      // Handle scheduled activity
+    if (activity.scheduledActivity) {
+      // Handle scheduled activity - create and link to session tracking
       const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
       const dayName = dayNames[activity.date.getDay()];
 
       try {
-        // Create the activity in the database
+        // Create the activity in the database first
         const { data: newActivity, error: activityError } = await supabase
           .from('activities')
           .insert({
@@ -241,7 +240,7 @@ export default function Stadium() {
 
         if (activityError) throw activityError;
 
-        // Create session tracking entry
+        // Create/update session tracking entry
         await supabase.rpc('log_session_status', {
           p_child_id: currentChildId,
           p_session_date: activity.date.toISOString().split('T')[0],
@@ -251,7 +250,7 @@ export default function Stadium() {
           p_day_of_week: dayName
         });
 
-        // Update session with activity_id
+        // Link the activity to the session
         await supabase
           .from('session_tracking')
           .update({ activity_id: newActivity.id })
@@ -271,16 +270,15 @@ export default function Stadium() {
         console.error('Error creating scheduled activity:', error);
         toast({
           title: "Error",
-          description: "Failed to create scheduled activity",
+          description: "Failed to create activity",
           variant: "destructive"
         });
       }
     } else {
-      // Handle regular new activity (existing flow)
+      // Handle non-scheduled activity (shouldn't happen with new flow, but keep as fallback)
       setCurrentActivity(activity);
       setShowNewActivity(false);
       
-      // Route to One-to-One forms if activity type is 1to1
       if (activity.type === '1to1') {
         setShowOneToOnePreForm(true);
       } else {
