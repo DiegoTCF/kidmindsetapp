@@ -53,10 +53,32 @@ export function WeeklyScheduleCard() {
   const [editingSchedule, setEditingSchedule] = useState<Record<string, string>>({});
   const [newActivity, setNewActivity] = useState({ day: '', activity: '', time: '' });
   const [saving, setSaving] = useState(false);
+  const [weeklyActivities, setWeeklyActivities] = useState<any[]>([]);
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const [showDayToggle, setShowDayToggle] = useState(false);
 
   useEffect(() => {
     loadSchedule();
+    loadWeeklyActivities();
   }, [user, selectedChild, isViewingAsPlayer]);
+
+  useEffect(() => {
+    const handleActivityCompleted = () => {
+      loadWeeklyActivities();
+    };
+
+    window.addEventListener('activityCompleted', handleActivityCompleted);
+    
+    return () => {
+      window.removeEventListener('activityCompleted', handleActivityCompleted);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (childId) {
+      loadWeeklyActivities();
+    }
+  }, [childId]);
 
   const loadSchedule = async () => {
     if (!user) return;
@@ -283,6 +305,32 @@ export function WeeklyScheduleCard() {
     setEditingSchedule(updated);
   };
 
+  const loadWeeklyActivities = async () => {
+    if (!childId) return;
+    
+    try {
+      // Get start and end of current week
+      const now = new Date();
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - now.getDay() + 1); // Monday
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6); // Sunday
+      
+      const { data: activities, error } = await supabase
+        .from('activities')
+        .select('*')
+        .eq('child_id', childId)
+        .gte('activity_date', startOfWeek.toISOString().split('T')[0])
+        .lte('activity_date', endOfWeek.toISOString().split('T')[0]);
+        
+      if (error) throw error;
+      
+      setWeeklyActivities(activities || []);
+    } catch (error) {
+      console.error('Error loading weekly activities:', error);
+    }
+  };
+
   const handleAddActivity = () => {
     if (newActivity.day && newActivity.activity) {
       const activityText = newActivity.time 
@@ -296,6 +344,137 @@ export function WeeklyScheduleCard() {
       
       setNewActivity({ day: '', activity: '', time: '' });
     }
+  };
+
+  const getFormStatus = () => {
+    const parsedSchedule = parseSchedule(schedule || '');
+    const thisWeekActivities = weeklyActivities;
+    
+    let completedForms = 0;
+    let totalForms = 0;
+    
+    parsedSchedule.forEach(scheduleDay => {
+      // Convert day abbreviation to full day name
+      const dayMap: Record<string, string> = {
+        'Mon': 'monday', 'Tue': 'tuesday', 'Wed': 'wednesday', 
+        'Thu': 'thursday', 'Fri': 'friday', 'Sat': 'saturday', 'Sun': 'sunday'
+      };
+      
+      const fullDayName = dayMap[scheduleDay.day];
+      if (!fullDayName) return;
+      
+      totalForms++;
+      
+      // Check if there's a completed activity for this day
+      const dayActivity = thisWeekActivities.find(activity => {
+        const activityDay = new Date(activity.activity_date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+        return activityDay === fullDayName && activity.pre_activity_completed && activity.post_activity_completed;
+      });
+      
+      if (dayActivity) {
+        completedForms++;
+      }
+    });
+    
+    return { completedForms, totalForms };
+  };
+
+  const handleDayClick = (day: string, activity: string) => {
+    setSelectedDay(day);
+    setShowDayToggle(true);
+  };
+
+  const handleStartActivity = () => {
+    if (!selectedDay) return;
+    
+    const dayMap: Record<string, string> = {
+      'Mon': 'monday', 'Tue': 'tuesday', 'Wed': 'wednesday', 
+      'Thu': 'thursday', 'Fri': 'friday', 'Sat': 'saturday', 'Sun': 'sunday'
+    };
+    
+    const fullDayName = dayMap[selectedDay];
+    const parsedSchedule = parseSchedule(schedule || '');
+    const daySchedule = parsedSchedule.find(s => s.day === selectedDay);
+    
+    if (daySchedule) {
+      // Navigate to Stadium with pre-filled activity data
+      const activityData = {
+        name: daySchedule.activity,
+        type: 'Match', // Default type, can be customized
+        date: new Date(),
+        day: fullDayName
+      };
+      
+      // Store activity data for Stadium to pick up
+      sessionStorage.setItem('scheduledActivity', JSON.stringify(activityData));
+      
+      // Navigate to Stadium
+      window.location.href = '/stadium';
+    }
+    
+    setShowDayToggle(false);
+    setSelectedDay(null);
+  };
+
+  const handleCancelActivity = async () => {
+    if (!selectedDay || !childId) return;
+    
+    try {
+      const dayMap: Record<string, string> = {
+        'Mon': 'monday', 'Tue': 'tuesday', 'Wed': 'wednesday', 
+        'Thu': 'thursday', 'Fri': 'friday', 'Sat': 'saturday', 'Sun': 'sunday'
+      };
+      
+      const fullDayName = dayMap[selectedDay];
+      const today = new Date();
+      
+      // Create a cancelled activity entry
+      const { error } = await supabase
+        .from('activities')
+        .insert({
+          child_id: childId,
+          activity_name: `Cancelled - ${parsedSchedule.find(s => s.day === selectedDay)?.activity || 'Activity'}`,
+          activity_type: 'cancelled',
+          activity_date: today.toISOString().split('T')[0],
+          pre_activity_completed: false,
+          post_activity_completed: false,
+          points_awarded: 0
+        });
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Activity Cancelled",
+        description: "Activity has been marked as cancelled for today."
+      });
+      
+      loadWeeklyActivities();
+    } catch (error) {
+      console.error('Error cancelling activity:', error);
+      toast({
+        title: "Error",
+        description: "Failed to cancel activity. Please try again.",
+        variant: "destructive"
+      });
+    }
+    
+    setShowDayToggle(false);
+    setSelectedDay(null);
+  };
+
+  const isFormCompleted = (day: string) => {
+    const dayMap: Record<string, string> = {
+      'Mon': 'monday', 'Tue': 'tuesday', 'Wed': 'wednesday', 
+      'Thu': 'thursday', 'Fri': 'friday', 'Sat': 'saturday', 'Sun': 'sunday'
+    };
+    
+    const fullDayName = dayMap[day];
+    if (!fullDayName) return false;
+    
+    return weeklyActivities.some(activity => {
+      const activityDay = new Date(activity.activity_date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+      return activityDay === fullDayName && activity.pre_activity_completed && activity.post_activity_completed;
+    });
   };
 
   if (loading) {
@@ -335,9 +514,7 @@ export function WeeklyScheduleCard() {
 
   const parsedSchedule = parseSchedule(schedule);
   const sortedSchedule = sortScheduleByDay(parsedSchedule);
-  const todayActivities = getCurrentDayActivities(parsedSchedule);
-  const currentDay = getCurrentDay();
-  const hasActivitiesToday = todayActivities.length > 0;
+  const { completedForms, totalForms } = getFormStatus();
 
   return (
     <Card className="shadow-soft">
@@ -359,57 +536,67 @@ export function WeeklyScheduleCard() {
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        {/* Today's Activities */}
-        {hasActivitiesToday && (
-          <div className="p-3 bg-primary/10 rounded-lg border-l-4 border-primary">
-            <h4 className="text-sm font-semibold text-primary mb-2">Today</h4>
-            {todayActivities.map((activity, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <span className="text-sm font-medium">{activity.activity}</span>
-                {activity.time && (
-                  <Badge variant="secondary" className="text-xs">
-                    <Clock className="w-3 h-3 mr-1" />
-                    {activity.time}
-                  </Badge>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+        {/* Form Status */}
+        <div className="p-3 bg-muted/30 rounded-lg">
+          {totalForms === 0 ? (
+            <p className="text-sm text-muted-foreground text-center">
+              No activities scheduled this week
+            </p>
+          ) : completedForms === totalForms ? (
+            <p className="text-sm text-green-600 font-medium text-center">
+              ✅ You are up to date with your forms
+            </p>
+          ) : (
+            <p className="text-sm text-orange-600 font-medium text-center">
+              📝 You have {totalForms - completedForms} forms this week to complete or mark as cancelled
+            </p>
+          )}
+        </div>
 
-        {/* Weekly Overview */}
+        {/* Weekly Schedule */}
         <div>
           <h4 className="text-sm font-medium text-muted-foreground mb-2">
             Weekly Schedule
           </h4>
           {sortedSchedule.length > 0 ? (
             <div className="space-y-2">
-              {sortedSchedule.map((item, index) => (
-                <div 
-                  key={index} 
-                  className={`flex items-center justify-between p-2 rounded ${
-                    item.day === currentDay 
-                      ? 'bg-primary/20 border border-primary/30' 
-                      : 'bg-muted/50'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className={`text-xs font-medium w-8 ${
-                      item.day === currentDay ? 'text-primary font-bold' : 'text-primary'
-                    }`}>
-                      {item.day}
-                    </span>
-                    <span className={`text-sm ${
-                      item.day === currentDay ? 'font-medium' : ''
-                    }`}>
-                      {item.activity}
-                    </span>
+              {sortedSchedule.map((item, index) => {
+                const isCompleted = isFormCompleted(item.day);
+                return (
+                  <div 
+                    key={index} 
+                    onClick={() => handleDayClick(item.day, item.activity)}
+                    className={`flex items-center justify-between p-3 rounded cursor-pointer transition-all hover:shadow-md ${
+                      isCompleted 
+                        ? 'bg-green-50 border border-green-200' 
+                        : 'bg-muted/50 hover:bg-muted/70'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-semibold text-primary w-10">
+                        {item.day}
+                      </span>
+                      <div>
+                        <span className="text-sm font-medium">
+                          {item.activity}
+                        </span>
+                        {item.time && (
+                          <div className="text-xs text-muted-foreground">
+                            {item.time}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {isCompleted && (
+                        <span className="text-green-600 text-sm font-medium">
+                          ✓ Completed
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  {item.time && (
-                    <span className="text-xs text-muted-foreground">{item.time}</span>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="text-sm text-muted-foreground bg-muted/30 p-3 rounded">
@@ -417,6 +604,68 @@ export function WeeklyScheduleCard() {
             </div>
           )}
         </div>
+
+        {/* Day Action Toggle */}
+        <Dialog open={showDayToggle} onOpenChange={setShowDayToggle}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>
+                {selectedDay && isFormCompleted(selectedDay) 
+                  ? `${selectedDay} - Completed` 
+                  : `${selectedDay} Activity`}
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              {selectedDay && isFormCompleted(selectedDay) ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-green-600">
+                    ✅ Forms completed for this day
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        // Handle edit form
+                        setShowDayToggle(false);
+                        toast({
+                          title: "Edit Form",
+                          description: "Edit functionality coming soon!"
+                        });
+                      }}
+                      className="flex-1"
+                    >
+                      Edit Form
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={handleCancelActivity}
+                      className="flex-1"
+                    >
+                      Mark as Cancelled
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleStartActivity}
+                    className="flex-1 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+                  >
+                    Start Activity
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleCancelActivity}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Edit Schedule Dialog */}
         <Dialog open={isEditing} onOpenChange={setIsEditing}>

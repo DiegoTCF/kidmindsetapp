@@ -51,6 +51,7 @@ export default function Stadium() {
   useEffect(() => {
     if (currentChildId) {
       loadIncompleteActivities();
+      checkForScheduledActivity();
     }
   }, [currentChildId]);
 
@@ -79,6 +80,20 @@ export default function Stadium() {
       window.removeEventListener('activityDeleted', handleActivityDeleted as EventListener);
     };
   }, []);
+
+  const checkForScheduledActivity = () => {
+    const scheduledActivity = sessionStorage.getItem('scheduledActivity');
+    if (scheduledActivity) {
+      try {
+        const activityData = JSON.parse(scheduledActivity);
+        setCurrentActivity(activityData);
+        setShowActivityForm(true);
+        sessionStorage.removeItem('scheduledActivity'); // Clear after use
+      } catch (error) {
+        console.error('Error parsing scheduled activity:', error);
+      }
+    }
+  };
 
   const loadIncompleteActivities = async () => {
     if (!currentChildId) return;
@@ -157,6 +172,9 @@ export default function Stadium() {
     setCurrentActivity(null);
     setResumingActivity(null);
     loadIncompleteActivities(); // Reload to update the list
+    
+    // Dispatch event for WeeklyScheduleCard to refresh
+    window.dispatchEvent(new CustomEvent('activityCompleted'));
   };
 
   const handleOneToOnePreComplete = async (preData: any) => {
@@ -298,6 +316,9 @@ export default function Stadium() {
       setCurrentActivity(null);
       setOneToOnePreData(null);
       loadIncompleteActivities();
+      
+      // Dispatch event for WeeklyScheduleCard to refresh
+      window.dispatchEvent(new CustomEvent('activityCompleted'));
     } catch (error) {
       console.error('Error completing one-to-one session:', error);
       toast({
