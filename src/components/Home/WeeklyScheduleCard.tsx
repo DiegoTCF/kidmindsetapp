@@ -53,35 +53,10 @@ export function WeeklyScheduleCard() {
   const [editingSchedule, setEditingSchedule] = useState<Record<string, string>>({});
   const [newActivity, setNewActivity] = useState({ day: '', activity: '', time: '' });
   const [saving, setSaving] = useState(false);
-  const [sessionStatus, setSessionStatus] = useState<Record<string, 'completed' | 'cancelled' | null>>({});
 
   useEffect(() => {
     loadSchedule();
-    loadSessionStatus();
   }, [user, selectedChild, isViewingAsPlayer]);
-
-  // Listen for activity completions to refresh status
-  useEffect(() => {
-    const handleActivityCompleted = () => {
-      console.log('[WeeklyScheduleCard] Activity completed event received, refreshing status');
-      loadSessionStatus();
-    };
-
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        console.log('[WeeklyScheduleCard] Page became visible, refreshing status');
-        loadSessionStatus();
-      }
-    };
-
-    window.addEventListener('activityCompleted', handleActivityCompleted);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    
-    return () => {
-      window.removeEventListener('activityCompleted', handleActivityCompleted);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, []);
 
   const loadSchedule = async () => {
     if (!user) return;
@@ -139,152 +114,6 @@ export function WeeklyScheduleCard() {
       console.error('Error loading schedule:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadSessionStatus = async () => {
-    if (!childId) return;
-    
-    try {
-      // Get current week's activities - use more inclusive date range
-      const today = new Date();
-      console.log('[WeeklyScheduleCard] Today is:', today.toDateString(), 'Day of week:', today.getDay());
-      
-      const startOfWeek = new Date(today);
-      // Ensure we get Monday as start of week for consistent behavior
-      const day = startOfWeek.getDay();
-      const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Sunday
-      startOfWeek.setDate(diff);
-      startOfWeek.setHours(0, 0, 0, 0);
-      
-      const endOfWeek = new Date(startOfWeek);
-      endOfWeek.setDate(endOfWeek.getDate() + 6);
-      endOfWeek.setHours(23, 59, 59, 999);
-
-      console.log('[WeeklyScheduleCard] Week calculation:', {
-        today: today.toDateString(),
-        todayDay: today.getDay(),
-        startOfWeek: startOfWeek.toDateString(),
-        endOfWeek: endOfWeek.toDateString(),
-        startOfWeekISO: startOfWeek.toISOString().split('T')[0],
-        endOfWeekISO: endOfWeek.toISOString().split('T')[0],
-        childId
-      });
-
-      const { data: activities, error } = await supabase
-        .from('activities')
-        .select('activity_date, post_activity_completed, pre_activity_completed, activity_name, activity_type')
-        .eq('child_id', childId)
-        .gte('activity_date', startOfWeek.toISOString().split('T')[0])
-        .lte('activity_date', endOfWeek.toISOString().split('T')[0]);
-
-      if (error) {
-        console.error('[WeeklyScheduleCard] Error loading activities:', error);
-        throw error;
-      }
-
-      console.log('[WeeklyScheduleCard] Activities found:', activities);
-
-      // Get session overrides for cancelled sessions
-      const { data: overrides, error: overrideError } = await supabase
-        .from('schedule_overrides')
-        .select('*')
-        .eq('child_id', childId)
-        .eq('override_type', 'cancelled')
-        .gte('override_date', startOfWeek.toISOString().split('T')[0])
-        .lte('override_date', endOfWeek.toISOString().split('T')[0]);
-
-      if (overrideError) {
-        console.error('[WeeklyScheduleCard] Error loading overrides:', overrideError);
-        throw overrideError;
-      }
-
-      console.log('[WeeklyScheduleCard] Overrides found:', overrides);
-
-      const status: Record<string, 'completed' | 'cancelled' | null> = {};
-      
-      // Mark completed sessions - check if both pre and post are completed
-      // Only mark as completed if the activity date is today or in the past
-      const currentDate = new Date();
-      currentDate.setHours(23, 59, 59, 999); // End of today
-      
-      activities?.forEach(activity => {
-        const activityDate = new Date(activity.activity_date);
-        
-        console.log('[WeeklyScheduleCard] Checking activity:', {
-          name: activity.activity_name,
-          date: activity.activity_date,
-          activityDate: activityDate.toDateString(),
-          currentDate: currentDate.toDateString(),
-          isPastOrToday: activityDate <= currentDate,
-          pre: activity.pre_activity_completed,
-          post: activity.post_activity_completed
-        });
-        
-        // Only mark as completed if the activity is today or in the past AND both forms are completed
-        if (activity.pre_activity_completed && activity.post_activity_completed && activityDate <= currentDate) {
-          const dayOfWeek = activityDate.getDay();
-          const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-          const dayName = dayNames[dayOfWeek];
-          console.log('[WeeklyScheduleCard] Marking day as completed:', dayName);
-          status[dayName] = 'completed';
-        }
-      });
-
-      // Mark cancelled sessions
-      overrides?.forEach(override => {
-        const dayOfWeek = new Date(override.override_date).getDay();
-        const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-        status[dayNames[dayOfWeek]] = 'cancelled';
-      });
-
-      console.log('[WeeklyScheduleCard] Final session status:', status);
-      setSessionStatus(status);
-    } catch (error) {
-      console.error('Error loading session status:', error);
-    }
-  };
-
-  const handleSessionCancel = async (day: string) => {
-    if (!childId) return;
-    
-    try {
-      const today = new Date();
-      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-      const dayIndex = dayNames.indexOf(day.toLowerCase());
-      
-      // Calculate the date for this day of the current week
-      const dayDate = new Date();
-      dayDate.setDate(dayDate.getDate() - dayDate.getDay() + dayIndex);
-
-      const { error } = await supabase
-        .from('schedule_overrides')
-        .insert({
-          child_id: childId,
-          override_date: dayDate.toISOString().split('T')[0],
-          override_type: 'cancelled',
-          note: 'Session cancelled by user'
-        });
-
-      if (error) throw error;
-
-      // Update local status
-      setSessionStatus(prev => ({
-        ...prev,
-        [day.toLowerCase()]: 'cancelled'
-      }));
-
-      toast({
-        title: "Session Cancelled",
-        description: `${day} session has been marked as cancelled.`
-      });
-    } catch (error) {
-      console.error('Error cancelling session:', error);
-      toast({
-        title: "Error",
-        description: "Failed to cancel session. Please try again.",
-        variant: "destructive"
-      });
     }
   };
 
@@ -513,34 +342,21 @@ export function WeeklyScheduleCard() {
   return (
     <Card className="shadow-soft">
       <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-primary" />
-              {playerName ? `${playerName}'s Week` : 'This Week'}
-            </CardTitle>
-            <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  console.log('[WeeklyScheduleCard] Manual refresh triggered');
-                  loadSessionStatus();
-                }}
-                className="text-xs"
-              >
-                🔄
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsEditing(true)}
-                className="flex items-center gap-1"
-              >
-                <Edit className="w-3 h-3" />
-                Edit
-              </Button>
-            </div>
-          </div>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-primary" />
+            {playerName ? `${playerName}'s Week` : 'This Week'}
+          </CardTitle>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsEditing(true)}
+            className="flex items-center gap-1"
+          >
+            <Edit className="w-3 h-3" />
+            Edit
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
         {/* Today's Activities */}
@@ -568,65 +384,32 @@ export function WeeklyScheduleCard() {
           </h4>
           {sortedSchedule.length > 0 ? (
             <div className="space-y-2">
-              {sortedSchedule.map((item, index) => {
-                const dayKey = item.day.toLowerCase() === 'mon' ? 'monday' :
-                              item.day.toLowerCase() === 'tue' ? 'tuesday' :
-                              item.day.toLowerCase() === 'wed' ? 'wednesday' :
-                              item.day.toLowerCase() === 'thu' ? 'thursday' :
-                              item.day.toLowerCase() === 'fri' ? 'friday' :
-                              item.day.toLowerCase() === 'sat' ? 'saturday' :
-                              'sunday';
-                const status = sessionStatus[dayKey];
-                
-                return (
-                  <div 
-                    key={index} 
-                    className={`flex items-center justify-between p-2 rounded ${
-                      item.day === currentDay 
-                        ? 'bg-primary/20 border border-primary/30' 
-                        : 'bg-muted/50'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className={`text-xs font-medium w-8 ${
-                        item.day === currentDay ? 'text-primary font-bold' : 'text-primary'
-                      }`}>
-                        {item.day}
-                      </span>
-                      <span className={`text-sm ${
-                        item.day === currentDay ? 'font-medium' : ''
-                      }`}>
-                        {item.activity}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {status === 'completed' && (
-                        <Badge variant="default" className="text-xs bg-green-500/20 text-green-700 dark:text-green-300 border-green-500/30">
-                          ✓ Form Completed
-                        </Badge>
-                      )}
-                      {status === 'cancelled' && (
-                        <Badge variant="destructive" className="text-xs">
-                          Cancelled
-                        </Badge>
-                      )}
-                      {!status && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-xs h-6 px-2 text-muted-foreground hover:text-destructive"
-                          onClick={() => handleSessionCancel(dayKey)}
-                        >
-                          Cancel
-                        </Button>
-                      )}
-                      {item.time && (
-                        <span className="text-xs text-muted-foreground">{item.time}</span>
-                      )}
-                    </div>
+              {sortedSchedule.map((item, index) => (
+                <div 
+                  key={index} 
+                  className={`flex items-center justify-between p-2 rounded ${
+                    item.day === currentDay 
+                      ? 'bg-primary/20 border border-primary/30' 
+                      : 'bg-muted/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs font-medium w-8 ${
+                      item.day === currentDay ? 'text-primary font-bold' : 'text-primary'
+                    }`}>
+                      {item.day}
+                    </span>
+                    <span className={`text-sm ${
+                      item.day === currentDay ? 'font-medium' : ''
+                    }`}>
+                      {item.activity}
+                    </span>
                   </div>
-                );
-              })}
+                  {item.time && (
+                    <span className="text-xs text-muted-foreground">{item.time}</span>
+                  )}
+                </div>
+              ))}
             </div>
           ) : (
             <div className="text-sm text-muted-foreground bg-muted/30 p-3 rounded">

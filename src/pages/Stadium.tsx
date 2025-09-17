@@ -156,10 +156,6 @@ export default function Stadium() {
     setShowActivityForm(false);
     setCurrentActivity(null);
     setResumingActivity(null);
-    
-    // Trigger event to update home page schedule status
-    window.dispatchEvent(new CustomEvent('activityCompleted'));
-    
     loadIncompleteActivities(); // Reload to update the list
   };
 
@@ -296,9 +292,6 @@ export default function Stadium() {
         title: `🎉 Session Complete! +${postPoints} points`,
         description: "Great technical work! Your progress has been saved."
       });
-
-      // Trigger event to update home page schedule status
-      window.dispatchEvent(new CustomEvent('activityCompleted'));
 
       // Reset state
       setShowOneToOnePostForm(false);
