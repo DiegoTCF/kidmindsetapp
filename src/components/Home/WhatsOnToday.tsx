@@ -92,7 +92,7 @@ export const WhatsOnToday = ({ schedule }: WhatsOnTodayProps) => {
   const getActivityStatus = () => {
     if (todayActivity) {
       if (todayActivity.post_activity_completed) {
-        return { status: 'completed', text: 'Completed ✓', color: 'text-green-600' };
+        return { status: 'completed', text: 'You have completed your form!', color: 'text-green-600' };
       } else if (todayActivity.pre_activity_completed) {
         return { status: 'in-progress', text: 'In Progress', color: 'text-yellow-600' };
       } else {
