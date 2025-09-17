@@ -60,6 +60,19 @@ export function WeeklyScheduleCard() {
     loadSessionStatus();
   }, [user, selectedChild, isViewingAsPlayer]);
 
+  // Listen for activity completions to refresh status
+  useEffect(() => {
+    const handleActivityCompleted = () => {
+      loadSessionStatus();
+    };
+
+    window.addEventListener('activityCompleted', handleActivityCompleted);
+    
+    return () => {
+      window.removeEventListener('activityCompleted', handleActivityCompleted);
+    };
+  }, []);
+
   const loadSchedule = async () => {
     if (!user) return;
     
@@ -131,7 +144,7 @@ export function WeeklyScheduleCard() {
 
       const { data: activities, error } = await supabase
         .from('activities')
-        .select('activity_date, post_activity_completed, activity_name')
+        .select('activity_date, post_activity_completed, pre_activity_completed, activity_name, activity_type')
         .eq('child_id', childId)
         .gte('activity_date', startOfWeek.toISOString().split('T')[0])
         .lte('activity_date', endOfWeek.toISOString().split('T')[0]);
@@ -151,9 +164,9 @@ export function WeeklyScheduleCard() {
 
       const status: Record<string, 'completed' | 'cancelled' | null> = {};
       
-      // Mark completed sessions
+      // Mark completed sessions - check if both pre and post are completed
       activities?.forEach(activity => {
-        if (activity.post_activity_completed) {
+        if (activity.pre_activity_completed && activity.post_activity_completed) {
           const dayOfWeek = new Date(activity.activity_date).getDay();
           const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
           status[dayNames[dayOfWeek]] = 'completed';
@@ -516,8 +529,8 @@ export function WeeklyScheduleCard() {
                     </div>
                     <div className="flex items-center gap-2">
                       {status === 'completed' && (
-                        <Badge variant="default" className="text-xs bg-green-500/20 text-green-700 dark:text-green-300">
-                          ✓ Done
+                        <Badge variant="default" className="text-xs bg-green-500/20 text-green-700 dark:text-green-300 border-green-500/30">
+                          ✓ Form Completed
                         </Badge>
                       )}
                       {status === 'cancelled' && (
