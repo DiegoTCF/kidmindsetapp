@@ -12,6 +12,7 @@ import { useUserLogging } from "@/hooks/useUserLogging";
 import { useAuth } from "@/hooks/useAuth";
 import { useChildData } from "@/hooks/useChildData";
 import { PlayerViewIndicator } from "@/components/layout/PlayerViewIndicator";
+import { WeeklyScheduleCard } from "@/components/Home/WeeklyScheduleCard";
 
 interface ActivityData {
   name: string;
@@ -473,6 +474,11 @@ export default function Stadium() {
             </Card>
           )}
 
+          {/* Weekly Schedule */}
+          <div className="w-full max-w-2xl">
+            <WeeklyScheduleCard />
+          </div>
+
           {/* Tools to Get Ready */}
           <Card className="w-full max-w-md shadow-soft">
             <CardHeader>
@@ -500,9 +506,10 @@ export default function Stadium() {
                   }}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl">🧘</span>
+                    <span className="text-xl">🧘‍♀️</span>
                     <div>
-                      <p className="font-medium">Start Yoga</p>
+                      <p className="font-medium text-sm">Yoga</p>
+                      <p className="text-xs text-muted-foreground">Stretch and prepare your body</p>
                     </div>
                   </div>
                 </Button>
@@ -511,9 +518,8 @@ export default function Stadium() {
                   variant="outline"
                   className="w-full h-auto p-4 text-left border-2 hover:border-primary/30 hover:opacity-80 transition-opacity"
                   onClick={() => {
-                    // Force opening in external browser
                     const link = document.createElement('a');
-                    link.href = 'https://drive.google.com/file/d/12tItFhl7cqpjuPpjDwO_WRHDy_9ZOOK0/view?usp=sharing';
+                    link.href = 'https://www.youtube.com/watch?v=D3GdWMCOhwE';
                     link.target = '_blank';
                     link.rel = 'noopener noreferrer';
                     document.body.appendChild(link);
@@ -522,9 +528,10 @@ export default function Stadium() {
                   }}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl">🎧</span>
+                    <span className="text-xl">👁️</span>
                     <div>
-                      <p className="font-medium">Start Visualisation</p>
+                      <p className="font-medium text-sm">Visualization</p>
+                      <p className="text-xs text-muted-foreground">Mental preparation techniques</p>
                     </div>
                   </div>
                 </Button>
@@ -533,9 +540,8 @@ export default function Stadium() {
                   variant="outline"
                   className="w-full h-auto p-4 text-left border-2 hover:border-primary/30 hover:opacity-80 transition-opacity"
                   onClick={() => {
-                    // Force opening in external browser
                     const link = document.createElement('a');
-                    link.href = 'https://drive.google.com/file/d/1UnpaPW8N4QzZfUTcukITMoaIVPoiZxR4/view?usp=sharing';
+                    link.href = 'https://www.youtube.com/watch?v=4HqjJTgH7CA';
                     link.target = '_blank';
                     link.rel = 'noopener noreferrer';
                     document.body.appendChild(link);
@@ -544,9 +550,10 @@ export default function Stadium() {
                   }}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl">🦁</span>
+                    <span className="text-xl">🎵</span>
                     <div>
-                      <p className="font-medium">Listen: Face the Lion</p>
+                      <p className="font-medium text-sm">Motivation</p>
+                      <p className="text-xs text-muted-foreground">Get pumped with audio</p>
                     </div>
                   </div>
                 </Button>

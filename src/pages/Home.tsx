@@ -11,7 +11,7 @@ import { CustomIcon } from "@/components/ui/custom-emoji";
 import { LevelProgressCard } from "@/components/Progress/LevelProgressCard";
 import { LevelUpNotification } from "@/components/Progress/LevelUpNotification";
 import { LatestCoreSkillsCard } from "@/components/Home/LatestCoreSkillsCard";
-import { WeeklyScheduleCard } from "@/components/Home/WeeklyScheduleCard";
+import { WhatsOnToday } from "@/components/Home/WhatsOnToday";
 interface MoodOption {
   iconType: 'sad' | 'not-great' | 'okay' | 'good' | 'amazing';
   label: string;
@@ -951,9 +951,9 @@ export default function Home() {
         {/* Top Navigation */}
         <TopNavigation />
 
-        {/* Weekly Schedule */}
+        {/* What's On Today */}
         <div className="mb-6">
-          <WeeklyScheduleCard />
+          <WhatsOnToday schedule={playerData.name ? localStorage.getItem(`weekly_schedule_${playerData.name}`) || '' : ''} />
         </div>
 
         {/* Mood Check */}
