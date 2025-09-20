@@ -7,19 +7,16 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Star, Plus } from "lucide-react";
 import { formatDate } from "date-fns";
-import { useLocation } from "react-router-dom";
 
 interface BestSelfScore {
   id: string;
   score: number;
   created_at: string;
-  activity_id?: string;
 }
 
 export function BestSelfTracker() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [scores, setScores] = useState<BestSelfScore[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasReflection, setHasReflection] = useState(false);
@@ -68,14 +65,9 @@ export function BestSelfTracker() {
   };
 
   const chartData = scores.map((score, index) => ({
-    session: `Session ${index + 1}`,
+    week: `W${index + 1}`,
     score: score.score,
-    date: score.created_at,
-    activityId: score.activity_id,
-    shortDate: new Date(score.created_at).toLocaleDateString('en-US', { 
-      month: 'short',
-      day: 'numeric'
-    })
+    date: score.created_at
   }));
 
   const averageScore = scores.length > 0 
@@ -89,23 +81,6 @@ export function BestSelfTracker() {
     if (score >= 60) return "#eab308";
     if (score >= 40) return "#f97316";
     return "#ef4444";
-  };
-
-  const handleChartClick = (data: any) => {
-    if (data && data.activePayload && data.activePayload[0]) {
-      const clickedData = data.activePayload[0].payload;
-      const clickedDate = new Date(clickedData.date);
-      const dateStr = clickedDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
-      
-      // Navigate to progress page with activity log tab and date filter
-      navigate('/progress', { 
-        state: { 
-          activeTab: 'activity-log',
-          filterDate: dateStr,
-          activityId: clickedData.activityId
-        }
-      });
-    }
   };
 
   if (loading) {
@@ -193,13 +168,7 @@ export function BestSelfTracker() {
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Stats Summary */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="text-center p-3 bg-muted/50 rounded-lg">
-            <div className="text-2xl font-bold text-primary">
-              {scores.length}
-            </div>
-            <div className="text-sm text-muted-foreground">Activities Logged</div>
-          </div>
+        <div className="grid grid-cols-2 gap-4">
           <div className="text-center p-3 bg-muted/50 rounded-lg">
             <div className="text-2xl font-bold" style={{ color: getScoreColor(latestScore) }}>
               {latestScore}%
@@ -217,61 +186,27 @@ export function BestSelfTracker() {
         {/* Chart */}
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} onClick={handleChartClick}>
+            <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
-                dataKey="shortDate" 
+                dataKey="week" 
                 fontSize={12}
-                angle={-45}
-                textAnchor="end"
-                height={60}
               />
               <YAxis 
                 domain={[0, 100]}
                 fontSize={12}
               />
               <Tooltip 
-                content={({ active, payload, label }) => {
-                  if (active && payload && payload.length) {
-                    const data = payload[0].payload;
-                    return (
-                      <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
-                        <p className="font-medium">{data.session}</p>
-                        <p className="text-primary font-semibold">{`${payload[0].value}%`}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {new Date(data.date).toLocaleDateString('en-US', { 
-                            weekday: 'short',
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric'
-                          })}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Click to view activity details
-                        </p>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
+                formatter={(value: number) => [`${value}%`, 'Best Self Score']}
+                labelFormatter={(label) => `Week ${label.slice(1)}`}
               />
               <Line 
                 type="monotone" 
                 dataKey="score" 
                 stroke="#8b5cf6"
                 strokeWidth={3}
-                dot={{ 
-                  fill: '#8b5cf6', 
-                  strokeWidth: 2, 
-                  r: 4,
-                  cursor: 'pointer'
-                }}
-                activeDot={{ 
-                  r: 6, 
-                  stroke: '#8b5cf6', 
-                  strokeWidth: 2,
-                  cursor: 'pointer'
-                }}
+                dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6, stroke: '#8b5cf6', strokeWidth: 2 }}
               />
             </LineChart>
           </ResponsiveContainer>

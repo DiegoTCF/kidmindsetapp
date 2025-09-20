@@ -27,14 +27,10 @@ interface Activity {
 interface ActivityLogProps {
   selectedFilter: string;
   childId?: string;
-  filterDate?: string;
-  highlightActivityId?: string;
 }
 export default function ActivityLog({
   selectedFilter,
-  childId,
-  filterDate,
-  highlightActivityId
+  childId
 }: ActivityLogProps) {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,16 +69,6 @@ export default function ActivityLog({
       });
       if (selectedFilter !== 'All') {
         query = query.eq('activity_type', selectedFilter);
-      }
-
-      // Filter by date if provided
-      if (filterDate) {
-        const startDate = new Date(filterDate);
-        const endDate = new Date(filterDate);
-        endDate.setDate(endDate.getDate() + 1);
-        
-        query = query.gte('activity_date', startDate.toISOString().split('T')[0])
-                    .lt('activity_date', endDate.toISOString().split('T')[0]);
       }
       const {
         data,
@@ -591,15 +577,7 @@ export default function ActivityLog({
       </CardHeader>
       <CardContent className="bg-primary">
         {activities.length > 0 ? <div className="space-y-3">
-            {activities.map(activity => <div 
-                key={activity.id} 
-                className={`flex items-center justify-between p-4 rounded-lg border transition-colors cursor-pointer ${
-                  highlightActivityId === activity.id 
-                    ? "bg-primary/10 border-primary/50 ring-2 ring-primary/20" 
-                    : "bg-card hover:bg-muted/50"
-                }`} 
-                onClick={() => setSelectedActivity(activity)}
-              >
+            {activities.map(activity => <div key={activity.id} className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => setSelectedActivity(activity)}>
                 <div className="flex items-center gap-3">
                   {getActivityIcon(activity.activity_type)}
                   <div>
