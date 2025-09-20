@@ -207,8 +207,7 @@ export default function Stadium() {
         return;
       }
 
-      // Log activity creation
-      await logActivity(currentActivity.name, '1to1', currentChildId);
+      // Note: Activity logging will be handled by ActivityForm component
 
       setOneToOnePreData(preData);
       setShowOneToOnePreForm(false);
