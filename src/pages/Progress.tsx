@@ -46,12 +46,12 @@ export default function Progress() {
       </div>
 
       <Tabs defaultValue="activities" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="activities">Activity Log</TabsTrigger>
-          <TabsTrigger value="behaviours">Super Behaviours</TabsTrigger>
-          <TabsTrigger value="stats">Your Stats</TabsTrigger>
-          <TabsTrigger value="core-skills">Core Skills</TabsTrigger>
-          <TabsTrigger value="best-self">Best Self</TabsTrigger>
+        <TabsList className="flex w-full overflow-x-auto">
+          <TabsTrigger value="activities" className="flex-shrink-0 text-xs">Activity Log</TabsTrigger>
+          <TabsTrigger value="behaviours" className="flex-shrink-0 text-xs">Super Behaviours</TabsTrigger>
+          <TabsTrigger value="stats" className="flex-shrink-0 text-xs">Your Stats</TabsTrigger>
+          <TabsTrigger value="core-skills" className="flex-shrink-0 text-xs">Core Skills</TabsTrigger>
+          <TabsTrigger value="best-self" className="flex-shrink-0 text-xs">Best Self</TabsTrigger>
         </TabsList>
 
         <TabsContent value="activities" className="space-y-6">
