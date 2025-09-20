@@ -7,16 +7,19 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Star, Plus } from "lucide-react";
 import { formatDate } from "date-fns";
+import { useLocation } from "react-router-dom";
 
 interface BestSelfScore {
   id: string;
   score: number;
   created_at: string;
+  activity_id?: string;
 }
 
 export function BestSelfTracker() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [scores, setScores] = useState<BestSelfScore[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasReflection, setHasReflection] = useState(false);
@@ -67,7 +70,8 @@ export function BestSelfTracker() {
   const chartData = scores.map((score, index) => ({
     week: `W${index + 1}`,
     score: score.score,
-    date: score.created_at
+    date: score.created_at,
+    activityId: score.activity_id
   }));
 
   const averageScore = scores.length > 0 
@@ -81,6 +85,23 @@ export function BestSelfTracker() {
     if (score >= 60) return "#eab308";
     if (score >= 40) return "#f97316";
     return "#ef4444";
+  };
+
+  const handleChartClick = (data: any) => {
+    if (data && data.activePayload && data.activePayload[0]) {
+      const clickedData = data.activePayload[0].payload;
+      const clickedDate = new Date(clickedData.date);
+      const dateStr = clickedDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+      
+      // Navigate to progress page with activity log tab and date filter
+      navigate('/progress', { 
+        state: { 
+          activeTab: 'activity-log',
+          filterDate: dateStr,
+          activityId: clickedData.activityId
+        }
+      });
+    }
   };
 
   if (loading) {
@@ -186,7 +207,7 @@ export function BestSelfTracker() {
         {/* Chart */}
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
+            <LineChart data={chartData} onClick={handleChartClick}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="week" 
@@ -199,14 +220,46 @@ export function BestSelfTracker() {
               <Tooltip 
                 formatter={(value: number) => [`${value}%`, 'Best Self Score']}
                 labelFormatter={(label) => `Week ${label.slice(1)}`}
+                content={({ active, payload, label }) => {
+                  if (active && payload && payload.length) {
+                    const data = payload[0].payload;
+                    return (
+                      <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
+                        <p className="font-medium">{`Week ${label.slice(1)}`}</p>
+                        <p className="text-primary font-semibold">{`${payload[0].value}%`}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {new Date(data.date).toLocaleDateString('en-US', { 
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric'
+                          })}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Click to view activity details
+                        </p>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
               />
               <Line 
                 type="monotone" 
                 dataKey="score" 
                 stroke="#8b5cf6"
                 strokeWidth={3}
-                dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: '#8b5cf6', strokeWidth: 2 }}
+                dot={{ 
+                  fill: '#8b5cf6', 
+                  strokeWidth: 2, 
+                  r: 4,
+                  cursor: 'pointer'
+                }}
+                activeDot={{ 
+                  r: 6, 
+                  stroke: '#8b5cf6', 
+                  strokeWidth: 2,
+                  cursor: 'pointer'
+                }}
               />
             </LineChart>
           </ResponsiveContainer>

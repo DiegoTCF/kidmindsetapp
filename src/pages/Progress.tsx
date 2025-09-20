@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUserLogging } from "@/hooks/useUserLogging";
 import { useChildData } from "@/hooks/useChildData";
+import { useLocation } from "react-router-dom";
 import { PlayerViewIndicator } from "@/components/layout/PlayerViewIndicator";
 import ActivityLog from "@/components/Progress/ActivityLog";
 import Charts from "@/components/Progress/Charts";
@@ -14,13 +15,22 @@ const activityFilters = ["All", "Match", "Training", "1to1", "Futsal", "Small Gr
 
 export default function Progress() {
   const [selectedFilter, setSelectedFilter] = useState("All");
+  const [activeTab, setActiveTab] = useState("activities");
   const { logProgressView } = useUserLogging();
   const { childId, loading } = useChildData();
+  const location = useLocation();
 
   // Log progress view when component mounts
   React.useEffect(() => {
     logProgressView();
   }, [logProgressView]);
+
+  // Handle navigation from BestSelfTracker
+  useEffect(() => {
+    if (location.state?.activeTab) {
+      setActiveTab(location.state.activeTab);
+    }
+  }, [location.state]);
 
   if (loading) {
     return (
@@ -45,7 +55,7 @@ export default function Progress() {
         </p>
       </div>
 
-      <Tabs defaultValue="activities" className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="flex w-full overflow-x-auto">
           <TabsTrigger value="activities" className="flex-shrink-0 text-xs">Activity Log</TabsTrigger>
           <TabsTrigger value="behaviours" className="flex-shrink-0 text-xs">Super Behaviours</TabsTrigger>
@@ -62,7 +72,12 @@ export default function Progress() {
               </Button>)}
           </div>
 
-          <ActivityLog selectedFilter={selectedFilter} childId={childId} />
+          <ActivityLog 
+            selectedFilter={selectedFilter} 
+            childId={childId}
+            filterDate={location.state?.filterDate}
+            highlightActivityId={location.state?.activityId}
+          />
         </TabsContent>
 
         <TabsContent value="behaviours" className="space-y-6">
