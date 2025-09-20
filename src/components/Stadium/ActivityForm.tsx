@@ -1105,6 +1105,17 @@ export default function ActivityForm({
                   </p>
                 </div>}
 
+              {/* Display custom intention */}
+              {intention && !selectedGoal && <div className="mb-4 p-3 bg-secondary/10 rounded-xl border border-secondary/20">
+                  <p className="text-sm font-medium mb-2 text-secondary">Your intention for this session:</p>
+                  <div className="text-sm">
+                    <span className="font-medium">{intention}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Did you manage to focus on this during the activity?
+                  </p>
+                </div>}
+
               {/* Display selected behaviours from pre-activity */}
               {selectedBehaviours.some(b => b.selected) && <div className="mb-4 p-3 bg-muted/50 rounded-xl">
                   <p className="text-sm font-medium mb-2">Your selected behaviours:</p>
