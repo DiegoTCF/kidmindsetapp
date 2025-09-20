@@ -45,7 +45,7 @@ export default function OneToOnePostForm({ activity, preData, onComplete, onBack
   });
 
   const [whatYouWorkedOn, setWhatYouWorkedOn] = useState(
-    preData?.one_to_one?.topic_practised || ""
+    preData?.one_to_one?.session_goal || preData?.one_to_one?.topic_practised || ""
   );
   const [whatWentWell, setWhatWentWell] = useState("");
   const [whatToImproveNext, setWhatToImproveNext] = useState("");
