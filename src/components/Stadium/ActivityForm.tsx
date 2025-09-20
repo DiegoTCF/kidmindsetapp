@@ -173,8 +173,13 @@ export default function ActivityForm({
     user,
     session
   } = useAuth();
-  const { childId, loading: childDataLoading } = useChildData();
-  const { isViewingAsPlayer } = useAdminPlayerView();
+  const {
+    childId,
+    loading: childDataLoading
+  } = useChildData();
+  const {
+    isViewingAsPlayer
+  } = useAdminPlayerView();
   const {
     logActivity,
     logActivityCompletion,
@@ -258,7 +263,6 @@ export default function ActivityForm({
 
   // Best self score state
   const [bestSelfScore, setBestSelfScore] = useState(75);
-  
   const [currentChildId, setCurrentChildId] = useState<string | null>(null);
 
   // Mindset support flow state
@@ -299,7 +303,6 @@ export default function ActivityForm({
         // No child found for current user
         return;
       }
-
       console.log('[ActivityForm] Using regular user child ID:', childIdResult);
       setCurrentChildId(childIdResult);
     } catch (error) {
@@ -308,13 +311,10 @@ export default function ActivityForm({
   };
   const loadUserGoals = async () => {
     if (!user?.id || childDataLoading) return;
-    
     try {
       // Use child ID from context (admin player view) or user ID for regular users  
       const effectiveUserId = childId || user.id;
-      
       console.log('[ActivityForm] loadUserGoals - user.id:', user.id, 'childId:', childId, 'effectiveUserId:', effectiveUserId);
-      
       const {
         data: goals,
         error
@@ -447,9 +447,7 @@ export default function ActivityForm({
       });
       return;
     }
-    
     console.log('[ActivityForm] handlePreActivitySubmit - currentChildId:', currentChildId, 'user.id:', user.id);
-    
     const prePoints = calculatePreActivityPoints();
 
     // Attempting to save pre-activity data
@@ -673,13 +671,11 @@ export default function ActivityForm({
         // Save best self score to database
         if (user) {
           try {
-            await supabase
-              .from('best_self_scores')
-              .insert({
-                user_id: user.id,
-                activity_id: activityId,
-                score: bestSelfScore
-              });
+            await supabase.from('best_self_scores').insert({
+              user_id: user.id,
+              activity_id: activityId,
+              score: bestSelfScore
+            });
           } catch (error) {
             console.error('Error saving best self score:', error);
           }
@@ -819,19 +815,11 @@ export default function ActivityForm({
             </p>
             
             <div className="space-y-3">
-              <Button 
-                onClick={() => navigate('/stadium')}
-                className="w-full"
-                variant="default"
-              >
+              <Button onClick={() => navigate('/stadium')} className="w-full" variant="default">
                 Back to Stadium
               </Button>
               
-              <Button 
-                onClick={onComplete} 
-                className="w-full"
-                variant="outline"
-              >
+              <Button onClick={onComplete} className="w-full" variant="outline">
                 Back to Stadium
               </Button>
             </div>
@@ -1107,7 +1095,7 @@ export default function ActivityForm({
 
               {/* Display custom intention */}
               {intention && !selectedGoal && <div className="mb-4 p-3 bg-secondary/10 rounded-xl border border-secondary/20">
-                  <p className="text-sm font-medium mb-2 text-secondary">Your intention for this session:</p>
+                  <p className="text-sm font-medium mb-2 text-zinc-50">Your intention for this session:</p>
                   <div className="text-sm">
                     <span className="font-medium">{intention}</span>
                   </div>
@@ -1206,10 +1194,7 @@ export default function ActivityForm({
           </Card>
 
           {/* Best Self Score */}
-          <BestSelfScore 
-            score={bestSelfScore}
-            onScoreChange={setBestSelfScore}
-          />
+          <BestSelfScore score={bestSelfScore} onScoreChange={setBestSelfScore} />
 
           {/* Match Performance Fields - Only for Match activities */}
           {activity.type === "Match" && <Card className="shadow-soft">
