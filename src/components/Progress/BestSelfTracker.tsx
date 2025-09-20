@@ -68,10 +68,14 @@ export function BestSelfTracker() {
   };
 
   const chartData = scores.map((score, index) => ({
-    week: `W${index + 1}`,
+    session: `Session ${index + 1}`,
     score: score.score,
     date: score.created_at,
-    activityId: score.activity_id
+    activityId: score.activity_id,
+    shortDate: new Date(score.created_at).toLocaleDateString('en-US', { 
+      month: 'short',
+      day: 'numeric'
+    })
   }));
 
   const averageScore = scores.length > 0 
@@ -189,7 +193,13 @@ export function BestSelfTracker() {
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Stats Summary */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
+          <div className="text-center p-3 bg-muted/50 rounded-lg">
+            <div className="text-2xl font-bold text-primary">
+              {scores.length}
+            </div>
+            <div className="text-sm text-muted-foreground">Activities Logged</div>
+          </div>
           <div className="text-center p-3 bg-muted/50 rounded-lg">
             <div className="text-2xl font-bold" style={{ color: getScoreColor(latestScore) }}>
               {latestScore}%
@@ -210,25 +220,27 @@ export function BestSelfTracker() {
             <LineChart data={chartData} onClick={handleChartClick}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
-                dataKey="week" 
+                dataKey="shortDate" 
                 fontSize={12}
+                angle={-45}
+                textAnchor="end"
+                height={60}
               />
               <YAxis 
                 domain={[0, 100]}
                 fontSize={12}
               />
               <Tooltip 
-                formatter={(value: number) => [`${value}%`, 'Best Self Score']}
-                labelFormatter={(label) => `Week ${label.slice(1)}`}
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
                     const data = payload[0].payload;
                     return (
                       <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
-                        <p className="font-medium">{`Week ${label.slice(1)}`}</p>
+                        <p className="font-medium">{data.session}</p>
                         <p className="text-primary font-semibold">{`${payload[0].value}%`}</p>
                         <p className="text-xs text-muted-foreground mt-1">
                           {new Date(data.date).toLocaleDateString('en-US', { 
+                            weekday: 'short',
                             month: 'short',
                             day: 'numeric',
                             year: 'numeric'
