@@ -44,7 +44,9 @@ export function AppLayout({ children, hideNavigation = false }: AppLayoutProps) 
         "min-h-screen pt-24", // Unified padding for all screen sizes
         !hideNavigation && "pb-20" // Account for bottom nav
       )}>
-        {children}
+        <div className="container max-w-4xl mx-auto px-4">
+          {children}
+        </div>
       </main>
 
       {/* Bottom Navigation */}
