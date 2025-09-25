@@ -22,6 +22,7 @@ export type Database = {
           assists_made: number | null
           child_id: string
           created_at: string
+          day_of_week: string | null
           final_score: string | null
           goals_scored: number | null
           id: string
@@ -45,6 +46,7 @@ export type Database = {
           assists_made?: number | null
           child_id: string
           created_at?: string
+          day_of_week?: string | null
           final_score?: string | null
           goals_scored?: number | null
           id?: string
@@ -68,6 +70,7 @@ export type Database = {
           assists_made?: number | null
           child_id?: string
           created_at?: string
+          day_of_week?: string | null
           final_score?: string | null
           goals_scored?: number | null
           id?: string
@@ -824,6 +827,51 @@ export type Database = {
         }
         Relationships: []
       }
+      session_tracking: {
+        Row: {
+          activity_id: string | null
+          activity_name: string | null
+          activity_type: string | null
+          child_id: string
+          created_at: string
+          day_of_week: string
+          id: string
+          post_form_completed: boolean | null
+          pre_form_completed: boolean | null
+          session_date: string
+          session_status: string
+          updated_at: string
+        }
+        Insert: {
+          activity_id?: string | null
+          activity_name?: string | null
+          activity_type?: string | null
+          child_id: string
+          created_at?: string
+          day_of_week: string
+          id?: string
+          post_form_completed?: boolean | null
+          pre_form_completed?: boolean | null
+          session_date?: string
+          session_status?: string
+          updated_at?: string
+        }
+        Update: {
+          activity_id?: string | null
+          activity_name?: string | null
+          activity_type?: string | null
+          child_id?: string
+          created_at?: string
+          day_of_week?: string
+          id?: string
+          post_form_completed?: boolean | null
+          pre_form_completed?: boolean | null
+          session_date?: string
+          session_status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       super_behaviour_ratings: {
         Row: {
           activity_id: string | null
@@ -1076,6 +1124,17 @@ export type Database = {
       is_user_admin: {
         Args: { check_user_id?: string }
         Returns: boolean
+      }
+      log_session_status: {
+        Args: {
+          p_activity_name?: string
+          p_activity_type?: string
+          p_child_id: string
+          p_day_of_week?: string
+          p_session_date: string
+          p_status: string
+        }
+        Returns: string
       }
       log_user_action: {
         Args: {

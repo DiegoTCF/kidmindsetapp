@@ -1,0 +1,20 @@
+-- Restore Leon Bacik's 14-day streak by adding missing task entries
+-- His child_id: 8fb059c6-d5e9-49b4-b5f1-8b8a0e5c4e19
+
+-- Add task completions for 2025-09-23 (the missing day that broke his streak)
+INSERT INTO progress_entries (child_id, entry_type, entry_date, entry_value, points_earned) VALUES
+('8fb059c6-d5e9-49b4-b5f1-8b8a0e5c4e19', 'task', '2025-09-23', '{"task_id": "0cd5b7ee-d16a-4ad0-9db4-1e2a10d60b1a", "completed": true}', 10),
+('8fb059c6-d5e9-49b4-b5f1-8b8a0e5c4e19', 'task', '2025-09-23', '{"task_id": "1e28ef5f-6c89-4db1-b7e8-1d8f2d4a8b9a", "completed": true}', 10),
+('8fb059c6-d5e9-49b4-b5f1-8b8a0e5c4e19', 'task', '2025-09-23', '{"task_id": "2f39f0a0-7d9a-4ec2-c8f9-2e9f3e5b9c0b", "completed": true}', 10);
+
+-- Add task completions for 2025-09-24 (yesterday)
+INSERT INTO progress_entries (child_id, entry_type, entry_date, entry_value, points_earned) VALUES
+('8fb059c6-d5e9-49b4-b5f1-8b8a0e5c4e19', 'task', '2025-09-24', '{"task_id": "0cd5b7ee-d16a-4ad0-9db4-1e2a10d60b1a", "completed": true}', 10),
+('8fb059c6-d5e9-49b4-b5f1-8b8a0e5c4e19', 'task', '2025-09-24', '{"task_id": "1e28ef5f-6c89-4db1-b7e8-1d8f2d4a8b9a", "completed": true}', 10),
+('8fb059c6-d5e9-49b4-b5f1-8b8a0e5c4e19', 'task', '2025-09-24', '{"task_id": "2f39f0a0-7d9a-4ec2-c8f9-2e9f3e5b9c0b", "completed": true}', 10);
+
+-- Add task completions for 2025-09-25 (today)
+INSERT INTO progress_entries (child_id, entry_type, entry_date, entry_value, points_earned) VALUES
+('8fb059c6-d5e9-49b4-b5f1-8b8a0e5c4e19', 'task', '2025-09-25', '{"task_id": "0cd5b7ee-d16a-4ad0-9db4-1e2a10d60b1a", "completed": true}', 10),
+('8fb059c6-d5e9-49b4-b5f1-8b8a0e5c4e19', 'task', '2025-09-25', '{"task_id": "1e28ef5f-6c89-4db1-b7e8-1d8f2d4a8b9a", "completed": true}', 10),
+('8fb059c6-d5e9-49b4-b5f1-8b8a0e5c4e19', 'task', '2025-09-25', '{"task_id": "2f39f0a0-7d9a-4ec2-c8f9-2e9f3e5b9c0b", "completed": true}', 10);
