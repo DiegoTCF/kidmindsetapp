@@ -12,14 +12,20 @@ interface BestSelfReflection {
 }
 
 export function BestSelfReminder() {
+  console.log('[BestSelfReminder] Component rendering...');
+  
   const { profile } = useProfile();
   const { childId } = useChildData();
   const [bestSelfReflection, setBestSelfReflection] = useState<BestSelfReflection | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  console.log('[BestSelfReminder] Component rendered, profile:', profile);
 
   useEffect(() => {
     async function loadBestSelfReflection() {
       if (!profile?.user_id) {
         console.log('[BestSelfReminder] No user_id in profile:', profile);
+        setLoading(false);
         return;
       }
       
@@ -37,13 +43,26 @@ export function BestSelfReminder() {
         if (data) {
           setBestSelfReflection(data);
         }
+        setLoading(false);
       } catch (error) {
         console.error('Error loading best self reflection:', error);
+        setLoading(false);
       }
     }
 
     loadBestSelfReflection();
   }, [profile?.user_id]);
+
+  console.log('[BestSelfReminder] Rendering state:', { loading, bestSelfReflection });
+
+  if (loading) {
+    return (
+      <div className="bg-white/10 border border-white/20 rounded-lg p-3 mb-4">
+        <h4 className="font-bold text-white mb-2">⭐ Best Version of Me</h4>
+        <p className="text-sm text-white/80">Loading...</p>
+      </div>
+    );
+  }
 
   if (!bestSelfReflection) {
     return (
