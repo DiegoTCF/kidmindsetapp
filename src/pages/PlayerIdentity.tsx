@@ -345,11 +345,6 @@ export default function PlayerIdentity() {
                   <Input id="weapon" placeholder="One sentence about your standout skill" value={mainWeapon} onChange={e => setMainWeapon(e.target.value.slice(0, 140))} />
                 </div>
 
-                <div className="grid gap-2">
-                  <Label htmlFor="avatar">Avatar URL (optional)</Label>
-                  <Input id="avatar" placeholder="Link to an image" value={avatarUrl} onChange={e => setAvatarUrl(e.target.value)} />
-                  {avatarUrl && <img src={avatarUrl} alt="Player identity avatar" className="w-24 h-24 rounded-md object-cover border" loading="lazy" />}
-                </div>
               </CardContent>
             </Card>
 
