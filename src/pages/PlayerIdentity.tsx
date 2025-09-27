@@ -30,20 +30,30 @@ interface PlayerIdentityRow {
   avatar_url: string | null;
   updated_at?: string;
 }
-
 export default function PlayerIdentity() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const { profile, updateProfile, refetchProfile } = useProfile();
-  const { childId, loading: childDataLoading } = useChildData();
-  const { isAdmin } = useAdmin();
-  
+  const {
+    user
+  } = useAuth();
+  const {
+    toast
+  } = useToast();
+  const {
+    profile,
+    updateProfile,
+    refetchProfile
+  } = useProfile();
+  const {
+    childId,
+    loading: childDataLoading
+  } = useChildData();
+  const {
+    isAdmin
+  } = useAdmin();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
   const [existing, setExisting] = useState<boolean>(false);
-  
   const [roleMain, setRoleMain] = useState<MainRole | null>(null);
   const [roleType, setRoleType] = useState<string>("");
   const [strengths, setStrengths] = useState<string[]>([]);
@@ -51,29 +61,23 @@ export default function PlayerIdentity() {
   const [mainWeapon, setMainWeapon] = useState<string>("");
   const [motto, setMotto] = useState<string>("");
   const [avatarUrl, setAvatarUrl] = useState<string>("");
-
   const roleTypeOptions = useMemo(() => roleMain ? ROLE_TYPES[roleMain] : [], [roleMain]);
-  
   const baseStrengths = useMemo(() => {
     if (!roleMain) return [] as string[];
     return roleMain === "Goalkeeper" ? GOALKEEPER_STRENGTHS : UNIVERSAL_STRENGTHS_OUTFIELD;
   }, [roleMain]);
-  
   const strengthOptions = useMemo(() => {
     const specific = roleType ? STRENGTHS_BY_ROLE_TYPE[roleType] ?? [] : [];
     return Array.from(new Set([...(baseStrengths as string[]), ...specific]));
   }, [baseStrengths, roleType]);
-
   const helpOptions = useMemo(() => {
     if (!roleMain) return [] as string[];
     return roleMain === "Goalkeeper" ? HELPS_TEAM_GK : HELPS_TEAM_OUTFIELD;
   }, [roleMain]);
-
   useEffect(() => {
     setRoleType("");
     setStrengths([]);
   }, [roleMain]);
-
   useEffect(() => {
     // SEO basics
     const prevTitle = document.title;
@@ -84,34 +88,30 @@ export default function PlayerIdentity() {
     el.setAttribute("name", "description");
     el.setAttribute("content", "Define your football DNA: role, strengths, and motto.");
     if (createdDesc) document.head.appendChild(el);
-    
     const linkCanonical = document.querySelector('link[rel="canonical"]') || document.createElement("link");
     linkCanonical.setAttribute("rel", "canonical");
     linkCanonical.setAttribute("href", window.location.origin + "/dna");
     if (!linkCanonical.parentElement) document.head.appendChild(linkCanonical);
-    
     return () => {
       document.title = prevTitle;
     };
   }, []);
-
   useEffect(() => {
     const load = async () => {
       if (!user || childDataLoading) return;
       setLoading(true);
-      
+
       // Use the effective user ID (child ID if admin in player view, otherwise user ID)
       const effectiveUserId = childId || user.id;
       const isAdminPlayerView = childId && childId !== user.id;
-      
+
       // Only load from player_identities if NOT in admin player view
       if (!isAdminPlayerView) {
-        const { data, error } = await supabase
-          .from("player_identities")
-          .select("*")
-          .eq("user_id", user.id) // Always use actual user ID for player_identities
-          .maybeSingle();
-          
+        const {
+          data,
+          error
+        } = await supabase.from("player_identities").select("*").eq("user_id", user.id) // Always use actual user ID for player_identities
+        .maybeSingle();
         if (error) {
           console.error("Failed to load identity", error);
           toast({
@@ -120,7 +120,6 @@ export default function PlayerIdentity() {
             variant: "destructive"
           });
         }
-        
         if (data) {
           setExisting(true);
           setRoleMain((data.role_main ?? null) as MainRole | null);
@@ -137,7 +136,6 @@ export default function PlayerIdentity() {
         // In admin player view, only load from profile data
         setExisting(false);
       }
-      
       setLoading(false);
     };
     load();
@@ -151,7 +149,6 @@ export default function PlayerIdentity() {
       if (profile.help_team) setHelpsTeam(profile.help_team);
     }
   }, [editing, profile]);
-
   const onSave = async () => {
     if (!user) return;
 
@@ -169,7 +166,7 @@ export default function PlayerIdentity() {
     }
     if (!roleType) {
       toast({
-        title: "Role Type is required", 
+        title: "Role Type is required",
         variant: "destructive"
       });
       return;
@@ -190,16 +187,15 @@ export default function PlayerIdentity() {
       });
       return;
     }
-
     setSaving(true);
-
     try {
       // Only save to player_identities table if NOT in admin player view
       // (player_identities has FK constraint to auth.users)
-      const isActualAdminPlayerView = (childId && childId !== user.id && isAdminPlayerView);
+      const isActualAdminPlayerView = childId && childId !== user.id && isAdminPlayerView;
       if (!isActualAdminPlayerView) {
         const payload: PlayerIdentityRow = {
-          user_id: user.id, // Always use actual user ID for player_identities
+          user_id: user.id,
+          // Always use actual user ID for player_identities
           role_main: roleMain,
           role_type: roleType || null,
           strengths: strengths.slice(0, 3),
@@ -208,25 +204,23 @@ export default function PlayerIdentity() {
           motto: motto || null,
           avatar_url: avatarUrl || null
         };
-
-        const { error: playerIdentityError } = await supabase
-          .from("player_identities")
-          .upsert(payload, { onConflict: "user_id" });
-
+        const {
+          error: playerIdentityError
+        } = await supabase.from("player_identities").upsert(payload, {
+          onConflict: "user_id"
+        });
         if (playerIdentityError) throw playerIdentityError;
       }
 
       // Update profiles table - use user ID for regular customers, child ID for admin player view
-      const profileUserId = (isAdmin && childId) ? childId : user.id;
+      const profileUserId = isAdmin && childId ? childId : user.id;
       await updateProfile({
         role: roleMain,
         strengths: strengths.slice(0, 3),
-        help_team: helpsTeam.slice(0, 3),
+        help_team: helpsTeam.slice(0, 3)
       });
-
       setExisting(true);
       setEditing(false);
-      
       toast({
         title: "DNA saved",
         description: "Your player identity has been saved."
@@ -249,9 +243,7 @@ export default function PlayerIdentity() {
   // Show form when editing, otherwise show DNA if any data exists
   const showForm = editing;
   const showDNA = !editing && (existing || profile?.role);
-
-  return (
-    <div className="max-w-2xl mx-auto px-4 pt-20 pb-8 bg-background">
+  return <div className="max-w-2xl mx-auto px-4 pt-20 pb-8 bg-background">
       <PlayerViewIndicator />
       <header className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
@@ -262,13 +254,10 @@ export default function PlayerIdentity() {
 
       <div className="space-y-4">
         {/* Show YOUR DNA card if data exists and not editing */}
-        {showDNA && (
-          <DNADisplay onEdit={() => setEditing(true)} />
-        )}
+        {showDNA && <DNADisplay onEdit={() => setEditing(true)} />}
 
         {/* Core Skills Assessment Card */}
-        {!editing && (
-          <Card className="shadow-sm border-2 border-primary/20">
+        {!editing && <Card className="shadow-sm border-2 border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-primary">
                 <Target className="w-5 h-5" />
@@ -279,23 +268,15 @@ export default function PlayerIdentity() {
               <p className="text-sm text-muted-foreground mb-4">
                 Test your mental skills across 6 key areas and track your progress over time.
               </p>
-              <Button 
-                onClick={() => navigate('/core-skills/self-assessment')}
-                className="w-full"
-                size="lg"
-              >
+              <Button onClick={() => navigate('/core-skills/self-assessment')} className="w-full" size="lg">
                 Take Assessment 🎯
               </Button>
             </CardContent>
-          </Card>
-        )}
+          </Card>}
 
-        {loading ? (
-          <div className="text-center py-8">
+        {loading ? <div className="text-center py-8">
             <p>Loading your player identity...</p>
-          </div>
-        ) : showForm ? (
-          <>
+          </div> : showForm ? <>
             {/* Role Selection */}
             <Card className="shadow-sm">
               <CardHeader>
@@ -322,17 +303,10 @@ export default function PlayerIdentity() {
               <CardContent>
                 <div className="grid gap-2">
                   <Label>Select up to 3 strengths</Label>
-                  <ChipMultiSelect 
-                    options={strengthOptions} 
-                    value={strengths} 
-                    onChange={setStrengths} 
-                    max={3} 
-                    addYourOwn 
-                    onAddCustom={async () => {
-                      const input = window.prompt("Add your own strength (max 30 chars)") || "";
-                      return input.trim().slice(0, 30) || null;
-                    }} 
-                  />
+                  <ChipMultiSelect options={strengthOptions} value={strengths} onChange={setStrengths} max={3} addYourOwn onAddCustom={async () => {
+                const input = window.prompt("Add your own strength (max 30 chars)") || "";
+                return input.trim().slice(0, 30) || null;
+              }} />
                 </div>
               </CardContent>
             </Card>
@@ -340,7 +314,7 @@ export default function PlayerIdentity() {
             {/* How You Help Team */}
             <Card className="shadow-sm">
               <CardHeader>
-                <CardTitle className="text-[#ff0066]">How You Help the Team</CardTitle>
+                <CardTitle className="text-[#e50914]">How You Help the Team</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-2">
@@ -358,54 +332,23 @@ export default function PlayerIdentity() {
               <CardContent className="space-y-4">
                 <div className="grid gap-2">
                   <Label htmlFor="motto">Motto</Label>
-                  <Input 
-                    id="motto" 
-                    placeholder="A short motto that defines you" 
-                    value={motto} 
-                    maxLength={140} 
-                    onChange={e => setMotto(e.target.value)} 
-                  />
+                  <Input id="motto" placeholder="A short motto that defines you" value={motto} maxLength={140} onChange={e => setMotto(e.target.value)} />
                   <div className="flex flex-wrap gap-2">
-                    {MOTTO_SUGGESTIONS.map(m => (
-                      <Button 
-                        key={m} 
-                        type="button" 
-                        variant="secondary" 
-                        size="sm" 
-                        onClick={() => setMotto(m)}
-                      >
+                    {MOTTO_SUGGESTIONS.map(m => <Button key={m} type="button" variant="secondary" size="sm" onClick={() => setMotto(m)}>
                         {m}
-                      </Button>
-                    ))}
+                      </Button>)}
                   </div>
                 </div>
 
                 <div className="grid gap-2">
                   <Label htmlFor="weapon">Main Weapon (optional)</Label>
-                  <Input 
-                    id="weapon" 
-                    placeholder="One sentence about your standout skill" 
-                    value={mainWeapon} 
-                    onChange={e => setMainWeapon(e.target.value.slice(0, 140))} 
-                  />
+                  <Input id="weapon" placeholder="One sentence about your standout skill" value={mainWeapon} onChange={e => setMainWeapon(e.target.value.slice(0, 140))} />
                 </div>
 
                 <div className="grid gap-2">
                   <Label htmlFor="avatar">Avatar URL (optional)</Label>
-                  <Input 
-                    id="avatar" 
-                    placeholder="Link to an image" 
-                    value={avatarUrl} 
-                    onChange={e => setAvatarUrl(e.target.value)} 
-                  />
-                  {avatarUrl && (
-                    <img 
-                      src={avatarUrl} 
-                      alt="Player identity avatar" 
-                      className="w-24 h-24 rounded-md object-cover border" 
-                      loading="lazy" 
-                    />
-                  )}
+                  <Input id="avatar" placeholder="Link to an image" value={avatarUrl} onChange={e => setAvatarUrl(e.target.value)} />
+                  {avatarUrl && <img src={avatarUrl} alt="Player identity avatar" className="w-24 h-24 rounded-md object-cover border" loading="lazy" />}
                 </div>
               </CardContent>
             </Card>
@@ -417,25 +360,15 @@ export default function PlayerIdentity() {
                   <Button onClick={onSave} disabled={saving || loading} className="flex-1">
                     {saving ? "Saving..." : "Save Changes"}
                   </Button>
-                  {editing && (
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setEditing(false)}
-                      disabled={saving}
-                    >
+                  {editing && <Button variant="outline" onClick={() => setEditing(false)} disabled={saving}>
                       Cancel
-                    </Button>
-                  )}
+                    </Button>}
                 </div>
               </CardContent>
             </Card>
-          </>
-        ) : (
-          <div className="text-center py-8">
+          </> : <div className="text-center py-8">
             <p className="text-foreground">DNA saved! Your player identity is ready.</p>
-          </div>
-        )}
+          </div>}
       </div>
-    </div>
-  );
+    </div>;
 }
