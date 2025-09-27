@@ -279,7 +279,7 @@ export default function PlayerIdentity() {
           </div> : showForm ? <>
             {/* Role Selection */}
             <Card className="shadow-sm">
-              <CardHeader>
+              <CardHeader className="text-[#e50914]">
                 <CardTitle>Choose Your Position / Role</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
