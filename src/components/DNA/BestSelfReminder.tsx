@@ -18,14 +18,21 @@ export function BestSelfReminder() {
 
   useEffect(() => {
     async function loadBestSelfReflection() {
-      if (!profile?.user_id) return;
+      if (!profile?.user_id) {
+        console.log('[BestSelfReminder] No user_id in profile:', profile);
+        return;
+      }
+      
+      console.log('[BestSelfReminder] Loading best self reflection for user:', profile.user_id);
       
       try {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('best_self_reflections')
           .select('*')
           .eq('user_id', profile.user_id)
-          .single();
+          .maybeSingle();
+        
+        console.log('[BestSelfReminder] Best self reflection data:', data, 'error:', error);
         
         if (data) {
           setBestSelfReflection(data);
@@ -39,7 +46,12 @@ export function BestSelfReminder() {
   }, [profile?.user_id]);
 
   if (!bestSelfReflection) {
-    return null;
+    return (
+      <div className="bg-white/10 border border-white/20 rounded-lg p-3 mb-4">
+        <h4 className="font-bold text-white mb-2">⭐ Best Version of Me</h4>
+        <p className="text-sm text-white/80">Create your Best Self vision to see it here</p>
+      </div>
+    );
   }
 
   return (
