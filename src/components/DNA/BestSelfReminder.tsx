@@ -55,7 +55,7 @@ export function BestSelfReminder() {
 
   if (loading) {
     return (
-      <div className="bg-white/10 border border-white/20 rounded-lg p-3 mb-4">
+      <div className="bg-black/80 border border-white/20 rounded-lg p-3 mb-4">
         <h4 className="font-bold text-white mb-2">⭐ Best Version of Me</h4>
         <p className="text-sm text-white/80">Loading...</p>
       </div>
@@ -64,7 +64,7 @@ export function BestSelfReminder() {
 
   if (!bestSelfReflection) {
     return (
-      <div className="bg-white/10 border border-white/20 rounded-lg p-3 mb-4">
+      <div className="bg-black/80 border border-white/20 rounded-lg p-3 mb-4">
         <h4 className="font-bold text-white mb-2">⭐ Best Version of Me</h4>
         <p className="text-sm text-white/80">Create your Best Self vision to see it here</p>
       </div>
@@ -72,7 +72,7 @@ export function BestSelfReminder() {
   }
 
   return (
-    <div className="bg-white/10 border border-white/20 rounded-lg p-3 mb-4">
+    <div className="bg-black/80 border border-white/20 rounded-lg p-3 mb-4">
       <h4 className="font-bold text-white mb-2">⭐ Best Version of Me</h4>
       {bestSelfReflection.ball_with_me && (
         <p className="text-sm text-white"><strong>With ball:</strong> {bestSelfReflection.ball_with_me}</p>

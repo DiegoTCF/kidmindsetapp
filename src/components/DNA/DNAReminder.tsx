@@ -12,7 +12,7 @@ export function DNAReminder() {
   }
 
   return (
-    <div className="bg-white/10 border border-white/20 rounded-lg p-3 mb-4">
+    <div className="bg-black/80 border border-white/20 rounded-lg p-3 mb-4">
       <h4 className="font-bold text-white mb-2">Remember Who You Are</h4>
       <p className="text-sm text-white"><strong>Role:</strong> {profile.role}</p>
       {profile.strengths && profile.strengths.length > 0 && (
