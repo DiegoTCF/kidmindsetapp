@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DNAReminder } from "@/components/DNA/DNAReminder";
+import { BestSelfReminder } from "@/components/DNA/BestSelfReminder";
 import { supabase } from "@/integrations/supabase/client";
 import { useChildData } from "@/hooks/useChildData";
 import { useAuth } from "@/hooks/useAuth";
@@ -162,33 +163,8 @@ export default function OneToOnePreForm({ activity, onComplete, onBack }: OneToO
         {/* DNA Reminder */}
         <DNAReminder />
 
-        {/* Best Version of Me Display */}
-        {bestSelfReflection && (
-          <Card className="shadow-soft mb-4 border-primary/20">
-            <CardHeader>
-              <CardTitle className="text-sm flex items-center gap-2">
-                ⭐ Best Version of Me
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {bestSelfReflection.ball_with_me && (
-                <div className="text-sm">
-                  <strong>With ball:</strong> {bestSelfReflection.ball_with_me}
-                </div>
-              )}
-              {bestSelfReflection.ball_without_me && (
-                <div className="text-sm">
-                  <strong>Without ball:</strong> {bestSelfReflection.ball_without_me}
-                </div>
-              )}
-              {bestSelfReflection.behaviour && (
-                <div className="text-sm">
-                  <strong>Behavior:</strong> {bestSelfReflection.behaviour}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+        {/* Best Self Reminder */}
+        <BestSelfReminder />
 
         {/* Goals Display */}
         {goals.length > 0 && (
