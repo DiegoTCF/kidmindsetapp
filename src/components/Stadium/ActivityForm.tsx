@@ -1262,7 +1262,7 @@ export default function ActivityForm({
                   <Slider value={[postActivityData[key as keyof typeof postActivityData] as number]} onValueChange={value => setPostActivityData(prev => ({
                 ...prev,
                 [key]: value[0]
-              }))} max={10} min={1} step={1} className="w-full" />
+              }))} max={10} min={1} step={0.5} className="w-full" />
                 </div>)}
             </CardContent>
           </Card>
@@ -1337,7 +1337,7 @@ export default function ActivityForm({
                             [currentQuestion.key]: value[0]
                           }
                         }
-                      }))} max={10} min={1} step={1} className="w-full" />
+                      }))} max={10} min={1} step={0.5} className="w-full" />
                           </div>
                           
                           <Button onClick={() => {
@@ -1437,7 +1437,7 @@ export default function ActivityForm({
                             [currentQuestion.key]: value[0]
                           }
                         }
-                      }))} max={10} min={1} step={1} className="w-full" />
+                      }))} max={10} min={1} step={0.5} className="w-full" />
                           </div>
                           
                           <Button onClick={() => {
@@ -1537,7 +1537,7 @@ export default function ActivityForm({
                             [currentQuestion.key]: value[0]
                           }
                         }
-                      }))} max={10} min={1} step={1} className="w-full" />
+                      }))} max={10} min={1} step={0.5} className="w-full" />
                           </div>
                           
                           <Button onClick={() => {
@@ -1637,7 +1637,7 @@ export default function ActivityForm({
                             [currentQuestion.key]: value[0]
                           }
                         }
-                      }))} max={10} min={1} step={1} className="w-full" />
+                      }))} max={10} min={1} step={0.5} className="w-full" />
                           </div>
                           
                           <Button onClick={() => {
