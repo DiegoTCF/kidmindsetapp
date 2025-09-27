@@ -1,5 +1,4 @@
-import { useProfile } from "@/hooks/useProfile";
-import { useChildData } from "@/hooks/useChildData";
+import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -14,28 +13,27 @@ interface BestSelfReflection {
 export function BestSelfReminder() {
   console.log('[BestSelfReminder] Component rendering...');
   
-  const { profile } = useProfile();
-  const { childId } = useChildData();
+  const { user } = useAuth();
   const [bestSelfReflection, setBestSelfReflection] = useState<BestSelfReflection | null>(null);
   const [loading, setLoading] = useState(true);
 
-  console.log('[BestSelfReminder] Component rendered, profile:', profile);
+  console.log('[BestSelfReminder] Component rendered, user:', user);
 
   useEffect(() => {
     async function loadBestSelfReflection() {
-      if (!profile?.user_id) {
-        console.log('[BestSelfReminder] No user_id in profile:', profile);
+      if (!user?.id) {
+        console.log('[BestSelfReminder] No user_id:', user);
         setLoading(false);
         return;
       }
       
-      console.log('[BestSelfReminder] Loading best self reflection for user:', profile.user_id);
+      console.log('[BestSelfReminder] Loading best self reflection for user:', user.id);
       
       try {
         const { data, error } = await supabase
           .from('best_self_reflections')
           .select('*')
-          .eq('user_id', profile.user_id)
+          .eq('user_id', user.id)
           .maybeSingle();
         
         console.log('[BestSelfReminder] Best self reflection data:', data, 'error:', error);
@@ -51,7 +49,7 @@ export function BestSelfReminder() {
     }
 
     loadBestSelfReflection();
-  }, [profile?.user_id]);
+  }, [user?.id]);
 
   console.log('[BestSelfReminder] Rendering state:', { loading, bestSelfReflection });
 
