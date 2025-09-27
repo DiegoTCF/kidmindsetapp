@@ -130,19 +130,19 @@ export default function OneToOnePostForm({ activity, preData, onComplete, onBack
                 <div key={key} className="space-y-3">
                   <Label>{label}</Label>
                   <div className="px-3">
-                    <Slider
-                      value={ratings[key as keyof typeof ratings]}
-                      onValueChange={(value) => handleRatingChange(key as keyof typeof ratings, value)}
-                      max={10}
-                      min={1}
-                      step={1}
-                      className="w-full"
-                    />
-                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                      <span>1</span>
-                      <span className="font-medium">{ratings[key as keyof typeof ratings][0]}</span>
-                      <span>10</span>
-                    </div>
+                     <Slider
+                       value={ratings[key as keyof typeof ratings]}
+                       onValueChange={(value) => handleRatingChange(key as keyof typeof ratings, value)}
+                       max={10}
+                       min={1}
+                       step={0.5}
+                       className="w-full"
+                     />
+                     <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                       <span>1</span>
+                       <span className="font-medium">{ratings[key as keyof typeof ratings][0]}</span>
+                       <span>10</span>
+                     </div>
                   </div>
                 </div>
               ))}
