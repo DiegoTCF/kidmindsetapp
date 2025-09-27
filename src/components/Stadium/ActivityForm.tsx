@@ -23,6 +23,7 @@ import MindsetSupportFlow from "./MindsetSupportFlow";
 import ConfidenceRating from "./ConfidenceRating";
 import { BestSelfScore } from "./BestSelfScore";
 import { DNAReminder } from "@/components/DNA/DNAReminder";
+import { BestSelfReminder } from "@/components/DNA/BestSelfReminder";
 interface Activity {
   name: string;
   type: string;
@@ -1003,6 +1004,9 @@ export default function ActivityForm({
             <CardContent className="space-y-4 bg-primary">
               {/* DNA Reminder */}
               <DNAReminder />
+              
+              {/* Best Self Reminder */}
+              <BestSelfReminder />
               
               {/* Goal Selection */}
               {userGoals.length > 0 && <div className="mb-6">
