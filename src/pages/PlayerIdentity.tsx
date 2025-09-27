@@ -337,6 +337,9 @@ export default function PlayerIdentity() {
                     {MOTTO_SUGGESTIONS.map(m => <Button key={m} type="button" variant="secondary" size="sm" onClick={() => setMotto(m)}>
                         {m}
                       </Button>)}
+                    <Button type="button" variant="secondary" size="sm" onClick={() => setMotto("No matter who with, or who against I focus on my behaviours")}>
+                      No matter who with, or who against I focus on my behaviours
+                    </Button>
                   </div>
                 </div>
 
