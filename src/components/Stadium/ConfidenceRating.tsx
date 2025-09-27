@@ -140,7 +140,7 @@ export default function ConfidenceRating({
               </div>
               
               <div className="px-2">
-                <Slider value={[ratings[currentQuestion.key]]} onValueChange={value => handleRatingChange(currentQuestion.key, value[0])} max={10} min={0} step={1} className={cn("transition-all duration-200", `[&_.slider-range]:${getSliderColor(ratings[currentQuestion.key])}`)} />
+                <Slider value={[ratings[currentQuestion.key]]} onValueChange={value => handleRatingChange(currentQuestion.key, value[0])} max={10} min={0} step={0.5} className={cn("transition-all duration-200", `[&_.slider-range]:${getSliderColor(ratings[currentQuestion.key])}`)} />
               </div>
               
               <div className="flex justify-between text-xs text-muted-foreground">
