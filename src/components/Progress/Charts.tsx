@@ -94,7 +94,7 @@ export default function Charts({
   const [confidenceTrends, setConfidenceTrends] = useState<ConfidenceTrend[]>([]);
   const [superBehaviourStats, setSuperBehaviourStats] = useState<SuperBehaviourStats[]>([]);
   const [activityRatingStats, setActivityRatingStats] = useState<ActivityRatingStats | null>(null);
-  const [bestSelfStats, setBestSelfStats] = useState<{average: number, percentage: number}>({average: 0, percentage: 0});
+  const [bestSelfStats, setBestSelfStats] = useState<{average: number, count: number}>({average: 0, count: 0});
   useEffect(() => {
     loadChartData();
   }, [selectedFilter, childId]);
@@ -369,13 +369,11 @@ export default function Charts({
             
             if (childBestSelfScores.length > 0) {
               const totalActivitiesWithScores = childBestSelfScores.length;
-              const totalActivities = activities.length;
               const averageScore = childBestSelfScores.reduce((sum, score) => sum + score.score, 0) / totalActivitiesWithScores;
-              const completionPercentage = (totalActivitiesWithScores / totalActivities) * 100;
               
               setBestSelfStats({
                 average: Math.round(averageScore * 10) / 10,
-                percentage: Math.round(completionPercentage * 10) / 10
+                count: totalActivitiesWithScores
               });
             }
           }
@@ -508,7 +506,7 @@ export default function Charts({
           <Card className="shadow-soft">
             <CardContent className="p-4">
               <div className="text-center">
-                <p className="text-2xl font-bold text-success">{bestSelfStats.percentage}%</p>
+                <p className="text-2xl font-bold text-success">{bestSelfStats.count}</p>
                 <p className="text-sm text-muted-foreground">Activities with Best Self Rating</p>
               </div>
             </CardContent>
