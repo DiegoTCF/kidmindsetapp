@@ -94,6 +94,7 @@ export default function Charts({
   const [confidenceTrends, setConfidenceTrends] = useState<ConfidenceTrend[]>([]);
   const [superBehaviourStats, setSuperBehaviourStats] = useState<SuperBehaviourStats[]>([]);
   const [activityRatingStats, setActivityRatingStats] = useState<ActivityRatingStats | null>(null);
+  const [bestSelfStats, setBestSelfStats] = useState<{average: number, percentage: number}>({average: 0, percentage: 0});
   useEffect(() => {
     loadChartData();
   }, [selectedFilter, childId]);
@@ -343,6 +344,43 @@ export default function Charts({
         
         setSuperBehaviourStats(behaviourStats);
       }
+      
+      // Load Best Self Statistics
+      if (activities.length > 0) {
+        const { data: bestSelfData, error: bestSelfError } = await supabase
+          .from('best_self_scores')
+          .select('score, activity_id')
+          .not('activity_id', 'is', null);
+          
+        if (bestSelfError) {
+          console.error('Error loading best self data:', bestSelfError);
+        } else if (bestSelfData && bestSelfData.length > 0) {
+          // Get activity IDs that belong to the current child - need to fetch activities with IDs
+          const { data: activitiesWithIds, error: activitiesError } = await supabase
+            .from('activities')
+            .select('id')
+            .eq('child_id', targetChildId);
+            
+          if (!activitiesError && activitiesWithIds) {
+            const childActivityIds = activitiesWithIds.map(activity => activity.id);
+            const childBestSelfScores = bestSelfData.filter(score => 
+              score.activity_id && childActivityIds.includes(score.activity_id)
+            );
+            
+            if (childBestSelfScores.length > 0) {
+              const totalActivitiesWithScores = childBestSelfScores.length;
+              const totalActivities = activities.length;
+              const averageScore = childBestSelfScores.reduce((sum, score) => sum + score.score, 0) / totalActivitiesWithScores;
+              const completionPercentage = (totalActivitiesWithScores / totalActivities) * 100;
+              
+              setBestSelfStats({
+                average: Math.round(averageScore * 10) / 10,
+                percentage: Math.round(completionPercentage * 10) / 10
+              });
+            }
+          }
+        }
+      }
     } catch (error) {
       console.error('Error loading chart data:', error);
     }
@@ -454,6 +492,29 @@ export default function Charts({
           </CardContent>
         </Card>
       </div>
+
+      {/* Best Self Stats */}
+      {bestSelfStats.average > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card className="shadow-soft">
+            <CardContent className="p-4">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-primary">{bestSelfStats.average}%</p>
+                <p className="text-sm text-muted-foreground">Avg Best Self Rating</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="shadow-soft">
+            <CardContent className="p-4">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-success">{bestSelfStats.percentage}%</p>
+                <p className="text-sm text-muted-foreground">Activities with Best Self Rating</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Match Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

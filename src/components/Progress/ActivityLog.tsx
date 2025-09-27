@@ -35,6 +35,7 @@ export default function ActivityLog({
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [bestSelfScores, setBestSelfScores] = useState<{[activityId: string]: number}>({});
   const {
     toast
   } = useToast();
@@ -76,6 +77,25 @@ export default function ActivityLog({
       } = await query;
       if (error) throw error;
       setActivities(data || []);
+      
+      // Load Best Self scores for all activities
+      if (data && data.length > 0) {
+        const activityIds = data.map(activity => activity.id);
+        const { data: scoresData, error: scoresError } = await supabase
+          .from('best_self_scores')
+          .select('activity_id, score')
+          .in('activity_id', activityIds);
+          
+        if (!scoresError && scoresData) {
+          const scoresMap: {[activityId: string]: number} = {};
+          scoresData.forEach(score => {
+            if (score.activity_id) {
+              scoresMap[score.activity_id] = score.score;
+            }
+          });
+          setBestSelfScores(scoresMap);
+        }
+      }
     } catch (error) {
       console.error('Error loading activities:', error);
     } finally {
@@ -353,21 +373,25 @@ export default function ActivityLog({
             {selectedActivity.post_activity_completed && selectedActivity.post_activity_data && <div className="space-y-2">
                 <h4 className="font-medium text-primary">Post-Activity Reflection & Journal</h4>
                 <div className="p-4 bg-muted/30 rounded-lg space-y-4">
-                  {/* Mood and Ratings */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {selectedActivity.post_activity_data.mood && <div className="text-center p-3 bg-background rounded-lg">
-                        <p className="text-sm font-medium">Mood</p>
-                        <p className="text-2xl font-bold text-primary">{selectedActivity.post_activity_data.mood}/5</p>
-                      </div>}
-                    {selectedActivity.post_activity_data.confidence && <div className="text-center p-3 bg-background rounded-lg">
-                        <p className="text-sm font-medium">Confidence</p>
-                        <p className="text-2xl font-bold text-primary">{selectedActivity.post_activity_data.confidence}/10</p>
-                      </div>}
-                    {selectedActivity.post_activity_data.satisfaction && <div className="text-center p-3 bg-background rounded-lg">
-                        <p className="text-sm font-medium">Satisfaction</p>
-                        <p className="text-2xl font-bold text-primary">{selectedActivity.post_activity_data.satisfaction}/10</p>
-                      </div>}
-                  </div>
+                   {/* Mood and Ratings */}
+                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                     {selectedActivity.post_activity_data.mood && <div className="text-center p-3 bg-background rounded-lg">
+                         <p className="text-sm font-medium">Mood</p>
+                         <p className="text-2xl font-bold text-primary">{selectedActivity.post_activity_data.mood}/5</p>
+                       </div>}
+                     {selectedActivity.post_activity_data.confidence && <div className="text-center p-3 bg-background rounded-lg">
+                         <p className="text-sm font-medium">Confidence</p>
+                         <p className="text-2xl font-bold text-primary">{selectedActivity.post_activity_data.confidence}/10</p>
+                       </div>}
+                     {selectedActivity.post_activity_data.satisfaction && <div className="text-center p-3 bg-background rounded-lg">
+                         <p className="text-sm font-medium">Satisfaction</p>
+                         <p className="text-2xl font-bold text-primary">{selectedActivity.post_activity_data.satisfaction}/10</p>
+                       </div>}
+                     {bestSelfScores[selectedActivity.id] && <div className="text-center p-3 bg-background rounded-lg">
+                         <p className="text-sm font-medium">Best Self</p>
+                         <p className="text-2xl font-bold text-primary">{bestSelfScores[selectedActivity.id]}%</p>
+                       </div>}
+                   </div>
 
                   {/* Journal Entries */}
                   <div className="space-y-4">
