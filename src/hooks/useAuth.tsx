@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AuthContextType {
@@ -27,6 +28,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.log('[AuthFix] Setting up auth state listener');
@@ -125,7 +127,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           
           // Redirect to auth page if not already there
           if (window.location.pathname !== '/auth') {
-            window.location.href = '/auth';
+            navigate('/auth');
           }
         }
       } catch (error) {
