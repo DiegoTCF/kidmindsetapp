@@ -91,9 +91,10 @@ const Auth = () => {
         } catch (logError) {
           console.log('[AuthFlow] Could not log login:', logError);
         }
-        // Auto-confirm users since we enabled auto-confirm
-        console.log('[AuthRedirect] Redirecting to home');
-        window.location.href = '/';
+        toast({
+          title: "Welcome back!",
+          description: "You have been signed in successfully.",
+        });
       }
     } catch (networkError: any) {
       console.error('[AuthFlow] Network/connection error:', networkError);
