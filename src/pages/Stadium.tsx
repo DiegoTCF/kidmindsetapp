@@ -56,6 +56,11 @@ export default function Stadium() {
     }
   }, [currentChildId]);
 
+  // Check for scheduled activities on every render when on Stadium page
+  useEffect(() => {
+    checkForScheduledActivity();
+  });
+
   // Also reload when component becomes visible again (user returns from other pages)
   useEffect(() => {
     const handleVisibilityChange = () => {

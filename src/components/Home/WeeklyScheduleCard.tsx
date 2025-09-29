@@ -414,8 +414,11 @@ export function WeeklyScheduleCard() {
       // Store activity data for Stadium to pick up
       sessionStorage.setItem('scheduledActivity', JSON.stringify(activityData));
       
-      // Navigate to Stadium
-      navigate('/stadium');
+      // If we're already on Stadium page, no need to navigate - the useEffect will pick it up
+      // If we're on a different page, navigate to Stadium
+      if (window.location.pathname !== '/stadium') {
+        navigate('/stadium');
+      }
     }
     
     setShowDayToggle(false);
