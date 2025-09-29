@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Calendar, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,11 +18,6 @@ interface NewActivityProps {
     date: Date;
   }) => void;
   onCancel: () => void;
-  initialData?: {
-    name: string;
-    type: string;
-    date: Date;
-  } | null;
 }
 
 const activityTypes = [
@@ -34,21 +29,12 @@ const activityTypes = [
   { value: "Other", label: "Other" },
 ];
 
-export default function NewActivity({ onSubmit, onCancel, initialData }: NewActivityProps) {
+export default function NewActivity({ onSubmit, onCancel }: NewActivityProps) {
   const [activityType, setActivityType] = useState("");
   const [activityName, setActivityName] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const { childId } = useChildData();
-
-  // Pre-fill form with initial data if provided
-  useEffect(() => {
-    if (initialData) {
-      setActivityName(initialData.name);
-      setActivityType(initialData.type);
-      setSelectedDate(initialData.date);
-    }
-  }, [initialData]);
 
   const handleSubmit = () => {
     if (!activityName.trim() || !activityType) return;

@@ -56,11 +56,6 @@ export default function Stadium() {
     }
   }, [currentChildId]);
 
-  // Check for scheduled activities on every render when on Stadium page
-  useEffect(() => {
-    checkForScheduledActivity();
-  });
-
   // Also reload when component becomes visible again (user returns from other pages)
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -88,17 +83,13 @@ export default function Stadium() {
   }, []);
 
   const checkForScheduledActivity = () => {
-    console.log('checkForScheduledActivity called');
     const scheduledActivity = sessionStorage.getItem('scheduledActivity');
-    console.log('scheduledActivity from sessionStorage:', scheduledActivity);
     if (scheduledActivity) {
       try {
         const activityData = JSON.parse(scheduledActivity);
-        console.log('Parsed activity data:', activityData);
         setCurrentActivity(activityData);
-        setShowNewActivity(true); // Show New Activity form instead of going directly to ActivityForm
+        setShowActivityForm(true);
         sessionStorage.removeItem('scheduledActivity'); // Clear after use
-        console.log('Set showNewActivity to true');
       } catch (error) {
         console.error('Error parsing scheduled activity:', error);
       }
@@ -353,11 +344,7 @@ export default function Stadium() {
     return (
       <NewActivity
         onSubmit={handleNewActivitySubmit}
-        onCancel={() => {
-          setShowNewActivity(false);
-          setCurrentActivity(null); // Clear any pre-filled data
-        }}
-        initialData={currentActivity}
+        onCancel={() => setShowNewActivity(false)}
       />
     );
   }

@@ -11,7 +11,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAdminPlayerView } from '@/hooks/useAdminPlayerView';
 import { useAdmin } from '@/hooks/useAdmin';
-import { useNavigate } from 'react-router-dom';
 
 interface ScheduleDay {
   day: string;
@@ -46,7 +45,6 @@ export function WeeklyScheduleCard() {
   const { toast } = useToast();
   const { isAdmin } = useAdmin();
   const { selectedChild, isViewingAsPlayer } = useAdminPlayerView();
-  const navigate = useNavigate();
   const [schedule, setSchedule] = useState<string | null>(null);
   const [playerName, setPlayerName] = useState<string>('');
   const [childId, setChildId] = useState<string | null>(null);
@@ -387,7 +385,6 @@ export function WeeklyScheduleCard() {
   };
 
   const handleStartActivity = () => {
-    console.log('handleStartActivity called, selectedDay:', selectedDay);
     if (!selectedDay) return;
     
     const dayMap: Record<string, string> = {
@@ -399,8 +396,6 @@ export function WeeklyScheduleCard() {
     const parsedSchedule = parseSchedule(schedule || '');
     const daySchedule = parsedSchedule.find(s => s.day === selectedDay);
     
-    console.log('daySchedule found:', daySchedule);
-    
     if (daySchedule) {
       // Navigate to Stadium with pre-filled activity data
       const activityData = {
@@ -410,15 +405,11 @@ export function WeeklyScheduleCard() {
         day: fullDayName
       };
       
-      console.log('Storing scheduled activity:', activityData);
       // Store activity data for Stadium to pick up
       sessionStorage.setItem('scheduledActivity', JSON.stringify(activityData));
       
-      // If we're already on Stadium page, no need to navigate - the useEffect will pick it up
-      // If we're on a different page, navigate to Stadium
-      if (window.location.pathname !== '/stadium') {
-        navigate('/stadium');
-      }
+      // Navigate to Stadium
+      window.location.href = '/stadium';
     }
     
     setShowDayToggle(false);
