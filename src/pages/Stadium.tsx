@@ -56,20 +56,6 @@ export default function Stadium() {
     }
   }, [currentChildId]);
 
-  // Listen for new activity events from weekly schedule
-  useEffect(() => {
-    const handleStartNewActivity = () => {
-      console.log('[Stadium] Received startNewActivity event');
-      checkForNewActivityData();
-    };
-
-    window.addEventListener('startNewActivity', handleStartNewActivity);
-    
-    return () => {
-      window.removeEventListener('startNewActivity', handleStartNewActivity);
-    };
-  }, []);
-
   // Also reload when component becomes visible again (user returns from other pages)
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -106,22 +92,6 @@ export default function Stadium() {
         sessionStorage.removeItem('scheduledActivity'); // Clear after use
       } catch (error) {
         console.error('Error parsing scheduled activity:', error);
-      }
-    }
-  };
-
-  const checkForNewActivityData = () => {
-    console.log('[Stadium] Checking for new activity data');
-    const newActivityData = sessionStorage.getItem('newActivityData');
-    if (newActivityData) {
-      try {
-        const activityData = JSON.parse(newActivityData);
-        console.log('[Stadium] Found new activity data:', activityData);
-        // Show New Activity form with pre-filled data
-        setShowNewActivity(true);
-        sessionStorage.removeItem('newActivityData'); // Clear after use
-      } catch (error) {
-        console.error('Error parsing new activity data:', error);
       }
     }
   };

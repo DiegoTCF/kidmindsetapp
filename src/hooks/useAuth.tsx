@@ -117,11 +117,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
           // Existing session found
           setSession(session);
           setUser(session.user);
+          setLoading(false);
         } else {
           // No session found - user needs to authenticate
           console.log('[AuthFix] No session found, user needs to sign up/login');
+          setLoading(false);
+          
+          // Redirect to auth page if not already there
+          if (window.location.pathname !== '/auth') {
+            window.location.href = '/auth';
+          }
         }
-        setLoading(false);
       } catch (error) {
         console.log('[AuthFix] Error initializing auth:', error);
         setLoading(false);
