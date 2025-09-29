@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAdminPlayerView } from '@/hooks/useAdminPlayerView';
 import { useAdmin } from '@/hooks/useAdmin';
+import { useNavigate } from 'react-router-dom';
 
 interface ScheduleDay {
   day: string;
@@ -45,6 +46,7 @@ export function WeeklyScheduleCard() {
   const { toast } = useToast();
   const { isAdmin } = useAdmin();
   const { selectedChild, isViewingAsPlayer } = useAdminPlayerView();
+  const navigate = useNavigate();
   const [schedule, setSchedule] = useState<string | null>(null);
   const [playerName, setPlayerName] = useState<string>('');
   const [childId, setChildId] = useState<string | null>(null);
@@ -385,6 +387,8 @@ export function WeeklyScheduleCard() {
   };
 
   const handleStartActivity = () => {
+    console.log('[WeeklySchedule Dialog]', 'Start Activity clicked', selectedDay);
+    
     if (!selectedDay) return;
     
     const dayMap: Record<string, string> = {
@@ -397,19 +401,38 @@ export function WeeklyScheduleCard() {
     const daySchedule = parsedSchedule.find(s => s.day === selectedDay);
     
     if (daySchedule) {
-      // Navigate to Stadium with pre-filled activity data
+      // Calculate the date for the selected day
+      const today = new Date();
+      const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      const targetDayIndex = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(selectedDay);
+      const daysFromToday = targetDayIndex - currentDay;
+      
+      const targetDate = new Date(today);
+      targetDate.setDate(today.getDate() + daysFromToday);
+      
+      // Pre-fill data for New Activity form
       const activityData = {
         name: daySchedule.activity,
-        type: 'Match', // Default type, can be customized
-        date: new Date(),
+        type: 'Match', // Will be customizable in the form
+        date: targetDate,
         day: fullDayName
       };
       
       // Store activity data for Stadium to pick up
-      sessionStorage.setItem('scheduledActivity', JSON.stringify(activityData));
+      sessionStorage.setItem('newActivityData', JSON.stringify(activityData));
       
-      // Navigate to Stadium
-      window.location.href = '/stadium';
+      // Navigate to Stadium using proper routing
+      if (window.location.pathname === '/stadium') {
+        // Already on stadium, trigger new activity
+        window.dispatchEvent(new CustomEvent('startNewActivity'));
+      } else {
+        // Navigate to stadium
+        navigate('/stadium');
+        // Dispatch event after navigation
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('startNewActivity'));
+        }, 100);
+      }
     }
     
     setShowDayToggle(false);

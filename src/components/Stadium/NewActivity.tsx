@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,6 +35,26 @@ export default function NewActivity({ onSubmit, onCancel }: NewActivityProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const { childId } = useChildData();
+
+  // Check for pre-filled data from weekly schedule
+  useEffect(() => {
+    const newActivityData = sessionStorage.getItem('newActivityData');
+    if (newActivityData) {
+      try {
+        const activityData = JSON.parse(newActivityData);
+        console.log('[NewActivity] Pre-filling with data:', activityData);
+        
+        if (activityData.name) setActivityName(activityData.name);
+        if (activityData.type) setActivityType(activityData.type);
+        if (activityData.date) setSelectedDate(new Date(activityData.date));
+        
+        // Clear the session storage
+        sessionStorage.removeItem('newActivityData');
+      } catch (error) {
+        console.error('Error parsing new activity data:', error);
+      }
+    }
+  }, []);
 
   const handleSubmit = () => {
     if (!activityName.trim() || !activityType) return;
