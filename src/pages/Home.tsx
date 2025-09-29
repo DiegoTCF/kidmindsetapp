@@ -83,13 +83,14 @@ export default function Home() {
     user,
     signOut
   } = useAuth();
+  const navigate = useNavigate();
   const handleLogout = async () => {
     try {
       await signOut();
       // Clear all localStorage data
       localStorage.clear();
       // Force redirect to auth page
-      window.location.href = '/auth';
+      navigate('/auth');
     } catch (error) {
       console.error('Logout error:', error);
       toast({

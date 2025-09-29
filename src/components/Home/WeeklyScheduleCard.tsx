@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -45,6 +46,7 @@ export function WeeklyScheduleCard() {
   const { toast } = useToast();
   const { isAdmin } = useAdmin();
   const { selectedChild, isViewingAsPlayer } = useAdminPlayerView();
+  const navigate = useNavigate();
   const [schedule, setSchedule] = useState<string | null>(null);
   const [playerName, setPlayerName] = useState<string>('');
   const [childId, setChildId] = useState<string | null>(null);
@@ -409,7 +411,7 @@ export function WeeklyScheduleCard() {
       sessionStorage.setItem('scheduledActivity', JSON.stringify(activityData));
       
       // Navigate to Stadium
-      window.location.href = '/stadium';
+      navigate('/stadium');
     }
     
     setShowDayToggle(false);
@@ -657,7 +659,7 @@ export function WeeklyScheduleCard() {
                           sessionStorage.setItem('scheduledActivity', JSON.stringify(editData));
                           
                           // Navigate to Stadium for editing
-                          window.location.href = '/stadium';
+                          navigate('/stadium');
                         }
                         
                         setShowDayToggle(false);

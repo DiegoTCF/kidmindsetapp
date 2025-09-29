@@ -117,7 +117,7 @@ export default function Admin() {
           variant: 'destructive'
         });
         // Force redirect to grown-up zone
-        window.location.href = '/grown-up';
+        navigate('/grown-up');
         return;
       }
 
@@ -134,7 +134,7 @@ export default function Admin() {
             description: 'Insufficient permissions to view profiles.',
             variant: 'destructive'
           });
-          window.location.href = '/grown-up';
+          navigate('/grown-up');
           return;
         }
         throw profilesError;
@@ -153,7 +153,7 @@ export default function Admin() {
             description: 'Insufficient permissions to view parent data.',
             variant: 'destructive'
           });
-          window.location.href = '/grown-up';
+          navigate('/grown-up');
           return;
         }
         throw parentsError;
@@ -172,7 +172,7 @@ export default function Admin() {
             description: 'Insufficient permissions to view user roles.',
             variant: 'destructive'
           });
-          window.location.href = '/grown-up';
+          navigate('/grown-up');
           return;
         }
         throw rolesError;
@@ -229,7 +229,7 @@ export default function Admin() {
           variant: 'destructive'
         });
         // Force redirect to grown-up zone
-        window.location.href = '/grown-up';
+        navigate('/grown-up');
         return [];
       }
 
@@ -251,7 +251,7 @@ export default function Admin() {
             description: 'Insufficient permissions to view parent data.',
             variant: 'destructive'
           });
-          window.location.href = '/grown-up';
+          navigate('/grown-up');
           return [];
         }
         if (parentError.code === 'PGRST116') {
@@ -299,7 +299,7 @@ export default function Admin() {
             description: 'Insufficient permissions to view children data.',
             variant: 'destructive'
           });
-          window.location.href = '/grown-up';
+          navigate('/grown-up');
           return [];
         }
         throw childrenError;
@@ -363,7 +363,7 @@ export default function Admin() {
             description: 'Insufficient permissions to modify user roles.',
             variant: 'destructive'
           });
-          window.location.href = '/grown-up';
+          navigate('/grown-up');
           return;
         }
         throw error;

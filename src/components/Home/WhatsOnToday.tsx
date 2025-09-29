@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, CheckCircle } from "lucide-react";
@@ -20,6 +21,7 @@ interface WhatsOnTodayProps {
 
 export const WhatsOnToday = ({ schedule }: WhatsOnTodayProps) => {
   const { childId } = useChildData();
+  const navigate = useNavigate();
   const [todayActivity, setTodayActivity] = useState<Activity | null>(null);
   const [todaySchedule, setTodaySchedule] = useState<string | null>(null);
 
@@ -86,7 +88,7 @@ export const WhatsOnToday = ({ schedule }: WhatsOnTodayProps) => {
       };
       sessionStorage.setItem('scheduledActivity', JSON.stringify(scheduledActivity));
     }
-    window.location.href = '/stadium';
+    navigate('/stadium');
   };
 
   const getActivityStatus = () => {

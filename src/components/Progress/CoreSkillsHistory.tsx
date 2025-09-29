@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -38,6 +39,7 @@ const skillLabels = {
 
 export function CoreSkillsHistory() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [results, setResults] = useState<CoreSkillsResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'radar' | 'trend'>('radar');
@@ -89,7 +91,7 @@ export function CoreSkillsHistory() {
           <div className="text-muted-foreground mb-4">
             No assessments completed yet
           </div>
-          <Button onClick={() => window.location.href = '/core-skills/self-assessment'}>
+          <Button onClick={() => navigate('/core-skills/self-assessment')}>
             Take Your First Assessment
           </Button>
         </CardContent>
