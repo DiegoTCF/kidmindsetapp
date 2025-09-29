@@ -387,6 +387,7 @@ export function WeeklyScheduleCard() {
   };
 
   const handleStartActivity = () => {
+    console.log('handleStartActivity called, selectedDay:', selectedDay);
     if (!selectedDay) return;
     
     const dayMap: Record<string, string> = {
@@ -398,6 +399,8 @@ export function WeeklyScheduleCard() {
     const parsedSchedule = parseSchedule(schedule || '');
     const daySchedule = parsedSchedule.find(s => s.day === selectedDay);
     
+    console.log('daySchedule found:', daySchedule);
+    
     if (daySchedule) {
       // Navigate to Stadium with pre-filled activity data
       const activityData = {
@@ -407,6 +410,7 @@ export function WeeklyScheduleCard() {
         day: fullDayName
       };
       
+      console.log('Storing scheduled activity:', activityData);
       // Store activity data for Stadium to pick up
       sessionStorage.setItem('scheduledActivity', JSON.stringify(activityData));
       

@@ -83,13 +83,17 @@ export default function Stadium() {
   }, []);
 
   const checkForScheduledActivity = () => {
+    console.log('checkForScheduledActivity called');
     const scheduledActivity = sessionStorage.getItem('scheduledActivity');
+    console.log('scheduledActivity from sessionStorage:', scheduledActivity);
     if (scheduledActivity) {
       try {
         const activityData = JSON.parse(scheduledActivity);
+        console.log('Parsed activity data:', activityData);
         setCurrentActivity(activityData);
         setShowNewActivity(true); // Show New Activity form instead of going directly to ActivityForm
         sessionStorage.removeItem('scheduledActivity'); // Clear after use
+        console.log('Set showNewActivity to true');
       } catch (error) {
         console.error('Error parsing scheduled activity:', error);
       }
