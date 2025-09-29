@@ -3,40 +3,86 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useChildData } from '@/hooks/useChildData';
 import { ArrowLeft, ArrowRight, Brain, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const OUTCOME_GOALS = ['I want to sign for an academy', 'I want to score more goals this season', 'I want to get into the starting XI', 'I want to make the representative/district team', 'I want to win the league with my team', 'I want to get a scholarship', 'I want to play for my country', 'I want to get scouted by professional clubs', 'I want to win player of the season', 'I want to play up an age group', 'I want to get into the academy\'s first team', 'I want to earn a professional contract', 'I want to play at a higher level', 'I want to be the top scorer', 'I want to win a tournament or league title', 'I want to get selected for trials'];
+const OUTCOME_EXAMPLES = [
+  'I want to sign for an academy',
+  'I want to score more goals this season', 
+  'I want to get into the starting XI',
+  'I want to make the representative/district team',
+  'I want to win the league with my team',
+  'I want to get a scholarship',
+  'I want to play for my country',
+  'I want to get scouted by professional clubs'
+];
 
-const MINDSET_GOALS = ['I want to learn how to deal with ANTs', 'I want to feel less nervous during matches', 'I want to feel less nervous BEFORE matches', 'I want to be more confident on the ball', 'I want to stop worrying about what others think', 'I want to bounce back faster from setbacks/mistakes', 'I want to stay focused during pressure moments', 'I want to believe in myself more', 'I want to overcome fear of failure', 'I want to stay calm under pressure', 'I want to trust my abilities', 'I want to stop negative self-talk', 'I want to be mentally stronger', 'I want to enjoy playing more', 'I want to handle coach feedback better', 'I want to stop comparing myself to others', 'I want to be more resilient'];
+const MINDSET_EXAMPLES = [
+  'I want to learn how to deal with ANTs',
+  'I want to feel less nervous during matches',
+  'I want to be more confident on the ball',
+  'I want to stop worrying about what others think',
+  'I want to bounce back faster from setbacks/mistakes',
+  'I want to stay focused during pressure moments',
+  'I want to believe in myself more',
+  'I want to overcome fear of failure'
+];
 
-const SKILL_GOALS = ['I want to win more tackles', 'I want to improve my finishing', 'I want to get faster', 'I want to get better first touch', 'I want to get better ball control', 'I want to improve in 1v1s', 'I want to improve my passing accuracy', 'I want to improve my weak foot', 'I want to improve my defending', 'I want to improve my dribbling', 'I want to improve my positioning'];
+const SKILL_EXAMPLES = [
+  'I want to win more tackles',
+  'I want to improve my finishing',
+  'I want to get faster',
+  'I want to get better first touch',
+  'I want to get better ball control',
+  'I want to improve in 1v1s',
+  'I want to improve my passing accuracy',
+  'I want to improve my weak foot'
+];
 
-interface GoalSelectionProps {
-  goals: string[];
-  selectedGoals: string[];
-  onToggle: (goal: string) => void;
+interface GoalInputProps {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  examples: string[];
+  placeholder: string;
 }
 
-const GoalSelection: React.FC<GoalSelectionProps> = ({ goals, selectedGoals, onToggle }) => {
+const GoalInput: React.FC<GoalInputProps> = ({ label, value, onChange, examples, placeholder }) => {
   return (
-    <div className="grid gap-3 md:grid-cols-2">
-      {goals.map(goal => (
-        <div
-          key={goal}
-          onClick={() => onToggle(goal)}
-          className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-            selectedGoals.includes(goal)
-              ? 'border-primary bg-primary/10 text-primary'
-              : 'border-border hover:border-primary/50'
-          }`}
-        >
-          <p className="text-sm font-medium">{goal}</p>
+    <div className="space-y-4">
+      <div>
+        <Label htmlFor={label} className="text-sm font-medium">{label}</Label>
+        <Textarea
+          id={label}
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="mt-2 min-h-[120px]"
+        />
+      </div>
+      <div>
+        <p className="text-sm font-medium text-muted-foreground mb-2">Examples to inspire you:</p>
+        <div className="flex flex-wrap gap-2">
+          {examples.map((example, index) => (
+            <Badge 
+              key={index} 
+              variant="outline" 
+              className="cursor-pointer hover:bg-primary/10 hover:border-primary text-xs"
+              onClick={() => {
+                const newValue = value ? value + '\n' + example : example;
+                onChange(newValue);
+              }}
+            >
+              {example}
+            </Badge>
+          ))}
         </div>
-      ))}
+      </div>
     </div>
   );
 };
@@ -50,9 +96,9 @@ interface Goal {
 
 export const GoalSettingFlow: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [selectedOutcomeGoals, setSelectedOutcomeGoals] = useState<string[]>([]);
-  const [selectedMindsetGoals, setSelectedMindsetGoals] = useState<string[]>([]);
-  const [selectedSkillGoals, setSelectedSkillGoals] = useState<string[]>([]);
+  const [outcomeGoals, setOutcomeGoals] = useState('');
+  const [mindsetGoals, setMindsetGoals] = useState('');
+  const [skillGoals, setSkillGoals] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showANTSuggestion, setShowANTSuggestion] = useState(false);
   const [showResults, setShowResults] = useState(false);
@@ -164,20 +210,11 @@ export const GoalSettingFlow: React.FC = () => {
     }
   };
 
-  const toggleGoal = (goal: string, type: 'outcome' | 'mindset' | 'skill') => {
-    if (type === 'outcome') {
-      setSelectedOutcomeGoals(prev => 
-        prev.includes(goal) ? prev.filter(g => g !== goal) : [...prev, goal]
-      );
-    } else if (type === 'mindset') {
-      setSelectedMindsetGoals(prev => 
-        prev.includes(goal) ? prev.filter(g => g !== goal) : [...prev, goal]
-      );
-    } else {
-      setSelectedSkillGoals(prev => 
-        prev.includes(goal) ? prev.filter(g => g !== goal) : [...prev, goal]
-      );
-    }
+  const parseGoals = (goalText: string): string[] => {
+    return goalText
+      .split('\n')
+      .map(goal => goal.trim())
+      .filter(goal => goal.length > 0);
   };
 
   const saveGoals = async () => {
@@ -190,22 +227,27 @@ export const GoalSettingFlow: React.FC = () => {
       const isChildContext = !!childId;
       const effectiveId = childId || user.id;
 
+      // Parse goals from text input
+      const outcomeGoalsList = parseGoals(outcomeGoals);
+      const mindsetGoalsList = parseGoals(mindsetGoals);
+      const skillGoalsList = parseGoals(skillGoals);
+
       // Clear existing goals and insert new ones
       if (isChildContext) {
         await supabase.from('child_goals').delete().eq('child_id', effectiveId);
 
         const allGoals = [
-          ...selectedOutcomeGoals.map(goal => ({
+          ...outcomeGoalsList.map(goal => ({
             child_id: effectiveId,
             goal_type: 'outcome',
             goal_text: goal
           })),
-          ...selectedMindsetGoals.map(goal => ({
+          ...mindsetGoalsList.map(goal => ({
             child_id: effectiveId,
             goal_type: 'mindset', 
             goal_text: goal
           })),
-          ...selectedSkillGoals.map(goal => ({
+          ...skillGoalsList.map(goal => ({
             child_id: effectiveId,
             goal_type: 'skill',
             goal_text: goal
@@ -220,17 +262,17 @@ export const GoalSettingFlow: React.FC = () => {
         await supabase.from('user_goals').delete().eq('user_id', effectiveId);
 
         const allGoals = [
-          ...selectedOutcomeGoals.map(goal => ({
+          ...outcomeGoalsList.map(goal => ({
             user_id: effectiveId,
             goal_type: 'outcome',
             goal_text: goal
           })),
-          ...selectedMindsetGoals.map(goal => ({
+          ...mindsetGoalsList.map(goal => ({
             user_id: effectiveId,
             goal_type: 'mindset', 
             goal_text: goal
           })),
-          ...selectedSkillGoals.map(goal => ({
+          ...skillGoalsList.map(goal => ({
             user_id: effectiveId,
             goal_type: 'skill',
             goal_text: goal
@@ -248,8 +290,8 @@ export const GoalSettingFlow: React.FC = () => {
         description: "Your amazing goals have been saved successfully!"
       });
 
-      // Show ANT suggestion if mindset goals were selected
-      if (selectedMindsetGoals.some(goal => goal.includes('ANT'))) {
+      // Show ANT suggestion if mindset goals contain ANT-related content
+      if (mindsetGoals.toLowerCase().includes('ant')) {
         setShowANTSuggestion(true);
       }
 
@@ -281,9 +323,9 @@ export const GoalSettingFlow: React.FC = () => {
 
       // Reset form
       setCurrentStep(1);
-      setSelectedOutcomeGoals([]);
-      setSelectedMindsetGoals([]);
-      setSelectedSkillGoals([]);
+      setOutcomeGoals('');
+      setMindsetGoals('');
+      setSkillGoals('');
     } catch (error) {
       console.error('Error saving goals:', error);
       toast({
@@ -314,11 +356,11 @@ export const GoalSettingFlow: React.FC = () => {
   const canProceed = () => {
     switch (currentStep) {
       case 1:
-        return selectedOutcomeGoals.length > 0;
+        return outcomeGoals.trim().length > 0;
       case 2:
-        return selectedMindsetGoals.length > 0;
+        return mindsetGoals.trim().length > 0;
       case 3:
-        return selectedSkillGoals.length > 0;
+        return skillGoals.trim().length > 0;
       case 4:
         return true;
       default:
@@ -330,36 +372,46 @@ export const GoalSettingFlow: React.FC = () => {
     switch (currentStep) {
       case 1:
         return (
-          <GoalSelection
-            goals={OUTCOME_GOALS}
-            selectedGoals={selectedOutcomeGoals}
-            onToggle={(goal) => toggleGoal(goal, 'outcome')}
+          <GoalInput
+            label="Write your big dreams and outcome goals:"
+            value={outcomeGoals}
+            onChange={setOutcomeGoals}
+            examples={OUTCOME_EXAMPLES}
+            placeholder="What are your big dreams this year? Write one goal per line..."
           />
         );
       case 2:
         return (
-          <GoalSelection
-            goals={MINDSET_GOALS}
-            selectedGoals={selectedMindsetGoals}
-            onToggle={(goal) => toggleGoal(goal, 'mindset')}
+          <GoalInput
+            label="Write what you want to improve mentally:"
+            value={mindsetGoals}
+            onChange={setMindsetGoals}
+            examples={MINDSET_EXAMPLES}
+            placeholder="What mindset goals do you want to work on? Write one goal per line..."
           />
         );
       case 3:
         return (
-          <GoalSelection
-            goals={SKILL_GOALS}
-            selectedGoals={selectedSkillGoals}
-            onToggle={(goal) => toggleGoal(goal, 'skill')}
+          <GoalInput
+            label="Write your skill improvement goals:"
+            value={skillGoals}
+            onChange={setSkillGoals}
+            examples={SKILL_EXAMPLES}
+            placeholder="What skills do you want to improve? Write one goal per line..."
           />
         );
       case 4:
+        const outcomeGoalsList = parseGoals(outcomeGoals);
+        const mindsetGoalsList = parseGoals(mindsetGoals);
+        const skillGoalsList = parseGoals(skillGoals);
+        
         return (
           <div className="space-y-6">
-            {selectedOutcomeGoals.length > 0 && (
+            {outcomeGoalsList.length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold mb-3 text-primary">🏆 Outcome Goals</h3>
                 <div className="space-y-2">
-                  {selectedOutcomeGoals.map((goal, index) => (
+                  {outcomeGoalsList.map((goal, index) => (
                     <Badge key={index} variant="secondary" className="mr-2 mb-2">
                       {goal}
                     </Badge>
@@ -368,11 +420,11 @@ export const GoalSettingFlow: React.FC = () => {
               </div>
             )}
 
-            {selectedMindsetGoals.length > 0 && (
+            {mindsetGoalsList.length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold mb-3 text-primary">🧠 Mindset Goals</h3>
                 <div className="space-y-2">
-                  {selectedMindsetGoals.map((goal, index) => (
+                  {mindsetGoalsList.map((goal, index) => (
                     <Badge key={index} variant="secondary" className="mr-2 mb-2">
                       {goal}
                     </Badge>
@@ -381,11 +433,11 @@ export const GoalSettingFlow: React.FC = () => {
               </div>
             )}
 
-            {selectedSkillGoals.length > 0 && (
+            {skillGoalsList.length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold mb-3 text-primary">⚽ Skill Goals</h3>
                 <div className="space-y-2">
-                  {selectedSkillGoals.map((goal, index) => (
+                  {skillGoalsList.map((goal, index) => (
                     <Badge key={index} variant="secondary" className="mr-2 mb-2">
                       {goal}
                     </Badge>
@@ -483,7 +535,7 @@ export const GoalSettingFlow: React.FC = () => {
         <CardHeader>
           <CardTitle className="text-xl">{getStepTitle()}</CardTitle>
           <CardDescription>
-            {currentStep < 4 ? 'Select all that apply:' : 'Review your goals and create them!'}
+            {currentStep < 4 ? 'Write your goals below. Click examples to add them quickly:' : 'Review your goals and create them!'}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -505,9 +557,9 @@ export const GoalSettingFlow: React.FC = () => {
                 variant="ghost"
                 onClick={() => {
                   setCurrentStep(1);
-                  setSelectedOutcomeGoals([]);
-                  setSelectedMindsetGoals([]);
-                  setSelectedSkillGoals([]);
+                  setOutcomeGoals('');
+                  setMindsetGoals('');
+                  setSkillGoals('');
                 }}
               >
                 Start Over
