@@ -88,7 +88,7 @@ export default function Stadium() {
       try {
         const activityData = JSON.parse(scheduledActivity);
         setCurrentActivity(activityData);
-        setShowActivityForm(true);
+        setShowNewActivity(true); // Show New Activity form instead of going directly to ActivityForm
         sessionStorage.removeItem('scheduledActivity'); // Clear after use
       } catch (error) {
         console.error('Error parsing scheduled activity:', error);
@@ -344,7 +344,11 @@ export default function Stadium() {
     return (
       <NewActivity
         onSubmit={handleNewActivitySubmit}
-        onCancel={() => setShowNewActivity(false)}
+        onCancel={() => {
+          setShowNewActivity(false);
+          setCurrentActivity(null); // Clear any pre-filled data
+        }}
+        initialData={currentActivity}
       />
     );
   }
