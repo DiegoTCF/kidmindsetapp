@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,7 +41,6 @@ const Auth = () => {
   });
   const { toast } = useToast();
   const { logLogin, logError } = useUserLogging();
-  const navigate = useNavigate();
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -94,7 +93,7 @@ const Auth = () => {
         }
         // Auto-confirm users since we enabled auto-confirm
         console.log('[AuthRedirect] Redirecting to home');
-        navigate('/');
+        window.location.href = '/';
       }
     } catch (networkError: any) {
       console.error('[AuthFlow] Network/connection error:', networkError);

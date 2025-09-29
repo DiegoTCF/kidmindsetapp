@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { Plus, Star, Trophy, Edit2, Check, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -84,14 +83,13 @@ export default function Home() {
     user,
     signOut
   } = useAuth();
-  const navigate = useNavigate();
   const handleLogout = async () => {
     try {
       await signOut();
       // Clear all localStorage data
       localStorage.clear();
       // Force redirect to auth page
-      navigate('/auth');
+      window.location.href = '/auth';
     } catch (error) {
       console.error('Logout error:', error);
       toast({
