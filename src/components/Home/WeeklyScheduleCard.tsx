@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAdminPlayerView } from '@/hooks/useAdminPlayerView';
 import { useAdmin } from '@/hooks/useAdmin';
+import { useNavigate } from 'react-router-dom';
 
 interface ScheduleDay {
   day: string;
@@ -45,6 +46,7 @@ export function WeeklyScheduleCard() {
   const { toast } = useToast();
   const { isAdmin } = useAdmin();
   const { selectedChild, isViewingAsPlayer } = useAdminPlayerView();
+  const navigate = useNavigate();
   const [schedule, setSchedule] = useState<string | null>(null);
   const [playerName, setPlayerName] = useState<string>('');
   const [childId, setChildId] = useState<string | null>(null);
@@ -409,7 +411,7 @@ export function WeeklyScheduleCard() {
       sessionStorage.setItem('scheduledActivity', JSON.stringify(activityData));
       
       // Navigate to Stadium
-      window.location.href = '/stadium';
+      navigate('/stadium');
     }
     
     setShowDayToggle(false);
