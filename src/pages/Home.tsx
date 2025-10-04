@@ -12,6 +12,7 @@ import { LevelProgressCard } from "@/components/Progress/LevelProgressCard";
 import { LevelUpNotification } from "@/components/Progress/LevelUpNotification";
 import { LatestCoreSkillsCard } from "@/components/Home/LatestCoreSkillsCard";
 import { WhatsOnToday } from "@/components/Home/WhatsOnToday";
+import CompleteProfileFlow from "@/components/Profile/CompleteProfileFlow";
 interface MoodOption {
   iconType: 'sad' | 'not-great' | 'okay' | 'good' | 'amazing';
   label: string;
@@ -123,6 +124,17 @@ export default function Home() {
   const [previousLevel, setPreviousLevel] = useState<number | null>(null);
   const [showLevelUpNotification, setShowLevelUpNotification] = useState(false);
 
+  // Profile completion tracking
+  const [needsProfileCompletion, setNeedsProfileCompletion] = useState(false);
+  const [checkingProfile, setCheckingProfile] = useState(true);
+
+  // Check if user needs to complete profile
+  useEffect(() => {
+    if (user) {
+      checkProfileCompletion();
+    }
+  }, [user]);
+
   // Load saved data on mount
   useEffect(() => {
     console.log('[KidMindset] Loading player data...');
@@ -131,6 +143,63 @@ export default function Home() {
     loadTodayData();
     loadWeeklyMoodAverage();
   }, []);
+
+  const checkProfileCompletion = async () => {
+    if (!user) return;
+    
+    setCheckingProfile(true);
+    try {
+      // Check if user has a parent record
+      const { data: parentData, error: parentError } = await supabase
+        .from('parents')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (parentError) {
+        console.error('Error checking parent record:', parentError);
+        setCheckingProfile(false);
+        return;
+      }
+
+      if (!parentData) {
+        // User needs to complete profile
+        setNeedsProfileCompletion(true);
+        setCheckingProfile(false);
+        return;
+      }
+
+      // Check if parent has a child record
+      const { data: childData, error: childError } = await supabase
+        .from('children')
+        .select('id')
+        .eq('parent_id', parentData.id)
+        .maybeSingle();
+
+      if (childError) {
+        console.error('Error checking child record:', childError);
+        setCheckingProfile(false);
+        return;
+      }
+
+      if (!childData) {
+        // Parent exists but no child - still needs completion
+        setNeedsProfileCompletion(true);
+      } else {
+        setNeedsProfileCompletion(false);
+      }
+    } catch (error) {
+      console.error('Error in profile completion check:', error);
+    } finally {
+      setCheckingProfile(false);
+    }
+  };
+
+  const handleProfileComplete = () => {
+    setNeedsProfileCompletion(false);
+    // Reload player data
+    loadPlayerData();
+  };
   const loadPlayerData = async () => {
     try {
       console.log('[Admin Child Fetch] Getting current user child data...');
@@ -938,6 +1007,11 @@ export default function Home() {
       });
     }
   };
+  // Show complete profile flow if needed
+  if (needsProfileCompletion && !checkingProfile) {
+    return <CompleteProfileFlow onComplete={handleProfileComplete} />;
+  }
+
   return <div className="min-h-screen bg-neutral-950">
       <div className="w-full max-w-sm mx-auto p-4">
         {/* Logout Button - Top Left */}
