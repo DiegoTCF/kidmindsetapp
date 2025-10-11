@@ -272,6 +272,7 @@ export default function ActivityForm({
     reason: string;
     answers: Record<string, string>;
   } | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   useEffect(() => {
     if (!childDataLoading) {
       loadChildData();
@@ -436,7 +437,7 @@ export default function ActivityForm({
     return points;
   };
   const handlePreActivitySubmit = async () => {
-    if (!currentChildId) return;
+    if (!currentChildId || isSubmitting) return;
 
     // Check authentication first
     if (!user || !session) {
@@ -448,6 +449,8 @@ export default function ActivityForm({
       });
       return;
     }
+    
+    setIsSubmitting(true);
     console.log('[ActivityForm] handlePreActivitySubmit - currentChildId:', currentChildId, 'user.id:', user.id);
     const prePoints = calculatePreActivityPoints();
 
@@ -535,21 +538,25 @@ export default function ActivityForm({
         description: "Please try again later",
         variant: "destructive"
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
   const handlePostActivitySubmit = async () => {
-    if (!currentChildId) return;
+    if (!currentChildId || isSubmitting) return;
 
     // Check authentication first
     if (!user || !session) {
       console.log('[ActivityForm] User not authenticated, redirecting to login');
       toast({
         title: "Session expired",
-        description: "Please sign in again to continue.",
+        description: "Please sign in again to complete.",
         variant: "destructive"
       });
       return;
     }
+    
+    setIsSubmitting(true);
     const postPoints = calculatePostActivityPoints();
     const fullActivityBonus = 20; // Bonus for completing both pre and post
 
@@ -700,6 +707,8 @@ export default function ActivityForm({
         description: "Please try again later",
         variant: "destructive"
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
   const handleItemComplete = (itemId: string) => {
@@ -1071,8 +1080,14 @@ export default function ActivityForm({
           </Card>
 
           {/* Submit Pre-Activity */}
-          <Button onClick={handlePreActivitySubmit} disabled={!isPreActivityComplete() || preActivityCompleted} className="w-full" size="lg">
-            {preActivityCompleted ? "Pre-Activity Complete!" : "Start Activity →"}
+          <Button 
+            type="button"
+            onClick={handlePreActivitySubmit} 
+            disabled={!isPreActivityComplete() || preActivityCompleted || isSubmitting} 
+            className="w-full" 
+            size="lg"
+          >
+            {isSubmitting ? "Saving..." : preActivityCompleted ? "Pre-Activity Complete!" : "Start Activity →"}
           </Button>
         </TabsContent>
 
@@ -1725,8 +1740,14 @@ export default function ActivityForm({
           </Card>
 
           {/* Submit Post-Activity */}
-          <Button onClick={handlePostActivitySubmit} disabled={!isPostActivityComplete()} className="w-full" size="lg">
-            Complete Activity 🎉
+          <Button 
+            type="button"
+            onClick={handlePostActivitySubmit} 
+            disabled={!isPostActivityComplete() || isSubmitting} 
+            className="w-full" 
+            size="lg"
+          >
+            {isSubmitting ? "Saving..." : "Complete Activity 🎉"}
           </Button>
         </TabsContent>
       </Tabs>
