@@ -43,6 +43,7 @@ export default function Stadium() {
   const [currentActivity, setCurrentActivity] = useState<ActivityData | null>(null);
   const [incompleteActivities, setIncompleteActivities] = useState<IncompleteActivity[]>([]);
   const [resumingActivity, setResumingActivity] = useState<IncompleteActivity | null>(null);
+  const [scheduledActivityData, setScheduledActivityData] = useState<ActivityData | null>(null);
   
   // One-to-One flow state
   const [showOneToOnePreForm, setShowOneToOnePreForm] = useState(false);
@@ -55,6 +56,21 @@ export default function Stadium() {
       checkForScheduledActivity();
     }
   }, [currentChildId]);
+
+  // Listen for schedule activity events
+  useEffect(() => {
+    const handleScheduleActivity = (event: CustomEvent) => {
+      const activityData = event.detail;
+      setScheduledActivityData(activityData);
+      setShowNewActivity(true);
+    };
+
+    window.addEventListener('openScheduledActivity', handleScheduleActivity as EventListener);
+    
+    return () => {
+      window.removeEventListener('openScheduledActivity', handleScheduleActivity as EventListener);
+    };
+  }, []);
 
   // Also reload when component becomes visible again (user returns from other pages)
   useEffect(() => {
@@ -87,8 +103,8 @@ export default function Stadium() {
     if (scheduledActivity) {
       try {
         const activityData = JSON.parse(scheduledActivity);
-        setCurrentActivity(activityData);
-        setShowActivityForm(true);
+        setScheduledActivityData(activityData);
+        setShowNewActivity(true);
         sessionStorage.removeItem('scheduledActivity'); // Clear after use
       } catch (error) {
         console.error('Error parsing scheduled activity:', error);
@@ -159,6 +175,7 @@ export default function Stadium() {
   const handleNewActivitySubmit = (activity: ActivityData) => {
     setCurrentActivity(activity);
     setShowNewActivity(false);
+    setScheduledActivityData(null); // Clear scheduled data
     
     // Route to One-to-One forms if activity type is 1to1
     if (activity.type === '1to1') {
@@ -344,7 +361,13 @@ export default function Stadium() {
     return (
       <NewActivity
         onSubmit={handleNewActivitySubmit}
-        onCancel={() => setShowNewActivity(false)}
+        onCancel={() => {
+          setShowNewActivity(false);
+          setScheduledActivityData(null);
+        }}
+        initialName={scheduledActivityData?.name}
+        initialType={scheduledActivityData?.type}
+        initialDate={scheduledActivityData?.date}
       />
     );
   }

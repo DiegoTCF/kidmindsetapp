@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAdminPlayerView } from '@/hooks/useAdminPlayerView';
 import { useAdmin } from '@/hooks/useAdmin';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface ScheduleDay {
   day: string;
@@ -47,6 +47,7 @@ export function WeeklyScheduleCard() {
   const { isAdmin } = useAdmin();
   const { selectedChild, isViewingAsPlayer } = useAdminPlayerView();
   const navigate = useNavigate();
+  const location = useLocation();
   const [schedule, setSchedule] = useState<string | null>(null);
   const [playerName, setPlayerName] = useState<string>('');
   const [childId, setChildId] = useState<string | null>(null);
@@ -407,11 +408,14 @@ export function WeeklyScheduleCard() {
         day: fullDayName
       };
       
-      // Store activity data for Stadium to pick up
-      sessionStorage.setItem('scheduledActivity', JSON.stringify(activityData));
-      
-      // Navigate to Stadium using React Router
-      navigate('/stadium');
+      // If already on Stadium, dispatch event; otherwise navigate
+      if (location.pathname === '/stadium') {
+        window.dispatchEvent(new CustomEvent('openScheduledActivity', { detail: activityData }));
+      } else {
+        // Store activity data for Stadium to pick up
+        sessionStorage.setItem('scheduledActivity', JSON.stringify(activityData));
+        navigate('/stadium');
+      }
     }
     
     setShowDayToggle(false);
@@ -661,10 +665,13 @@ export function WeeklyScheduleCard() {
                             activityId: existingActivity?.id
                           };
                           
-                          sessionStorage.setItem('scheduledActivity', JSON.stringify(editData));
-                          
-                          // Navigate to Stadium for editing
-                          navigate('/stadium');
+                          // If already on Stadium, dispatch event; otherwise navigate
+                          if (location.pathname === '/stadium') {
+                            window.dispatchEvent(new CustomEvent('openScheduledActivity', { detail: editData }));
+                          } else {
+                            sessionStorage.setItem('scheduledActivity', JSON.stringify(editData));
+                            navigate('/stadium');
+                          }
                         }
                         
                         setShowDayToggle(false);

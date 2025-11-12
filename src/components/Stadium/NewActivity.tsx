@@ -18,6 +18,9 @@ interface NewActivityProps {
     date: Date;
   }) => void;
   onCancel: () => void;
+  initialName?: string;
+  initialType?: string;
+  initialDate?: Date;
 }
 
 const activityTypes = [
@@ -29,10 +32,10 @@ const activityTypes = [
   { value: "Other", label: "Other" },
 ];
 
-export default function NewActivity({ onSubmit, onCancel }: NewActivityProps) {
-  const [activityType, setActivityType] = useState("");
-  const [activityName, setActivityName] = useState("");
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+export default function NewActivity({ onSubmit, onCancel, initialName = "", initialType = "", initialDate }: NewActivityProps) {
+  const [activityType, setActivityType] = useState(initialType);
+  const [activityName, setActivityName] = useState(initialName);
+  const [selectedDate, setSelectedDate] = useState<Date>(initialDate || new Date());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const { childId } = useChildData();
 
