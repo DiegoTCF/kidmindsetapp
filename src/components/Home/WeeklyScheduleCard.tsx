@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, Clock, Edit, Plus, X, Save } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAdminPlayerView } from '@/hooks/useAdminPlayerView';
 import { useAdmin } from '@/hooks/useAdmin';
+import { useNavigate } from 'react-router-dom';
 
 interface ScheduleDay {
   day: string;
@@ -45,6 +46,7 @@ export function WeeklyScheduleCard() {
   const { toast } = useToast();
   const { isAdmin } = useAdmin();
   const { selectedChild, isViewingAsPlayer } = useAdminPlayerView();
+  const navigate = useNavigate();
   const [schedule, setSchedule] = useState<string | null>(null);
   const [playerName, setPlayerName] = useState<string>('');
   const [childId, setChildId] = useState<string | null>(null);
@@ -408,8 +410,8 @@ export function WeeklyScheduleCard() {
       // Store activity data for Stadium to pick up
       sessionStorage.setItem('scheduledActivity', JSON.stringify(activityData));
       
-      // Navigate to Stadium
-      window.location.href = '/stadium';
+      // Navigate to Stadium using React Router
+      navigate('/stadium');
     }
     
     setShowDayToggle(false);
@@ -614,6 +616,11 @@ export function WeeklyScheduleCard() {
                   ? `${selectedDay} - Completed` 
                   : `${selectedDay} Activity`}
               </DialogTitle>
+              <DialogDescription>
+                {selectedDay && isFormCompleted(selectedDay)
+                  ? 'You have already completed forms for this activity'
+                  : 'Choose an action for this scheduled activity'}
+              </DialogDescription>
             </DialogHeader>
             
             <div className="space-y-4">
@@ -657,7 +664,7 @@ export function WeeklyScheduleCard() {
                           sessionStorage.setItem('scheduledActivity', JSON.stringify(editData));
                           
                           // Navigate to Stadium for editing
-                          window.location.href = '/stadium';
+                          navigate('/stadium');
                         }
                         
                         setShowDayToggle(false);
