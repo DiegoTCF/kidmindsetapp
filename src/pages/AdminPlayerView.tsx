@@ -17,6 +17,7 @@ import NewActivity from '@/components/Stadium/NewActivity';
 import ActivityForm from '@/components/Stadium/ActivityForm';
 import CoreSkillsEvaluation from '@/components/Admin/CoreSkillsEvaluation';
 import AdminCoreSkillsAssessment from '@/components/Admin/AdminCoreSkillsAssessment';
+import AdminCoreSkillsResults from '@/components/Admin/AdminCoreSkillsResults';
 import { WeeklyScheduleCard } from '@/components/Home/WeeklyScheduleCard';
 
 interface Child {
@@ -348,7 +349,7 @@ export default function AdminPlayerView() {
 
         {/* Navigation Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="home" className="flex items-center gap-2">
               <HomeIcon className="w-4 h-4" />
               Home
@@ -361,9 +362,13 @@ export default function AdminPlayerView() {
               <TrendingUp className="w-4 h-4" />
               Progress
             </TabsTrigger>
+            <TabsTrigger value="self-assessment" className="flex items-center gap-2">
+              <Target className="w-4 h-4" />
+              Self-Assessment
+            </TabsTrigger>
             <TabsTrigger value="evaluation" className="flex items-center gap-2">
               <Brain className="w-4 h-4" />
-              Core Skills Eval
+              Eval
             </TabsTrigger>
             <TabsTrigger value="assessment" className="flex items-center gap-2">
               <Brain className="w-4 h-4" />
@@ -514,6 +519,20 @@ export default function AdminPlayerView() {
                 <Charts selectedFilter="All" childId={child.id} />
               </TabsContent>
             </Tabs>
+          </TabsContent>
+
+          {/* Self-Assessment Results Tab */}
+          <TabsContent value="self-assessment" className="space-y-6">
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
+              <p className="text-purple-800 text-sm">
+                <strong>Player Self-Assessment:</strong> View {child.name}'s self-reported core skills assessment results.
+              </p>
+            </div>
+            
+            <AdminCoreSkillsResults 
+              childId={child.id} 
+              childName={child.name} 
+            />
           </TabsContent>
 
           {/* Core Skills Evaluation Tab */}
