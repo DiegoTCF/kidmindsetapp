@@ -929,7 +929,7 @@ export type Database = {
           child_id: string | null
           created_at: string
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           page_location: string | null
           session_id: string | null
           timestamp: string
@@ -942,7 +942,7 @@ export type Database = {
           child_id?: string | null
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           page_location?: string | null
           session_id?: string | null
           timestamp?: string
@@ -955,7 +955,7 @@ export type Database = {
           child_id?: string | null
           created_at?: string
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           page_location?: string | null
           session_id?: string | null
           timestamp?: string
@@ -1069,24 +1069,18 @@ export type Database = {
         Args: { notification_id: string }
         Returns: Json
       }
-      admin_delete_user: {
-        Args: { target_user_id: string }
-        Returns: Json
-      }
+      admin_delete_user: { Args: { target_user_id: string }; Returns: Json }
       admin_get_all_users: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           created_at: string
           email: string
           id: string
         }[]
       }
-      auth_or_anon: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      auth_or_anon: { Args: never; Returns: boolean }
       get_current_user_child_data: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           child_id: string
           child_level: number
@@ -1095,36 +1089,21 @@ export type Database = {
           weekly_mood_avg: number
         }[]
       }
-      get_current_user_child_id: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      get_superadmin_email: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      get_current_user_child_id: { Args: never; Returns: string }
+      get_superadmin_email: { Args: never; Returns: string }
       get_user_child_ids: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           child_id: string
         }[]
       }
-      is_admin: {
-        Args: { check_user_id?: string }
-        Returns: boolean
-      }
-      is_authenticated: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      is_admin: { Args: { check_user_id?: string }; Returns: boolean }
+      is_authenticated: { Args: never; Returns: boolean }
       is_superadmin_simple: {
         Args: { check_user_id?: string }
         Returns: boolean
       }
-      is_user_admin: {
-        Args: { check_user_id?: string }
-        Returns: boolean
-      }
+      is_user_admin: { Args: { check_user_id?: string }; Returns: boolean }
       log_session_status: {
         Args: {
           p_activity_name?: string
@@ -1145,22 +1124,13 @@ export type Database = {
         }
         Returns: string
       }
-      reset_user_progress: {
-        Args: { target_user_id?: string }
-        Returns: Json
-      }
+      reset_user_progress: { Args: { target_user_id?: string }; Returns: Json }
       sync_child_points: {
         Args: { target_child_id?: string }
         Returns: undefined
       }
-      test_admin_access: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      update_task_points: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      test_admin_access: { Args: never; Returns: Json }
+      update_task_points: { Args: never; Returns: undefined }
       user_owns_child: {
         Args: { check_child_id: string; check_user_id?: string }
         Returns: boolean
