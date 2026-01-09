@@ -12,6 +12,7 @@ import Goals from "./pages/Goals";
 
 import GrownUpZone from "./pages/GrownUpZone";
 import Admin from "./pages/Admin";
+import ClientManager from "./pages/ClientManager";
 import AdminPlayerView from "./pages/AdminPlayerView";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
@@ -138,6 +139,13 @@ const App = () => {
               <Route path="/admin/player/:childId" element={
                 <ProtectedRoute>
                   <AdminPlayerView />
+                </ProtectedRoute>
+              } />
+
+              {/* Client Manager route - admin only, no navigation */}
+              <Route path="/admin/clients" element={
+                <ProtectedRoute>
+                  <ClientManager />
                 </ProtectedRoute>
               } />
 

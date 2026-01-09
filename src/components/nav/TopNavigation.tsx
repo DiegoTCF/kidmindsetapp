@@ -1,4 +1,4 @@
-import { LogOut, Settings, GraduationCap, UserCheck, Shield, ShieldAlert } from "lucide-react";
+import { LogOut, Settings, GraduationCap, UserCheck, Shield, ShieldAlert, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -58,6 +58,10 @@ export function TopNavigation({ isGrownUpZone = false }: TopNavigationProps) {
     navigate('/admin');
   };
 
+  const handleClientManager = () => {
+    navigate('/admin/clients');
+  };
+
   const handleAdminPanel = async () => {
     // Check if user is admin before navigating
     if (isAdmin) {
@@ -89,10 +93,16 @@ export function TopNavigation({ isGrownUpZone = false }: TopNavigationProps) {
                 Grown Up Zone
               </DropdownMenuItem>
               {isAdmin && (
-                <DropdownMenuItem onClick={handleAdminArea}>
-                  <Shield className="mr-2 h-4 w-4" />
-                  Admin Dashboard
-                </DropdownMenuItem>
+                <>
+                  <DropdownMenuItem onClick={handleAdminArea}>
+                    <Shield className="mr-2 h-4 w-4" />
+                    Admin Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleClientManager}>
+                    <Users className="mr-2 h-4 w-4" />
+                    Client Manager
+                  </DropdownMenuItem>
+                </>
               )}
               <DropdownMenuSeparator />
             </>

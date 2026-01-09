@@ -283,6 +283,146 @@ export type Database = {
           },
         ]
       }
+      coaching_plans: {
+        Row: {
+          billing_type: string
+          created_at: string
+          default_duration_weeks: number | null
+          default_sessions_per_period: number | null
+          id: string
+          name: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          billing_type: string
+          created_at?: string
+          default_duration_weeks?: number | null
+          default_sessions_per_period?: number | null
+          id?: string
+          name: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          billing_type?: string
+          created_at?: string
+          default_duration_weeks?: number | null
+          default_sessions_per_period?: number | null
+          id?: string
+          name?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      coaching_session_logs: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          id: string
+          logged_by: string | null
+          session_date: string
+          subscription_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          logged_by?: string | null
+          session_date?: string
+          subscription_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          logged_by?: string | null
+          session_date?: string
+          subscription_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coaching_session_logs_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "coaching_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coaching_subscriptions: {
+        Row: {
+          admin_notes: string | null
+          child_id: string
+          created_at: string
+          current_period_end: string
+          current_period_start: string
+          end_date: string | null
+          id: string
+          last_session_date: string | null
+          period_type: string
+          plan_id: string
+          sessions_per_period: number
+          sessions_used_in_period: number
+          start_date: string
+          status: string
+          total_sessions_used: number
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          child_id: string
+          created_at?: string
+          current_period_end: string
+          current_period_start: string
+          end_date?: string | null
+          id?: string
+          last_session_date?: string | null
+          period_type?: string
+          plan_id: string
+          sessions_per_period?: number
+          sessions_used_in_period?: number
+          start_date: string
+          status?: string
+          total_sessions_used?: number
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          child_id?: string
+          created_at?: string
+          current_period_end?: string
+          current_period_start?: string
+          end_date?: string | null
+          id?: string
+          last_session_date?: string | null
+          period_type?: string
+          plan_id?: string
+          sessions_per_period?: number
+          sessions_used_in_period?: number
+          start_date?: string
+          status?: string
+          total_sessions_used?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coaching_subscriptions_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coaching_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "coaching_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       core_skill_evaluations: {
         Row: {
           admin_id: string
@@ -1079,6 +1219,7 @@ export type Database = {
         }[]
       }
       auth_or_anon: { Args: never; Returns: boolean }
+      auto_reset_expired_periods: { Args: never; Returns: number }
       get_current_user_child_data: {
         Args: never
         Returns: {
@@ -1104,6 +1245,10 @@ export type Database = {
         Returns: boolean
       }
       is_user_admin: { Args: { check_user_id?: string }; Returns: boolean }
+      log_coaching_session: {
+        Args: { p_notes?: string; p_subscription_id: string }
+        Returns: Json
+      }
       log_session_status: {
         Args: {
           p_activity_name?: string
@@ -1123,6 +1268,10 @@ export type Database = {
           page_location_param?: string
         }
         Returns: string
+      }
+      reset_subscription_period: {
+        Args: { p_subscription_id: string }
+        Returns: Json
       }
       reset_user_progress: { Args: { target_user_id?: string }; Returns: Json }
       sync_child_points: {
