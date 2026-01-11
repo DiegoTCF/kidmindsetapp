@@ -29,7 +29,6 @@ import CoreSkillsAssessment from "./pages/CoreSkillsAssessment";
 import CoreSkillsSelfAssessment from "./pages/CoreSkillsSelfAssessment";
 import { BestSelf } from "./components/mindset/BestSelf";
 import TestProfileFlow from "./pages/TestProfileFlow";
-import TestDesign from "./pages/TestDesign";
 
 const queryClient = new QueryClient();
 
@@ -193,13 +192,6 @@ const App = () => {
 
               {/* Test Profile Flow route - for preview only */}
               <Route path="/test-profile-flow" element={<TestProfileFlow />} />
-              
-              {/* Test Design route - for design experimentation */}
-              <Route path="/test-design" element={
-                <ProtectedRoute>
-                  <TestDesign />
-                </ProtectedRoute>
-              } />
               
               {/* Catch-all route */}
               <Route path="*" element={<NotFound />} />
