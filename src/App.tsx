@@ -29,6 +29,9 @@ import CoreSkillsAssessment from "./pages/CoreSkillsAssessment";
 import CoreSkillsSelfAssessment from "./pages/CoreSkillsSelfAssessment";
 import { BestSelf } from "./components/mindset/BestSelf";
 import TestProfileFlow from "./pages/TestProfileFlow";
+import HomeTest from "./pages/HomeTest";
+import Performance from "./pages/Performance";
+import Tools from "./pages/Tools";
 
 const queryClient = new QueryClient();
 
@@ -192,6 +195,40 @@ const App = () => {
 
               {/* Test Profile Flow route - for preview only */}
               <Route path="/test-profile-flow" element={<TestProfileFlow />} />
+
+              {/* Test Home Page - diamond layout */}
+              <Route path="/home-test" element={
+                <ProtectedRoute>
+                  <HomeTest />
+                </ProtectedRoute>
+              } />
+
+              {/* Performance Page - combined progress + stadium */}
+              <Route path="/performance" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Performance />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+
+              {/* Tools Page */}
+              <Route path="/tools" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Tools />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+
+              {/* Profile Page */}
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Profile />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
               
               {/* Catch-all route */}
               <Route path="*" element={<NotFound />} />
