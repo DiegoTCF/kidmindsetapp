@@ -24,9 +24,9 @@ export function AppLayout({ children, hideNavigation = false }: AppLayoutProps) 
         <div className="flex items-center justify-between px-4 py-2">
           <div className="w-8" /> {/* Spacer for balance */}
           <img 
-            src="/lovable-uploads/12821ebd-705b-4e17-b537-45a7e96dd74f.png" 
+            src="/lovable-uploads/confident-footballer-logo.png" 
             alt="The Confident Footballer Logo" 
-            className="h-16 w-auto"
+            className="h-14 w-auto"
           />
           <Button
             variant="ghost"
