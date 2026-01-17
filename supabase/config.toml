@@ -13,3 +13,7 @@ enabled = true
 enabled = true
 [functions.send-admin-email]
 verify_jwt = false
+[functions.admin-password-reset]
+verify_jwt = false
+[functions.admin-delete-user]
+verify_jwt = false

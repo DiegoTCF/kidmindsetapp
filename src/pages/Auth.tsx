@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useUserLogging } from '@/hooks/useUserLogging';
-import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, ChevronLeft, ChevronRight, KeyRound } from 'lucide-react';
 
 interface OnboardingData {
   email: string;
@@ -26,8 +26,11 @@ interface OnboardingData {
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
   const [loading, setLoading] = useState(false);
   const [signUpStep, setSignUpStep] = useState(1);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
     email: '',
     password: '',
@@ -41,6 +44,90 @@ const Auth = () => {
   });
   const { toast } = useToast();
   const { logLogin, logError } = useUserLogging();
+
+  // Listen for password recovery event
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[AuthRecovery] Auth event:', event);
+      if (event === 'PASSWORD_RECOVERY') {
+        console.log('[AuthRecovery] Password recovery detected');
+        setIsPasswordRecovery(true);
+        setIsForgotPassword(false);
+        setIsSignUp(false);
+      }
+    });
+
+    // Also check URL hash for recovery token (fallback)
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const type = hashParams.get('type');
+    if (type === 'recovery') {
+      console.log('[AuthRecovery] Recovery token found in URL');
+      setIsPasswordRecovery(true);
+    }
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSetNewPassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    console.log('[AuthRecovery] Setting new password');
+
+    if (newPassword !== confirmNewPassword) {
+      toast({
+        title: "Passwords don't match",
+        description: "Please make sure both passwords are identical.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+      if (error) {
+        console.log('[AuthRecovery] Error updating password:', error.message);
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        console.log('[AuthRecovery] Password updated successfully');
+        toast({
+          title: "Password updated!",
+          description: "Your password has been reset. Redirecting to home...",
+        });
+        setIsPasswordRecovery(false);
+        // Clear hash from URL
+        window.history.replaceState(null, '', '/auth');
+        // Redirect to home
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1500);
+      }
+    } catch (error: any) {
+      console.error('[AuthRecovery] Error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    }
+
+    setLoading(false);
+  };
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -413,6 +500,59 @@ const Auth = () => {
                 onClick={() => setIsForgotPassword(false)}
               >
                 Back to Sign In
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Password Recovery UI - shown when user clicks reset link from email
+  if (isPasswordRecovery) {
+    return (
+      <div className="min-h-screen bg-gradient-primary flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <div className="flex justify-center mb-4">
+              <div className="p-3 bg-primary/10 rounded-full">
+                <KeyRound className="h-8 w-8 text-primary" />
+              </div>
+            </div>
+            <CardTitle className="text-center">Set New Password</CardTitle>
+            <CardDescription className="text-center">
+              Enter your new password below
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSetNewPassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="newPassword">New Password</Label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  placeholder="Minimum 6 characters"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmNewPassword">Confirm New Password</Label>
+                <Input
+                  id="confirmNewPassword"
+                  type="password"
+                  placeholder="Confirm your new password"
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Update Password
               </Button>
             </form>
           </CardContent>
