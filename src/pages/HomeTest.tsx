@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { User, TrendingUp, Wrench, Map, Brain } from "lucide-react";
 import { useChildData } from "@/hooks/useChildData";
 import { supabase } from "@/integrations/supabase/client";
-
 interface DiamondCircleProps {
   icon: React.ReactNode;
   label: string;
@@ -132,13 +131,15 @@ export default function HomeTest() {
   const { childId, loading } = useChildData();
   const [profileName, setProfileName] = useState<string>("Player");
   const [unseenTasks, setUnseenTasks] = useState<number>(0);
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load profile name from localStorage
+    // Load profile name and photo from localStorage
     const savedProfile = localStorage.getItem('kidmindset_profile');
     if (savedProfile) {
       const profileData = JSON.parse(savedProfile);
       setProfileName(profileData.name || "Player");
+      setProfilePhoto(profileData.photoUrl || null);
     }
   }, []);
 
@@ -286,11 +287,11 @@ export default function HomeTest() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="flex flex-col items-center justify-center gap-3 mb-3">
+        <div className="flex flex-col items-center justify-center gap-2 mb-3">
           <motion.img 
             src="/lovable-uploads/confident-footballer-logo.png" 
             alt="The Confident Footballer Logo" 
-            className="h-20 sm:h-24 w-auto drop-shadow-2xl"
+            className="h-16 sm:h-20 w-auto drop-shadow-2xl"
             whileHover={{ scale: 1.05 }}
             animate={{
               filter: ['drop-shadow(0 0 20px hsl(0, 85%, 50%, 0.3))', 'drop-shadow(0 0 30px hsl(0, 85%, 50%, 0.5))', 'drop-shadow(0 0 20px hsl(0, 85%, 50%, 0.3))']
@@ -299,12 +300,28 @@ export default function HomeTest() {
               filter: { duration: 2, repeat: Infinity, ease: "easeInOut" }
             }}
           />
+          <motion.h1 
+            className="text-xl sm:text-2xl font-black text-white tracking-tight text-center"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            The Confident Footballer
+          </motion.h1>
+          <motion.p 
+            className="text-sm sm:text-base font-semibold text-primary tracking-wide"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            Player App
+          </motion.p>
         </div>
         <motion.p 
-          className="text-white/80 text-base font-medium"
+          className="text-white/70 text-sm font-medium"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.3 }}
         >
           Welcome back, <span className="text-primary font-bold">{profileName}</span>!
         </motion.p>
@@ -343,9 +360,17 @@ export default function HomeTest() {
             color={colors.profile}
             isCenter={true}
             centerContent={
-              <div className="flex flex-col items-center justify-center">
-                <User className="w-10 h-10 sm:w-12 sm:h-12" style={{ color: colors.profile }} />
-              </div>
+              profilePhoto ? (
+                <img 
+                  src={profilePhoto} 
+                  alt={profileName}
+                  className="w-full h-full rounded-full object-cover"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center">
+                  <User className="w-10 h-10 sm:w-12 sm:h-12" style={{ color: colors.profile }} />
+                </div>
+              )
             }
           />
 
