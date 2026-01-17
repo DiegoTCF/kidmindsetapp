@@ -177,7 +177,12 @@ export default function HomeTest() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div 
+        className="min-h-screen flex items-center justify-center"
+        style={{
+          background: 'linear-gradient(135deg, hsl(0, 0%, 8%) 0%, hsl(0, 0%, 12%) 25%, hsl(0, 85%, 15%) 50%, hsl(0, 0%, 10%) 75%, hsl(0, 0%, 5%) 100%)'
+        }}
+      >
         <motion.div 
           className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full"
           animate={{ rotate: 360 }}
@@ -189,35 +194,90 @@ export default function HomeTest() {
 
   return (
     <motion.div 
-      className="min-h-screen bg-white relative overflow-hidden"
+      className="min-h-screen relative overflow-hidden"
+      style={{
+        background: 'linear-gradient(135deg, hsl(0, 0%, 8%) 0%, hsl(0, 0%, 12%) 25%, hsl(0, 85%, 15%) 50%, hsl(0, 0%, 10%) 75%, hsl(0, 0%, 5%) 100%)'
+      }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Subtle background pattern */}
+      {/* Animated grid pattern */}
       <div 
-        className="absolute inset-0 pointer-events-none opacity-[0.03]"
+        className="absolute inset-0 pointer-events-none opacity-20"
         style={{
-          backgroundImage: `radial-gradient(circle at 2px 2px, hsl(0, 0%, 0%) 1px, transparent 0)`,
-          backgroundSize: '32px 32px'
+          backgroundImage: `linear-gradient(hsl(0, 85%, 50%, 0.1) 1px, transparent 1px), linear-gradient(90deg, hsl(0, 85%, 50%, 0.1) 1px, transparent 1px)`,
+          backgroundSize: '40px 40px'
         }}
       />
       
-      {/* Decorative gradient orbs */}
+      {/* Glowing orbs for gamified effect */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Top right red glow */}
         <motion.div 
-          className="absolute -top-20 -right-20 w-64 h-64 rounded-full opacity-10"
-          style={{ background: 'radial-gradient(circle, hsl(0, 85%, 50%) 0%, transparent 70%)' }}
-          animate={{ scale: [1, 1.1, 1], opacity: [0.1, 0.15, 0.1] }}
+          className="absolute -top-32 -right-32 w-96 h-96 rounded-full"
+          style={{ background: 'radial-gradient(circle, hsl(0, 85%, 50%, 0.4) 0%, hsl(0, 85%, 40%, 0.2) 30%, transparent 70%)' }}
+          animate={{ 
+            scale: [1, 1.2, 1], 
+            opacity: [0.4, 0.6, 0.4],
+            x: [0, 20, 0],
+            y: [0, -10, 0]
+          }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        />
+        
+        {/* Bottom left dark glow */}
+        <motion.div 
+          className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full"
+          style={{ background: 'radial-gradient(circle, hsl(0, 0%, 0%, 0.8) 0%, hsl(0, 0%, 0%, 0.4) 40%, transparent 70%)' }}
+          animate={{ scale: [1, 1.1, 1] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        />
+        
+        {/* Center subtle red pulse */}
+        <motion.div 
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full"
+          style={{ background: 'radial-gradient(circle, hsl(0, 85%, 50%, 0.15) 0%, transparent 60%)' }}
+          animate={{ 
+            scale: [0.8, 1, 0.8], 
+            opacity: [0.2, 0.35, 0.2]
+          }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         />
-        <motion.div 
-          className="absolute -bottom-32 -left-32 w-80 h-80 rounded-full opacity-5"
-          style={{ background: 'radial-gradient(circle, hsl(0, 0%, 0%) 0%, transparent 70%)' }}
-          animate={{ scale: [1, 1.05, 1] }}
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-        />
+        
+        {/* Floating particles */}
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-2 h-2 rounded-full"
+            style={{
+              background: i % 2 === 0 ? 'hsl(0, 85%, 50%)' : 'hsl(0, 0%, 100%)',
+              left: `${15 + i * 15}%`,
+              top: `${20 + (i % 3) * 25}%`,
+              boxShadow: i % 2 === 0 ? '0 0 10px hsl(0, 85%, 50%)' : '0 0 8px hsl(0, 0%, 100%)'
+            }}
+            animate={{
+              y: [0, -30, 0],
+              opacity: [0.3, 0.7, 0.3],
+              scale: [1, 1.2, 1]
+            }}
+            transition={{
+              duration: 3 + i * 0.5,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: i * 0.3
+            }}
+          />
+        ))}
       </div>
+      
+      {/* Vignette effect */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse at center, transparent 40%, hsl(0, 0%, 0%, 0.6) 100%)'
+        }}
+      />
 
       {/* Header */}
       <motion.div 
@@ -226,19 +286,22 @@ export default function HomeTest() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="flex items-center justify-center gap-3 mb-3">
+        <div className="flex flex-col items-center justify-center gap-3 mb-3">
           <motion.img 
-            src="/lovable-uploads/0c9470e1-345e-4fca-81f4-74d09d83b37e.png" 
-            alt="Logo" 
-            className="w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-lg"
-            whileHover={{ scale: 1.05, rotate: 5 }}
+            src="/lovable-uploads/confident-footballer-logo.png" 
+            alt="The Confident Footballer Logo" 
+            className="h-20 sm:h-24 w-auto drop-shadow-2xl"
+            whileHover={{ scale: 1.05 }}
+            animate={{
+              filter: ['drop-shadow(0 0 20px hsl(0, 85%, 50%, 0.3))', 'drop-shadow(0 0 30px hsl(0, 85%, 50%, 0.5))', 'drop-shadow(0 0 20px hsl(0, 85%, 50%, 0.3))']
+            }}
+            transition={{
+              filter: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+            }}
           />
-          <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
-            The Confident Footballer
-          </h1>
         </div>
         <motion.p 
-          className="text-muted-foreground text-base font-medium"
+          className="text-white/80 text-base font-medium"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
@@ -310,12 +373,12 @@ export default function HomeTest() {
 
       {/* Footer hint */}
       <motion.div 
-        className="text-center pb-8 px-4"
+        className="text-center pb-8 px-4 relative z-10"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6 }}
       >
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-white/50">
           Tap any circle to explore
         </p>
       </motion.div>
