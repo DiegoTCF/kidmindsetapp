@@ -813,6 +813,68 @@ export type Database = {
         }
         Relationships: []
       }
+      player_tasks: {
+        Row: {
+          child_id: string
+          completed_at: string | null
+          content_text: string | null
+          content_url: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_date: string | null
+          file_path: string | null
+          id: string
+          order_index: number | null
+          seen_at: string | null
+          status: string
+          task_type: string
+          title: string
+        }
+        Insert: {
+          child_id: string
+          completed_at?: string | null
+          content_text?: string | null
+          content_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          file_path?: string | null
+          id?: string
+          order_index?: number | null
+          seen_at?: string | null
+          status?: string
+          task_type: string
+          title: string
+        }
+        Update: {
+          child_id?: string
+          completed_at?: string | null
+          content_text?: string | null
+          content_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          file_path?: string | null
+          id?: string
+          order_index?: number | null
+          seen_at?: string | null
+          status?: string
+          task_type?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_tasks_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
