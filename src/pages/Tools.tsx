@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { PlayerViewIndicator } from "@/components/layout/PlayerViewIndicator";
+import { BackToHomeButton } from "@/components/layout/BackToHomeButton";
 import { Wrench, Brain, Target, Eye, Sparkles, Heart } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -96,6 +97,8 @@ export default function Tools() {
   return (
     <div className="min-h-screen bg-background p-4">
       <PlayerViewIndicator />
+
+      <BackToHomeButton className="mb-4" />
       
       {/* Header */}
       <motion.div 

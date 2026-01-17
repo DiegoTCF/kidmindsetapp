@@ -30,7 +30,12 @@ interface PlayerIdentityRow {
   avatar_url: string | null;
   updated_at?: string;
 }
-export default function PlayerIdentity() {
+
+interface PlayerIdentityProps {
+  embedded?: boolean;
+}
+
+export default function PlayerIdentity({ embedded = false }: PlayerIdentityProps) {
   const navigate = useNavigate();
   const {
     user
@@ -235,14 +240,21 @@ export default function PlayerIdentity() {
   // Show form when editing, otherwise show DNA if any data exists
   const showForm = editing;
   const showDNA = !editing && (existing || profile?.role);
-  return <div className="max-w-2xl mx-auto px-4 pt-20 pb-8 bg-background">
-      <PlayerViewIndicator />
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <Dna className="w-6 h-6" /> DNA
-        </h1>
-        <p className="text-foreground">What kind of player are you?</p>
-      </header>
+  // Container classes - embedded mode has no page wrapper padding
+  const containerClasses = embedded 
+    ? "pb-8" 
+    : "max-w-2xl mx-auto px-4 pt-20 pb-8 bg-background";
+
+  return <div className={containerClasses}>
+      {!embedded && <PlayerViewIndicator />}
+      {!embedded && (
+        <header className="mb-6">
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <Dna className="w-6 h-6" /> DNA
+          </h1>
+          <p className="text-foreground">What kind of player are you?</p>
+        </header>
+      )}
 
       <div className="space-y-4">
         {/* Show YOUR DNA card if data exists and not editing */}

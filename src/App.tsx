@@ -32,6 +32,8 @@ import TestProfileFlow from "./pages/TestProfileFlow";
 import HomeTest from "./pages/HomeTest";
 import Performance from "./pages/Performance";
 import Tools from "./pages/Tools";
+import Identity from "./pages/Identity";
+import Journey from "./pages/Journey";
 
 const queryClient = new QueryClient();
 
@@ -218,6 +220,20 @@ const App = () => {
                   <AppLayout>
                     <Tools />
                   </AppLayout>
+                </ProtectedRoute>
+              } />
+
+              {/* Identity Page - Tabbed DNA + Best Self */}
+              <Route path="/identity" element={
+                <ProtectedRoute>
+                  <Identity />
+                </ProtectedRoute>
+              } />
+
+              {/* Journey Page - Player Tasks */}
+              <Route path="/journey" element={
+                <ProtectedRoute>
+                  <Journey />
                 </ProtectedRoute>
               } />
 

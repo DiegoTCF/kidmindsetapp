@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useChildData } from "@/hooks/useChildData";
 import { PlayerViewIndicator } from "@/components/layout/PlayerViewIndicator";
+import { BackToHomeButton } from "@/components/layout/BackToHomeButton";
 import ActivityLog from "@/components/Progress/ActivityLog";
 import Charts from "@/components/Progress/Charts";
 import BehaviourCharts from "@/components/Progress/BehaviourCharts";
@@ -33,6 +34,7 @@ export default function Performance() {
 
   return (
     <div className="min-h-screen bg-background p-4">
+      <BackToHomeButton className="mb-4" />
       <PlayerViewIndicator />
       
       {/* Header */}
