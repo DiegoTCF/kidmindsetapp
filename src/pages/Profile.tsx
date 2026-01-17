@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
-import { User, Settings, Star, Trophy, Target, Calendar, LogOut } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { User, Settings, Star, Target, Calendar, LogOut, Camera, ArrowLeft, Home } from "lucide-react";
+import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,85 +16,34 @@ interface UserProfile {
   level: number;
   joinDate: string;
   weeklySchedule: string[];
+  photoUrl?: string;
 }
-
-interface Achievement {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-  unlocked: boolean;
-  unlockedDate?: string;
-}
-
-const defaultAchievements: Achievement[] = [
-  {
-    id: "first_mood",
-    title: "Mood Tracker",
-    description: "Recorded your first mood",
-    icon: "😊",
-    unlocked: false
-  },
-  {
-    id: "task_master",
-    title: "Task Master",
-    description: "Completed all daily tasks",
-    icon: "good",
-    unlocked: false
-  },
-  {
-    id: "week_warrior",
-    title: "Week Warrior",
-    description: "7-day task streak",
-    icon: "flame",
-    unlocked: false
-  },
-  {
-    id: "level_up",
-    title: "Level Up",
-    description: "Reached level 2",
-    icon: "⭐",
-    unlocked: false
-  },
-  {
-    id: "reflector",
-    title: "Deep Reflector",
-    description: "Completed post-game reflection",
-    icon: "🤔",
-    unlocked: false
-  },
-  {
-    id: "confident",
-    title: "Confidence Builder",
-    description: "Rated confidence 8+ five times",
-    icon: "💪",
-    unlocked: false
-  }
-];
 
 export default function Profile() {
   const { toast } = useToast();
   const { signOut } = useAuth();
+  const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [profile, setProfile] = useState<UserProfile>({
     name: "Champion",
     age: 12,
     level: 1,
     joinDate: new Date().toISOString(),
-    weeklySchedule: []
+    weeklySchedule: [],
+    photoUrl: undefined
   });
   
-  const [achievements, setAchievements] = useState<Achievement[]>(defaultAchievements);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     name: "",
     age: ""
   });
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   useEffect(() => {
     console.log('[KidMindset] Profile page loaded');
     loadProfileData();
-    checkAchievements();
   }, []);
 
   const loadProfileData = () => {
@@ -100,10 +51,10 @@ export default function Profile() {
     const savedProfile = localStorage.getItem('kidmindset_profile');
     if (savedProfile) {
       const profileData = JSON.parse(savedProfile);
-      setProfile(profileData);
+      setProfile(prev => ({ ...prev, ...profileData }));
       setEditForm({
         name: profileData.name,
-        age: profileData.age.toString()
+        age: profileData.age?.toString() || "12"
       });
     }
 
@@ -113,80 +64,72 @@ export default function Profile() {
       const data = JSON.parse(playerData);
       setProfile(prev => ({ ...prev, level: data.level || 1 }));
     }
-
-    // Load achievements
-    const savedAchievements = localStorage.getItem('kidmindset_achievements');
-    if (savedAchievements) {
-      setAchievements(JSON.parse(savedAchievements));
-    }
   };
 
-  const checkAchievements = () => {
-    const updatedAchievements = [...achievements];
-    let newUnlocks = 0;
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-    // Check mood tracker achievement
-    const hasMoodData = localStorage.getItem(`kidmindset_mood_${new Date().toDateString()}`);
-    if (hasMoodData && !updatedAchievements.find(a => a.id === "first_mood")?.unlocked) {
-      const achievement = updatedAchievements.find(a => a.id === "first_mood");
-      if (achievement) {
-        achievement.unlocked = true;
-        achievement.unlockedDate = new Date().toISOString();
-        newUnlocks++;
-      }
-    }
-
-    // Check task completion
-    const today = new Date().toDateString();
-    const taskData = localStorage.getItem(`kidmindset_tasks_${today}`);
-    if (taskData) {
-      const tasks = JSON.parse(taskData);
-      if (tasks.length > 0 && tasks.every((t: any) => t.completed)) {
-        const achievement = updatedAchievements.find(a => a.id === "task_master");
-        if (achievement && !achievement.unlocked) {
-          achievement.unlocked = true;
-          achievement.unlockedDate = new Date().toISOString();
-          newUnlocks++;
-        }
-      }
-    }
-
-    // Check level achievement
-    const playerData = localStorage.getItem('kidmindset_player');
-    if (playerData) {
-      const data = JSON.parse(playerData);
-      if (data.level >= 2) {
-        const achievement = updatedAchievements.find(a => a.id === "level_up");
-        if (achievement && !achievement.unlocked) {
-          achievement.unlocked = true;
-          achievement.unlockedDate = new Date().toISOString();
-          newUnlocks++;
-        }
-      }
-    }
-
-    // Check reflection achievement
-    const postGameData = localStorage.getItem(`kidmindset_postgame_${today}`);
-    if (postGameData) {
-      const data = JSON.parse(postGameData);
-      if (data.mood || Object.values(data.journalPrompts || {}).some((v: any) => v.trim())) {
-        const achievement = updatedAchievements.find(a => a.id === "reflector");
-        if (achievement && !achievement.unlocked) {
-          achievement.unlocked = true;
-          achievement.unlockedDate = new Date().toISOString();
-          newUnlocks++;
-        }
-      }
-    }
-
-    if (newUnlocks > 0) {
-      setAchievements(updatedAchievements);
-      localStorage.setItem('kidmindset_achievements', JSON.stringify(updatedAchievements));
-      
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
       toast({
-        title: `🎉 ${newUnlocks} New Achievement${newUnlocks > 1 ? 's' : ''}!`,
-        description: "Check your profile to see what you've unlocked!",
+        title: "Invalid file type",
+        description: "Please upload an image file.",
+        variant: "destructive"
       });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please upload an image smaller than 5MB.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsUploadingPhoto(true);
+
+    try {
+      // Convert to base64 for localStorage storage
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        
+        const updatedProfile = {
+          ...profile,
+          photoUrl: base64String
+        };
+        
+        setProfile(updatedProfile);
+        localStorage.setItem('kidmindset_profile', JSON.stringify(updatedProfile));
+        
+        toast({
+          title: "Photo updated!",
+          description: "Your profile photo has been saved.",
+        });
+        
+        setIsUploadingPhoto(false);
+      };
+      reader.onerror = () => {
+        toast({
+          title: "Upload failed",
+          description: "Failed to process the image. Please try again.",
+          variant: "destructive"
+        });
+        setIsUploadingPhoto(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload photo. Please try again.",
+        variant: "destructive"
+      });
+      setIsUploadingPhoto(false);
     }
   };
 
@@ -209,10 +152,6 @@ export default function Profile() {
     });
   };
 
-  const getUnlockedCount = (): number => {
-    return achievements.filter(a => a.unlocked).length;
-  };
-
   const formatJoinDate = (): string => {
     return new Date(profile.joinDate).toLocaleDateString('en-US', {
       month: 'long',
@@ -227,18 +166,41 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <motion.div 
+      className="min-h-screen bg-background p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
       <PlayerViewIndicator />
+      
+      {/* Back to Home Button */}
+      <motion.div 
+        className="mb-4"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Button 
+          variant="outline" 
+          onClick={() => navigate('/home-test')}
+          className="gap-2"
+        >
+          <Home className="w-4 h-4" />
+          Back to Home
+        </Button>
+      </motion.div>
+
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground mb-2">
-          👤 My Account
+          👤 My Profile
         </h1>
         <p className="text-muted-foreground">
-          Your journey and achievements
+          Manage your account
         </p>
       </div>
 
-      {/* Profile Header */}
+      {/* Profile Header with Photo */}
       <Card className="mb-6 shadow-soft">
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -260,31 +222,61 @@ export default function Profile() {
           {!isEditing ? (
             <div className="space-y-4">
               <div className="text-center">
-                <div className="w-20 h-20 bg-gradient-to-r from-primary to-accent rounded-full 
-                               flex items-center justify-center text-2xl font-bold text-white mx-auto mb-3">
-                  {profile.name.charAt(0).toUpperCase()}
+                {/* Profile Photo with Upload */}
+                <div className="relative inline-block mb-3">
+                  <motion.div 
+                    className="w-24 h-24 rounded-full overflow-hidden border-4 border-primary/20 shadow-lg mx-auto"
+                    whileHover={{ scale: 1.02 }}
+                  >
+                    {profile.photoUrl ? (
+                      <img 
+                        src={profile.photoUrl} 
+                        alt={profile.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-r from-primary to-accent flex items-center justify-center text-3xl font-bold text-white">
+                        {profile.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </motion.div>
+                  
+                  {/* Camera button overlay */}
+                  <motion.button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploadingPhoto}
+                    className="absolute bottom-0 right-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Camera className="w-4 h-4" />
+                  </motion.button>
+                  
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                    className="hidden"
+                  />
                 </div>
+                
+                {isUploadingPhoto && (
+                  <p className="text-xs text-muted-foreground mb-2">Uploading...</p>
+                )}
+                
                 <h2 className="text-xl font-bold">{profile.name}</h2>
                 <p className="text-muted-foreground">Age {profile.age}</p>
+                <p className="text-xs text-muted-foreground mt-1">Tap camera to change photo</p>
               </div>
 
-              <div className="grid grid-cols-3 gap-4 mt-6">
+              <div className="grid grid-cols-2 gap-4 mt-6">
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-1 mb-1">
-                    <Star className="w-4 h-4 text-level-foreground" />
+                    <Star className="w-4 h-4 text-primary" />
                     <span className="text-sm font-medium">Level</span>
                   </div>
                   <p className="text-lg font-bold text-primary">{profile.level}</p>
-                </div>
-                
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-1 mb-1">
-                    <Trophy className="w-4 h-4 text-achievement" />
-                    <span className="text-sm font-medium">Achievements</span>
-                  </div>
-                  <p className="text-lg font-bold text-achievement">
-                    {getUnlockedCount()}/{achievements.length}
-                  </p>
                 </div>
                 
                 <div className="text-center">
@@ -298,6 +290,33 @@ export default function Profile() {
             </div>
           ) : (
             <div className="space-y-4">
+              {/* Photo upload in edit mode */}
+              <div className="text-center mb-4">
+                <div className="relative inline-block">
+                  <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-primary/20 shadow-lg mx-auto">
+                    {profile.photoUrl ? (
+                      <img 
+                        src={profile.photoUrl} 
+                        alt={profile.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-r from-primary to-accent flex items-center justify-center text-2xl font-bold text-white">
+                        {editForm.name.charAt(0)?.toUpperCase() || "?"}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploadingPhoto}
+                    className="absolute bottom-0 right-0 w-7 h-7 bg-primary rounded-full flex items-center justify-center text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+                  >
+                    <Camera className="w-3 h-3" />
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">Change photo</p>
+              </div>
+
               <div>
                 <Label htmlFor="name">Name</Label>
                 <Input
@@ -349,54 +368,6 @@ export default function Profile() {
         </CardContent>
       </Card>
 
-      {/* Achievements */}
-      <Card className="mb-6 shadow-soft">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-achievement" />
-            Achievements
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 gap-3">
-            {achievements.map((achievement) => (
-              <div
-                key={achievement.id}
-                className={cn(
-                  "flex items-center gap-4 p-4 rounded-lg border-2 transition-all duration-200",
-                  achievement.unlocked
-                    ? "bg-achievement/10 border-achievement/30"
-                    : "bg-muted/30 border-muted opacity-60"
-                )}
-              >
-                <div className="flex-shrink-0">
-                  <span className="text-2xl block w-10 h-10 flex items-center justify-center rounded-lg bg-background">
-                    {achievement.unlocked ? achievement.icon : "🔒"}
-                  </span>
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <h3 className={cn(
-                    "font-semibold",
-                    achievement.unlocked ? "text-achievement" : "text-muted-foreground"
-                  )}>
-                    {achievement.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {achievement.description}
-                  </p>
-                  {achievement.unlocked && achievement.unlockedDate && (
-                    <p className="text-xs text-achievement mt-1">
-                      Unlocked {new Date(achievement.unlockedDate).toLocaleDateString()}
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Quick Stats */}
       <Card className="shadow-soft">
         <CardHeader>
@@ -420,23 +391,12 @@ export default function Profile() {
             </div>
             
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Achievements Unlocked:</span>
-              <span className="font-semibold text-achievement">
-                {getUnlockedCount()} / {achievements.length}
-              </span>
-            </div>
-            
-            <div className="flex justify-between">
               <span className="text-muted-foreground">Member Since:</span>
               <span className="font-semibold">{formatJoinDate()}</span>
             </div>
           </div>
         </CardContent>
       </Card>
-    </div>
+    </motion.div>
   );
-}
-
-function cn(...classes: string[]) {
-  return classes.filter(Boolean).join(' ');
 }
