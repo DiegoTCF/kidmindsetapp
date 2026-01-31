@@ -80,9 +80,7 @@ const App = () => {
               {/* Main app routes with navigation - protected */}
               <Route path="/" element={
                 <ProtectedRoute>
-                  <AppLayout>
-                    <Home />
-                  </AppLayout>
+                  <Home />
                 </ProtectedRoute>
               } />
               <Route path="/stadium" element={
