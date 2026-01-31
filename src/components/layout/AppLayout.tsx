@@ -18,13 +18,10 @@ export function AppLayout({ children, hideNavigation = false }: AppLayoutProps) 
   };
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, hsl(220 20% 96%) 0%, hsl(220 15% 88%) 100%)' }}>
-      {/* Header with logo and branding - Light theme */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-card/98 backdrop-blur-md border-b border-border shadow-soft py-3">
-        {/* Red accent bar at top */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-accent" />
-        
-        <div className="flex flex-col items-center gap-1 pt-1">
+    <div className="min-h-screen bg-background">
+      {/* Header with logo and branding */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-md border-b border-border/20 py-3">
+        <div className="flex flex-col items-center gap-1">
           {/* Logo */}
           <img 
             src="/lovable-uploads/The_Confident_Footballer.png" 
@@ -36,18 +33,18 @@ export function AppLayout({ children, hideNavigation = false }: AppLayoutProps) 
             <span className="font-['Baloo_2'] text-lg font-bold text-primary">
               The Confident Footballer
             </span>
-            <span className="font-['Baloo_2'] text-sm font-semibold text-foreground bg-secondary px-3 py-0.5 rounded-full border border-border">
+            <span className="font-['Baloo_2'] text-sm font-semibold text-black bg-white px-3 py-0.5 rounded-full">
               Players App
             </span>
           </div>
         </div>
         {/* Logout Button */}
-        <div className="absolute top-4 left-3">
+        <div className="absolute top-3 left-3">
           <Button
             variant="outline"
             size="sm"
             onClick={handleLogout}
-            className="flex items-center gap-2 bg-card hover:bg-secondary border-border text-foreground"
+            className="flex items-center gap-2"
           >
             <LogOut className="h-4 w-4" />
             Logout

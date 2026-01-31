@@ -181,13 +181,10 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(180deg, hsl(220 20% 96%) 0%, hsl(220 15% 88%) 100%)' }}>
-      {/* Top Header Bar - Light theme with red accent */}
-      <header className="w-full bg-card/98 backdrop-blur-md border-b border-border shadow-soft py-3 relative">
-        {/* Red accent bar at top */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-accent" />
-        
-        <div className="flex flex-col items-center gap-1 pt-1">
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Top Header Bar */}
+      <header className="w-full bg-card/95 backdrop-blur-md border-b border-border/20 py-3">
+        <div className="flex flex-col items-center gap-1">
           {/* Logo */}
           <img 
             src="/lovable-uploads/The_Confident_Footballer.png" 
@@ -199,18 +196,18 @@ export default function Home() {
             <span className="font-['Baloo_2'] text-lg font-bold text-primary">
               The Confident Footballer
             </span>
-            <span className="font-['Baloo_2'] text-sm font-semibold text-foreground bg-secondary px-3 py-0.5 rounded-full border border-border">
+            <span className="font-['Baloo_2'] text-sm font-semibold text-black bg-white px-3 py-0.5 rounded-full">
               Players App
             </span>
           </div>
         </div>
         {/* Logout Button - positioned in header */}
-        <div className="absolute top-4 left-3">
+        <div className="absolute top-3 left-3">
           <Button 
             variant="outline" 
             size="sm" 
             onClick={handleLogout} 
-            className="flex items-center gap-2 bg-card hover:bg-secondary border-border text-foreground"
+            className="flex items-center gap-2"
           >
             <LogOut className="h-4 w-4" />
             Logout

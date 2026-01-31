@@ -39,17 +39,17 @@ export function BottomNav() {
       {/* Grown Up Zone Button - Floating */}
       <button
         onClick={handleGrownUpZone}
-        className="fixed top-4 right-4 z-50 w-10 h-10 bg-card backdrop-blur-sm rounded-full 
-                   flex items-center justify-center text-muted-foreground hover:bg-secondary 
-                   transition-all duration-200 shadow-soft border border-border"
+        className="fixed top-4 right-4 z-50 w-10 h-10 bg-muted/80 backdrop-blur-sm rounded-full 
+                   flex items-center justify-center text-muted-foreground hover:bg-muted 
+                   transition-all duration-200 shadow-lg"
         aria-label="Grown Up Zone"
       >
         <Settings className="w-5 h-5" />
       </button>
 
-      {/* Bottom Navigation - Light frosted glass effect */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-card/98 backdrop-blur-md border-t 
-                      border-border px-2 py-2 safe-area-pb shadow-soft">
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t 
+                      border-border px-2 py-2 safe-area-pb">
         <div className="flex items-center justify-around max-w-md mx-auto">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -60,16 +60,16 @@ export function BottomNav() {
                 onClick={() => handleNavClick(item.path)}
                 className={cn(
                   "flex flex-col items-center gap-1 px-3 py-2 rounded-xl min-w-0 flex-1",
-                  "transition-all duration-200 touch-manipulation active:scale-95",
+                  "transition-all duration-200 touch-manipulation",
                   isActive 
                     ? "bg-primary/10 text-primary" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 )}
                 aria-label={item.label}
               >
                 <div className={cn(
                   "flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200",
-                  isActive && "bg-primary/15 scale-110 shadow-sm"
+                  isActive && "bg-primary/20 scale-110"
                 )}>
                   <CustomIcon type={item.iconType} size="md" />
                 </div>

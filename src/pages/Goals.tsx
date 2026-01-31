@@ -11,7 +11,7 @@ const Goals = () => {
       <div className="container mx-auto px-4 py-6 max-w-4xl">
         <PlayerViewIndicator />
         <Tabs defaultValue="goals" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 bg-secondary border border-border">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="goals">🎯 GOAL SETTING</TabsTrigger>
             <TabsTrigger value="ant">🐜 MEET MY SILLY ANT</TabsTrigger>
           </TabsList>
