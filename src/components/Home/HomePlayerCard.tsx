@@ -182,10 +182,10 @@ export function HomePlayerCard({ onNameChange }: HomePlayerCardProps) {
 
     setUploadingPhoto(true);
     try {
-      // Create a unique file name
+      // Create a unique file name with user ID as folder (required by RLS policy)
       const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
 
       // Upload to Supabase storage
       const { error: uploadError } = await supabase.storage
