@@ -18,7 +18,7 @@ export function AppLayout({ children, hideNavigation = false }: AppLayoutProps) 
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, hsl(220 20% 96%) 0%, hsl(220 15% 88%) 100%)' }}>
       {/* Header with logo and branding - Light theme */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-card/98 backdrop-blur-md border-b border-border shadow-soft py-3">
         {/* Red accent bar at top */}
