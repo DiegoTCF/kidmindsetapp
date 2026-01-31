@@ -181,10 +181,11 @@ export default function Home() {
   }
 
   return (
-    <div className="bg-background pb-24">
-      <div className="w-full max-w-sm mx-auto px-4 pt-4">
-        {/* Logout Button - Top Left */}
-        <div className="flex justify-start mb-2">
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Main content - centered */}
+      <div className="flex-1 flex flex-col items-center justify-center px-4 pb-24 pt-4">
+        {/* Logout Button - Top Right */}
+        <div className="absolute top-4 left-4">
           <Button 
             variant="outline" 
             size="sm" 
@@ -197,7 +198,7 @@ export default function Home() {
         </div>
 
         {/* Welcome Message */}
-        <div className="text-center mb-4">
+        <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-foreground">
             Welcome Back, {playerData.name}
           </h1>
@@ -207,13 +208,13 @@ export default function Home() {
         </div>
 
         {/* FIFA-style Player Card (clickable for edit) */}
-        <div className="flex justify-center">
-          <HomePlayerCard onNameChange={handleNameChange} />
+        <HomePlayerCard onNameChange={handleNameChange} />
+
+        {/* Top Navigation (action buttons) */}
+        <div className="mt-6">
+          <TopNavigation />
         </div>
       </div>
-
-      {/* Top Navigation (action buttons) */}
-      <TopNavigation />
 
       {/* Level Up Notification */}
       <LevelUpNotification 
