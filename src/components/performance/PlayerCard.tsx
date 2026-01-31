@@ -20,60 +20,50 @@ const getTier = (rating: number, hasData: boolean): TierType => {
 };
 
 const tierStyles: Record<TierType, {
-  cardBg: string;
-  frameBorder: string;
-  frameGlow: string;
-  ratingColor: string;
-  labelColor: string;
-  accentGradient: string;
+  borderGradient: string;
+  glowColor: string;
+  glowRgba: string;
+  textGlow: string;
   label: string;
 }> = {
   elite: {
-    cardBg: 'bg-gradient-to-b from-[#2a1f4e] via-[#1a1235] to-[#0f0a1f]',
-    frameBorder: 'from-purple-400 via-blue-400 to-cyan-400',
-    frameGlow: 'shadow-[0_0_60px_rgba(147,51,234,0.4),inset_0_1px_0_rgba(255,255,255,0.1)]',
-    ratingColor: 'text-white',
-    labelColor: 'text-purple-300',
-    accentGradient: 'from-purple-400 to-cyan-400',
+    borderGradient: 'linear-gradient(135deg, #ffd700 0%, #ffb800 25%, #ff9500 50%, #ffb800 75%, #ffd700 100%)',
+    glowColor: '#ffd700',
+    glowRgba: 'rgba(255, 215, 0, 0.5)',
+    textGlow: '0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.4)',
     label: 'ELITE'
   },
   gold: {
-    cardBg: 'bg-gradient-to-b from-[#3d3420] via-[#2a2415] to-[#1a180f]',
-    frameBorder: 'from-yellow-300 via-amber-400 to-yellow-500',
-    frameGlow: 'shadow-[0_0_60px_rgba(251,191,36,0.3),inset_0_1px_0_rgba(255,255,255,0.1)]',
-    ratingColor: 'text-white',
-    labelColor: 'text-yellow-300',
-    accentGradient: 'from-yellow-400 to-amber-500',
+    borderGradient: 'linear-gradient(135deg, #f5c542 0%, #d4a84b 25%, #c9963c 50%, #d4a84b 75%, #f5c542 100%)',
+    glowColor: '#f5c542',
+    glowRgba: 'rgba(245, 197, 66, 0.45)',
+    textGlow: '0 0 20px rgba(245, 197, 66, 0.8), 0 0 40px rgba(245, 197, 66, 0.4)',
     label: 'GOLD'
   },
   silver: {
-    cardBg: 'bg-gradient-to-b from-[#2d2d35] via-[#1e1e24] to-[#14141a]',
-    frameBorder: 'from-slate-300 via-gray-400 to-slate-500',
-    frameGlow: 'shadow-[0_0_60px_rgba(148,163,184,0.25),inset_0_1px_0_rgba(255,255,255,0.1)]',
-    ratingColor: 'text-white',
-    labelColor: 'text-slate-300',
-    accentGradient: 'from-slate-300 to-gray-500',
+    borderGradient: 'linear-gradient(135deg, #e8eaed 0%, #c0c7d4 25%, #9ca3af 50%, #c0c7d4 75%, #e8eaed 100%)',
+    glowColor: '#c0c7d4',
+    glowRgba: 'rgba(192, 199, 212, 0.45)',
+    textGlow: '0 0 20px rgba(192, 199, 212, 0.8), 0 0 40px rgba(192, 199, 212, 0.4)',
     label: 'SILVER'
   },
   bronze: {
-    cardBg: 'bg-gradient-to-b from-[#3d2a1a] via-[#2a1f15] to-[#1a140f]',
-    frameBorder: 'from-orange-400 via-amber-500 to-orange-600',
-    frameGlow: 'shadow-[0_0_60px_rgba(217,119,6,0.3),inset_0_1px_0_rgba(255,255,255,0.1)]',
-    ratingColor: 'text-white',
-    labelColor: 'text-orange-300',
-    accentGradient: 'from-orange-400 to-amber-600',
+    borderGradient: 'linear-gradient(135deg, #cd7f32 0%, #b87333 25%, #a0522d 50%, #b87333 75%, #cd7f32 100%)',
+    glowColor: '#cd7f32',
+    glowRgba: 'rgba(205, 127, 50, 0.4)',
+    textGlow: '0 0 20px rgba(205, 127, 50, 0.8), 0 0 40px rgba(205, 127, 50, 0.4)',
     label: 'BRONZE'
   },
   nodata: {
-    cardBg: 'bg-gradient-to-b from-[#3d1a1a] via-[#2a1515] to-[#1a0f0f]',
-    frameBorder: 'from-red-400 via-red-500 to-red-600',
-    frameGlow: 'shadow-[0_0_60px_rgba(220,38,38,0.3),inset_0_1px_0_rgba(255,255,255,0.1)]',
-    ratingColor: 'text-white',
-    labelColor: 'text-red-300',
-    accentGradient: 'from-red-400 to-red-600',
+    borderGradient: 'linear-gradient(135deg, #ef4444 0%, #dc2626 25%, #b91c1c 50%, #dc2626 75%, #ef4444 100%)',
+    glowColor: '#ef4444',
+    glowRgba: 'rgba(239, 68, 68, 0.4)',
+    textGlow: '0 0 20px rgba(239, 68, 68, 0.8), 0 0 40px rgba(239, 68, 68, 0.4)',
     label: 'NO DATA'
   }
 };
+
+const clipPath = 'polygon(0 8%, 50% 0, 100% 8%, 100% 92%, 50% 100%, 0 92%)';
 
 export function PlayerCard({ playerName, overallRating, avatarUrl, hasData }: PlayerCardProps) {
   const tier = getTier(overallRating, hasData);
@@ -83,103 +73,163 @@ export function PlayerCard({ playerName, overallRating, avatarUrl, hasData }: Pl
   return (
     <motion.div
       className="relative mx-auto"
-      initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      whileHover={{ scale: 1.02, y: -4 }}
+      style={{ width: 240 }}
+      initial={{ opacity: 0, rotateY: -15 }}
+      animate={{ opacity: 1, rotateY: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      whileHover={{ scale: 1.03, y: -6 }}
     >
-      {/* Outer card with metallic frame */}
-      <div 
-        className={`relative w-72 ${styles.cardBg} ${styles.frameGlow} rounded-lg overflow-hidden`}
+      {/* Pulsing outer glow */}
+      <motion.div
+        className="absolute inset-0 blur-2xl rounded-2xl"
         style={{
-          clipPath: 'polygon(0 6%, 6% 0, 94% 0, 100% 6%, 100% 94%, 94% 100%, 6% 100%, 0 94%)'
+          background: styles.glowRgba,
+          clipPath,
+        }}
+        animate={{
+          opacity: [0.5, 0.8, 0.5],
+          scale: [0.98, 1.03, 0.98],
+        }}
+        transition={{
+          duration: 3,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+      />
+
+      {/* Drop shadow */}
+      <div
+        className="absolute inset-0 blur-2xl opacity-60 translate-y-4"
+        style={{
+          background: styles.glowRgba,
+          clipPath,
+        }}
+      />
+
+      {/* Card container */}
+      <div
+        className="relative overflow-hidden"
+        style={{
+          clipPath,
+          aspectRatio: '3/4',
+          borderRadius: 16,
         }}
       >
-        {/* Metallic border frame */}
-        <div 
-          className={`absolute inset-0 bg-gradient-to-b ${styles.frameBorder} opacity-60`}
+        {/* Metallic gradient border (3px) */}
+        <div
+          className="absolute inset-0"
           style={{
-            clipPath: 'polygon(0 6%, 6% 0, 94% 0, 100% 6%, 100% 94%, 94% 100%, 6% 100%, 0 94%)'
+            background: styles.borderGradient,
+            clipPath,
           }}
         />
-        
-        {/* Inner content area */}
-        <div 
-          className={`relative m-[3px] ${styles.cardBg} p-4`}
+
+        {/* Inner card */}
+        <div
+          className="absolute inset-[3px] bg-gradient-to-b from-[#1a1a2e] via-[#16162a] to-[#0f0f1a] overflow-hidden"
           style={{
-            clipPath: 'polygon(0 6%, 6% 0, 94% 0, 100% 6%, 100% 94%, 94% 100%, 6% 100%, 0 94%)'
+            clipPath,
+            borderRadius: 14,
           }}
         >
-          {/* Shimmer effect */}
+          {/* Background photo */}
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={playerName}
+              className="absolute inset-0 w-full h-full object-cover object-top"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-[#2a2a4a] to-[#1a1a2e]">
+              <User 
+                className="w-24 h-24 opacity-30"
+                style={{ color: styles.glowColor }}
+              />
+            </div>
+          )}
+
+          {/* Dark gradient overlays */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: 'linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.1) 25%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.5) 75%, rgba(0,0,0,0.85) 100%)'
+            }}
+          />
+
+          {/* Top vignette for rating */}
+          <div
+            className="absolute top-0 left-0 right-0 h-24 pointer-events-none"
+            style={{
+              background: 'linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 100%)'
+            }}
+          />
+
+          {/* Holographic shimmer */}
           <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none"
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.2) 50%, transparent 60%)',
+            }}
             initial={{ x: '-100%' }}
             animate={{ x: '200%' }}
             transition={{
+              duration: 2.5,
               repeat: Infinity,
-              repeatDelay: 4,
-              duration: 1.8,
-              ease: "easeInOut"
+              repeatDelay: 1,
+              ease: "easeInOut",
             }}
           />
-          
-          {/* Rating in top left */}
-          <div className="absolute top-4 left-4 z-10">
-            <div className={`text-6xl font-black ${styles.ratingColor} leading-none drop-shadow-lg`}
-              style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}
+
+          {/* Rating display - top left */}
+          <motion.div
+            className="absolute top-4 left-4 z-10"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+          >
+            <div
+              className="text-5xl font-black text-white leading-none"
+              style={{ textShadow: styles.textGlow }}
             >
               {displayRating}
             </div>
-            <div className={`text-sm font-bold ${styles.labelColor} tracking-[0.2em] mt-1`}>
-              {styles.label}
-            </div>
-          </div>
-
-          {/* Photo container with beveled frame */}
-          <div className="relative mt-6 mx-auto">
-            {/* Photo frame border */}
-            <div 
-              className={`absolute inset-0 bg-gradient-to-b ${styles.frameBorder} opacity-50`}
-              style={{
-                clipPath: 'polygon(8% 0, 92% 0, 100% 8%, 100% 100%, 0 100%, 0 8%)'
-              }}
-            />
-            
-            {/* Photo container */}
-            <div 
-              className="relative m-[2px] bg-muted overflow-hidden aspect-[4/5]"
-              style={{
-                clipPath: 'polygon(8% 0, 92% 0, 100% 8%, 100% 100%, 0 100%, 0 8%)'
+            <div
+              className="text-[9px] font-bold uppercase tracking-[0.2em] mt-1"
+              style={{ 
+                color: styles.glowColor,
+                textShadow: styles.textGlow 
               }}
             >
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt={playerName}
-                  className="w-full h-full object-cover object-top"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-muted to-muted/80">
-                  <User className="w-20 h-20 text-muted-foreground/50" />
-                </div>
-              )}
-              
-              {/* Photo overlay gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+              {styles.label}
             </div>
-          </div>
+          </motion.div>
 
-          {/* Player name */}
-          <div className="mt-4 text-center">
-            <h2 className={`text-xl font-bold ${styles.ratingColor} uppercase tracking-[0.15em]`}
-              style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}
+          {/* Player name - bottom */}
+          <motion.div
+            className="absolute bottom-4 left-0 right-0 text-center z-10 px-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
+            {/* Decorative line above name */}
+            <div
+              className="w-16 h-[2px] mx-auto mb-2 rounded-full"
+              style={{ background: styles.borderGradient }}
+            />
+            
+            <h2
+              className="text-lg font-bold text-white uppercase tracking-wider truncate"
+              style={{ textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}
             >
               {playerName}
             </h2>
-            
-            {/* Accent underline */}
-            <div className={`mx-auto mt-3 w-12 h-[3px] rounded-full bg-gradient-to-r ${styles.accentGradient}`} />
-          </div>
+
+            {/* Accent line below name */}
+            <div
+              className="w-10 h-[2px] mx-auto mt-2 rounded-full"
+              style={{ background: styles.borderGradient }}
+            />
+          </motion.div>
         </div>
       </div>
     </motion.div>
