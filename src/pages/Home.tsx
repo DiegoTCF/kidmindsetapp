@@ -180,8 +180,8 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="w-full max-w-sm mx-auto p-4">
+    <div className="bg-background pb-4">
+      <div className="w-full max-w-sm mx-auto px-4 pt-4">
         {/* Logout Button - Top Left */}
         <div className="flex justify-start mb-2">
           <Button 
@@ -209,12 +209,10 @@ export default function Home() {
         <div className="flex justify-center">
           <HomePlayerCard onNameChange={handleNameChange} />
         </div>
-
-        {/* Top Navigation (action buttons) */}
-        <div className="mt-4">
-          <TopNavigation />
-        </div>
       </div>
+
+      {/* Top Navigation (action buttons) */}
+      <TopNavigation />
 
       {/* Level Up Notification */}
       <LevelUpNotification 
