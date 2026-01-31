@@ -747,7 +747,7 @@ const Auth = () => {
     <div className="min-h-screen bg-gradient-primary flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <div className="flex flex-col items-center mb-4">
+          <div className="flex flex-col items-center mb-6">
             <img 
               src="/lovable-uploads/new-logo.png" 
               alt="The Confident Footballer Logo" 
@@ -759,8 +759,13 @@ const Auth = () => {
             >
               The Confident Footballer
             </h1>
+            <p 
+              className="text-lg font-semibold text-white mt-1"
+              style={{ fontFamily: "'Baloo 2', cursive" }}
+            >
+              Player App
+            </p>
           </div>
-          <CardTitle className="text-center">Welcome Back</CardTitle>
           <CardDescription className="text-center">
             Sign in to your account
           </CardDescription>
