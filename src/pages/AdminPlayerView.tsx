@@ -384,54 +384,12 @@ export default function AdminPlayerView() {
               <AdminPlayerCard childId={child.id} />
             </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <HomeIcon className="w-5 h-5" />
-                  Player Dashboard
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Card className="bg-primary/5">
-                      <CardContent className="p-4">
-                        <div className="text-center">
-                          <Trophy className="w-8 h-8 mx-auto text-primary mb-2" />
-                          <p className="text-sm text-muted-foreground">Level</p>
-                          <p className="text-2xl font-bold">{child.level}</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card className="bg-accent/5">
-                      <CardContent className="p-4">
-                        <div className="text-center">
-                          <span className="text-2xl block mb-2">⭐</span>
-                          <p className="text-sm text-muted-foreground">Points</p>
-                          <p className="text-2xl font-bold">{child.points}</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card className="bg-secondary/5">
-                      <CardContent className="p-4">
-                        <div className="text-center">
-                          <span className="text-2xl block mb-2">🎂</span>
-                          <p className="text-sm text-muted-foreground">Age</p>
-                          <p className="text-2xl font-bold">{child.age}</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                  
-                  <div className="bg-card border border-border rounded-lg p-4">
-                    <p className="text-foreground text-sm">
-                      <strong>Mentorship View:</strong> This is how {child.name} sees their dashboard. 
-                      Use this to guide them through their football journey during 1-on-1 sessions.
-                    </p>
-                  </div>
-                </div>
+            <Card className="bg-card border border-border rounded-lg">
+              <CardContent className="p-4">
+                <p className="text-foreground text-sm">
+                  <strong>Mentorship View:</strong> This is how {child.name} sees their dashboard. 
+                  Use this to guide them through their football journey during 1-on-1 sessions.
+                </p>
               </CardContent>
             </Card>
 
