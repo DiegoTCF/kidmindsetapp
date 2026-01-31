@@ -5,6 +5,7 @@ import { PlayerCard } from "@/components/performance/PlayerCard";
 import { StatBar } from "@/components/performance/StatBar";
 import { PlayerCardSkeleton, StatBarSkeleton } from "@/components/performance/PerformanceSkeletons";
 import { adaptPerformanceData, AdaptedPerformanceData } from "@/components/performance/PerformanceAdapter";
+import { TimePeriodFilter, TimePeriod, getDateRangeForPeriod } from "@/components/performance/TimePeriodFilter";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
@@ -13,6 +14,7 @@ export function ProgressPlayerCard() {
   const [performanceData, setPerformanceData] = useState<AdaptedPerformanceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAllStats, setShowAllStats] = useState(false);
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>('all');
 
   useEffect(() => {
     if (childId) {
@@ -20,13 +22,15 @@ export function ProgressPlayerCard() {
     } else if (!childLoading) {
       setLoading(false);
     }
-  }, [childId, childLoading]);
+  }, [childId, childLoading, timePeriod]);
 
   const loadPerformanceData = async () => {
     if (!childId) return;
     
     setLoading(true);
     try {
+      const { startDate } = getDateRangeForPeriod(timePeriod);
+      
       // Fetch child details for name and avatar
       const { data: childData, error: childError } = await supabase
         .from('children')
@@ -52,12 +56,18 @@ export function ProgressPlayerCard() {
         avatarUrl = identityData?.avatar_url || null;
       }
 
-      // Fetch super behaviour ratings
-      const { data: behaviourData, error: behaviourError } = await supabase
+      // Fetch super behaviour ratings with date filter
+      let behaviourQuery = supabase
         .from('super_behaviour_ratings')
-        .select('behaviour_type, average_score')
+        .select('behaviour_type, average_score, created_at')
         .eq('child_id', childId)
         .order('created_at', { ascending: false });
+      
+      if (startDate) {
+        behaviourQuery = behaviourQuery.gte('created_at', startDate.toISOString());
+      }
+      
+      const { data: behaviourData, error: behaviourError } = await behaviourQuery;
 
       if (behaviourError) {
         console.error('Error loading behaviour data:', behaviourError);
@@ -84,14 +94,20 @@ export function ProgressPlayerCard() {
         });
       }
 
-      // Fetch activity ratings from post_activity_data
-      const { data: activities, error: activitiesError } = await supabase
+      // Fetch activity ratings from post_activity_data with date filter
+      let activitiesQuery = supabase
         .from('activities')
-        .select('post_activity_data')
+        .select('post_activity_data, activity_date')
         .eq('child_id', childId)
         .eq('post_activity_completed', true)
         .order('activity_date', { ascending: false })
-        .limit(20);
+        .limit(50);
+      
+      if (startDate) {
+        activitiesQuery = activitiesQuery.gte('activity_date', startDate.toISOString().split('T')[0]);
+      }
+      
+      const { data: activities, error: activitiesError } = await activitiesQuery;
 
       let activityRatings = null;
       if (!activitiesError && activities && activities.length > 0) {
@@ -123,13 +139,19 @@ export function ProgressPlayerCard() {
         }
       }
 
-      // Fetch best self scores
-      const { data: bestSelfData } = await supabase
+      // Fetch best self scores with date filter
+      let bestSelfQuery = supabase
         .from('best_self_scores')
-        .select('score')
+        .select('score, created_at')
         .eq('user_id', userData?.user?.id || '')
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(50);
+      
+      if (startDate) {
+        bestSelfQuery = bestSelfQuery.gte('created_at', startDate.toISOString());
+      }
+      
+      const { data: bestSelfData } = await bestSelfQuery;
 
       let bestSelfAverage: number | null = null;
       if (bestSelfData && bestSelfData.length > 0) {
@@ -177,6 +199,13 @@ export function ProgressPlayerCard() {
 
   return (
     <div className="space-y-6">
+      {/* Time Period Filter */}
+      <TimePeriodFilter 
+        value={timePeriod} 
+        onChange={setTimePeriod}
+        className="mb-2"
+      />
+      
       {/* FIFA-style Player Card */}
       <div className="flex justify-center">
         <PlayerCard
