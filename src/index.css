@@ -236,6 +236,30 @@
   .shadow-glow-cyan {
     box-shadow: var(--glow-cyan);
   }
+
+  /* Conic gradient for rotating effects */
+  .bg-gradient-conic {
+    background: conic-gradient(
+      hsl(var(--primary)),
+      hsl(43, 90%, 55%),
+      hsl(190, 100%, 50%),
+      hsl(var(--primary))
+    );
+  }
+
+  /* Pulsing border animation */
+  .border-pulse {
+    animation: border-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes border-pulse {
+    0%, 100% {
+      border-color: hsl(var(--primary) / 0.3);
+    }
+    50% {
+      border-color: hsl(var(--primary) / 0.8);
+    }
+  }
 }
 
 /* Hide Lovable badge/sticker */
