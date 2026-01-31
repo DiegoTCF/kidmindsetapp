@@ -9,6 +9,7 @@ import { BottomNav } from "@/components/nav/BottomNav";
 import { LevelUpNotification } from "@/components/Progress/LevelUpNotification";
 import CompleteProfileFlow from "@/components/Profile/CompleteProfileFlow";
 import { HomePlayerCard } from "@/components/Home/HomePlayerCard";
+import stadiumBackground from "@/assets/stadium-background.jpg";
 
 interface PlayerData {
   name: string;
@@ -181,58 +182,72 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Top Header Bar */}
-      <header className="w-full bg-card/95 backdrop-blur-md border-b border-border/20 py-3">
-        <div className="flex flex-col items-center gap-1">
-          {/* Logo */}
-          <img 
-            src="/lovable-uploads/The_Confident_Footballer.png" 
-            alt="The Confident Footballer Logo" 
-            className="h-16 w-auto"
-          />
-          {/* Branding Text */}
-          <div className="flex flex-col items-center">
-            <span className="font-['Baloo_2'] text-lg font-bold text-primary">
-              The Confident Footballer
-            </span>
-            <span className="font-['Baloo_2'] text-sm font-semibold text-black bg-white px-3 py-0.5 rounded-full">
-              Players App
-            </span>
+    <div className="min-h-screen flex flex-col relative overflow-hidden">
+      {/* Stadium Background with Effects */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${stadiumBackground})` }}
+      >
+        {/* Gradient overlay for better readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80" />
+        {/* Animated light rays effect */}
+        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/30 via-transparent to-transparent animate-pulse" />
+      </div>
+
+      {/* Content layer */}
+      <div className="relative z-10 flex flex-col min-h-screen">
+        {/* Top Header Bar */}
+        <header className="w-full bg-black/60 backdrop-blur-md border-b border-white/10 py-3">
+          <div className="flex flex-col items-center gap-1">
+            {/* Logo */}
+            <img 
+              src="/lovable-uploads/The_Confident_Footballer.png" 
+              alt="The Confident Footballer Logo" 
+              className="h-16 w-auto drop-shadow-lg"
+            />
+            {/* Branding Text */}
+            <div className="flex flex-col items-center">
+              <span className="font-['Baloo_2'] text-lg font-bold text-primary drop-shadow-md">
+                The Confident Footballer
+              </span>
+              <span className="font-['Baloo_2'] text-sm font-semibold text-black bg-white px-3 py-0.5 rounded-full shadow-md">
+                Players App
+              </span>
+            </div>
           </div>
-        </div>
-        {/* Logout Button - positioned in header */}
-        <div className="absolute top-3 left-3">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleLogout} 
-            className="flex items-center gap-2"
-          >
-            <LogOut className="h-4 w-4" />
-            Logout
-          </Button>
-        </div>
-      </header>
+          {/* Logout Button - positioned in header */}
+          <div className="absolute top-3 left-3">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleLogout} 
+              className="flex items-center gap-2 bg-black/50 border-white/20 text-white hover:bg-black/70"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </Button>
+          </div>
+        </header>
 
-      {/* Main content - centered */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 pb-24">
-        {/* Welcome Message */}
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-foreground">
-            Welcome Back, {playerData.name}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Tap your card to edit profile
-          </p>
-        </div>
+        {/* Main content - centered */}
+        <div className="flex-1 flex flex-col items-center justify-center px-4 pb-24">
+          {/* Welcome Message */}
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold text-white drop-shadow-lg">
+              Welcome Back, {playerData.name}
+            </h1>
+            <p className="text-sm text-white/80 mt-1 drop-shadow-md">
+              Tap your card to edit profile
+            </p>
+          </div>
 
-        {/* FIFA-style Player Card (clickable for edit) */}
-        <HomePlayerCard onNameChange={handleNameChange} />
+          {/* FIFA-style Player Card (clickable for edit) */}
+          <HomePlayerCard onNameChange={handleNameChange} />
 
-        {/* Top Navigation (action buttons) */}
-        <div className="mt-6">
-          <TopNavigation />
+          {/* Top Navigation (action buttons) */}
+          <div className="mt-6">
+            <TopNavigation />
+          </div>
         </div>
       </div>
 
