@@ -96,15 +96,14 @@ export function HomePlayerCard({ onNameChange }: HomePlayerCardProps) {
         });
       }
 
-      // Fetch activity ratings from post_activity_data
+      // Fetch activity ratings from post_activity_data (match Progress page limit)
       const { data: activities } = await supabase
         .from('activities')
-        .select('post_activity_data')
+        .select('post_activity_data, activity_date')
         .eq('child_id', childIdResult)
         .eq('post_activity_completed', true)
         .order('activity_date', { ascending: false })
-        .limit(20);
-
+        .limit(50);
       let activityRatings = null;
       if (activities && activities.length > 0) {
         let workRateSum = 0, confidenceSum = 0, mistakesSum = 0, focusSum = 0, performanceSum = 0;
@@ -135,13 +134,13 @@ export function HomePlayerCard({ onNameChange }: HomePlayerCardProps) {
         }
       }
 
-      // Fetch best self scores
+      // Fetch best self scores (match Progress page limit)
       const { data: bestSelfData } = await supabase
         .from('best_self_scores')
-        .select('score')
+        .select('score, created_at')
         .eq('user_id', user?.id || '')
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(50);
 
       let bestSelfAverage: number | null = null;
       if (bestSelfData && bestSelfData.length > 0) {
