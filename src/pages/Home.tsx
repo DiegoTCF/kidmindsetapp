@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { LogOut, Crown, Sparkles } from "lucide-react";
+import { LogOut, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,7 +9,7 @@ import { BottomNav } from "@/components/nav/BottomNav";
 import { LevelUpNotification } from "@/components/Progress/LevelUpNotification";
 import CompleteProfileFlow from "@/components/Profile/CompleteProfileFlow";
 import { HomePlayerCard } from "@/components/Home/HomePlayerCard";
-import { FloatingParticles, LevelProgress, QuickStats, PowerRing } from "@/components/Home/GameEffects";
+import { FloatingParticles, PowerRing } from "@/components/Home/GameEffects";
 import stadiumBackground from "@/assets/stadium-background.jpg";
 
 interface PlayerData {
@@ -225,16 +225,12 @@ export default function Home() {
             
             {/* Branding Text */}
             <div className="flex flex-col items-center">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-gold animate-pulse" />
-                <span 
-                  className="text-base font-bold text-primary drop-shadow-md tracking-wider"
-                  style={{ fontFamily: "'Orbitron', sans-serif" }}
-                >
-                  THE CONFIDENT FOOTBALLER
-                </span>
-                <Sparkles className="w-4 h-4 text-gold animate-pulse" />
-              </div>
+              <span 
+                className="text-base font-bold text-primary drop-shadow-md tracking-wider"
+                style={{ fontFamily: "'Orbitron', sans-serif" }}
+              >
+                THE CONFIDENT FOOTBALLER
+              </span>
               <span className="text-xs font-bold text-primary-foreground bg-gradient-to-r from-primary via-primary to-primary/80 px-4 py-0.5 rounded-full shadow-lg shadow-primary/30 uppercase tracking-widest mt-1">
                 Players App
               </span>
@@ -276,20 +272,11 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Level Progress Bar */}
-          <div className="w-full max-w-sm mb-6">
-            <LevelProgress level={playerData.level} points={playerData.points} />
-          </div>
-
-          {/* FIFA-style Player Card with Power Ring */}
           <PowerRing>
             <div className="animate-float">
               <HomePlayerCard onNameChange={handleNameChange} />
             </div>
           </PowerRing>
-
-          {/* Quick Stats */}
-          <QuickStats stats={{ matches: 12, goals: 5, achievements: 3 }} />
 
           {/* Tap hint */}
           <p className="text-xs text-muted-foreground mt-4 animate-pulse">
