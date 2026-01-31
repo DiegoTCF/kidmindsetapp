@@ -19,29 +19,42 @@ export function AppLayout({ children, hideNavigation = false }: AppLayoutProps) 
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header with logo and logout button */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-md border-b border-border/20">
-        <div className="flex items-center justify-between px-4 py-2">
-          <div className="w-8" /> {/* Spacer for balance */}
+      {/* Header with logo and branding */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-md border-b border-border/20 py-3">
+        <div className="flex flex-col items-center gap-1">
+          {/* Logo */}
           <img 
-            src="/lovable-uploads/new-logo.png" 
+            src="/lovable-uploads/The_Confident_Footballer.png" 
             alt="The Confident Footballer Logo" 
-            className="h-20 w-auto"
+            className="h-16 w-auto"
           />
+          {/* Branding Text */}
+          <div className="flex flex-col items-center">
+            <span className="font-['Baloo_2'] text-lg font-bold text-primary">
+              The Confident Footballer
+            </span>
+            <span className="font-['Baloo_2'] text-sm font-semibold text-black bg-white px-3 py-0.5 rounded-full">
+              Players App
+            </span>
+          </div>
+        </div>
+        {/* Logout Button */}
+        <div className="absolute top-3 left-3">
           <Button
-            variant="ghost"
-            size="icon"
+            variant="outline"
+            size="sm"
             onClick={handleLogout}
-            className="h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm shadow-sm hover:bg-accent"
+            className="flex items-center gap-2"
           >
             <LogOut className="h-4 w-4" />
+            Logout
           </Button>
         </div>
       </header>
 
       {/* Main Content */}
       <main className={cn(
-        "min-h-screen pt-24", // Unified padding for all screen sizes
+        "min-h-screen pt-36", // Account for taller header with branding
         !hideNavigation && "pb-20" // Account for bottom nav
       )}>
         <div className="container max-w-4xl mx-auto px-4">

@@ -189,7 +189,7 @@ export default function Home() {
           <img 
             src="/lovable-uploads/The_Confident_Footballer.png" 
             alt="The Confident Footballer Logo" 
-            className="h-48 w-auto"
+            className="h-16 w-auto"
           />
           {/* Branding Text */}
           <div className="flex flex-col items-center">
