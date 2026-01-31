@@ -180,8 +180,8 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <div className="w-full max-w-sm mx-auto p-4 flex-1 flex flex-col">
+    <div className="min-h-screen bg-background">
+      <div className="w-full max-w-sm mx-auto p-4">
         {/* Logout Button - Top Left */}
         <div className="flex justify-start mb-2">
           <Button 
@@ -206,12 +206,14 @@ export default function Home() {
         </div>
 
         {/* FIFA-style Player Card (clickable for edit) */}
-        <div className="flex-1 flex items-start justify-center">
+        <div className="flex justify-center">
           <HomePlayerCard onNameChange={handleNameChange} />
         </div>
 
         {/* Top Navigation (action buttons) */}
-        <TopNavigation />
+        <div className="mt-4">
+          <TopNavigation />
+        </div>
       </div>
 
       {/* Level Up Notification */}
