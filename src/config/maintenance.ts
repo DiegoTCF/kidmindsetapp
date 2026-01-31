@@ -8,7 +8,7 @@
  */
 
 // Hardcoded fallback - change to true to enable maintenance mode
-const MAINTENANCE_ENABLED = true;
+const MAINTENANCE_ENABLED = false;
 
 // Check environment variable first, fallback to hardcoded value
 export const isMaintenanceMode = (): boolean => {
