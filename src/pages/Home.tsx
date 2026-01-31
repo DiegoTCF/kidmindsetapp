@@ -189,14 +189,14 @@ export default function Home() {
           <img 
             src="/lovable-uploads/new-logo.png" 
             alt="The Confident Footballer Logo" 
-            className="h-16 w-auto"
+            className="h-48 w-auto"
           />
           {/* Branding Text */}
           <div className="flex flex-col items-center">
             <span className="font-['Baloo_2'] text-lg font-bold text-primary">
               The Confident Footballer
             </span>
-            <span className="font-['Baloo_2'] text-sm font-semibold text-foreground bg-white/90 px-3 py-0.5 rounded-full">
+            <span className="font-['Baloo_2'] text-sm font-semibold text-black bg-white px-3 py-0.5 rounded-full">
               Players App
             </span>
           </div>
