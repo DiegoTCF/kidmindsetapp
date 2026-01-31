@@ -7,8 +7,8 @@
  * Environment variable takes precedence over the hardcoded value.
  */
 
-// Hardcoded fallback - can be changed without redeploy if using dynamic config
-const MAINTENANCE_ENABLED = false;
+// Hardcoded fallback - change to true to enable maintenance mode
+const MAINTENANCE_ENABLED = true;
 
 // Check environment variable first, fallback to hardcoded value
 export const isMaintenanceMode = (): boolean => {
@@ -23,10 +23,9 @@ export const isMaintenanceMode = (): boolean => {
 };
 
 // Routes that are allowed during maintenance mode
+// Currently only /maintenance itself is allowed - blocks everything including login
 export const MAINTENANCE_ALLOWED_ROUTES = [
-  '/auth',
   '/maintenance',
-  '/support',
 ];
 
 // Check if a route is allowed during maintenance
