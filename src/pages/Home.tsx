@@ -182,10 +182,27 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Main content - centered */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 pb-24 pt-4">
-        {/* Logout Button - Top Right */}
-        <div className="absolute top-4 left-4">
+      {/* Top Header Bar */}
+      <header className="w-full bg-card/95 backdrop-blur-md border-b border-border/20 py-3">
+        <div className="flex flex-col items-center gap-1">
+          {/* Logo */}
+          <img 
+            src="/lovable-uploads/new-logo.png" 
+            alt="The Confident Footballer Logo" 
+            className="h-16 w-auto"
+          />
+          {/* Branding Text */}
+          <div className="flex flex-col items-center">
+            <span className="font-['Baloo_2'] text-lg font-bold text-primary">
+              The Confident Footballer
+            </span>
+            <span className="font-['Baloo_2'] text-sm font-semibold text-foreground bg-white/90 px-3 py-0.5 rounded-full">
+              Players App
+            </span>
+          </div>
+        </div>
+        {/* Logout Button - positioned in header */}
+        <div className="absolute top-3 left-3">
           <Button 
             variant="outline" 
             size="sm" 
@@ -196,7 +213,10 @@ export default function Home() {
             Logout
           </Button>
         </div>
+      </header>
 
+      {/* Main content - centered */}
+      <div className="flex-1 flex flex-col items-center justify-center px-4 pb-24">
         {/* Welcome Message */}
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-foreground">
