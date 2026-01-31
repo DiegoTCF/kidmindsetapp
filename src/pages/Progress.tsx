@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUserLogging } from "@/hooks/useUserLogging";
@@ -10,6 +9,8 @@ import Charts from "@/components/Progress/Charts";
 import BehaviourCharts from "@/components/Progress/BehaviourCharts";
 import { CoreSkillsHistory } from "@/components/Progress/CoreSkillsHistory";
 import { BestSelfTracker } from "@/components/Progress/BestSelfTracker";
+import { ProgressPlayerCard } from "@/components/Progress/ProgressPlayerCard";
+
 const activityFilters = ["All", "Match", "Training", "1to1", "Futsal", "Small Group", "Other"];
 
 export default function Progress() {
@@ -44,6 +45,9 @@ export default function Progress() {
           Track your activities, view stats, and celebrate your growth
         </p>
       </div>
+
+      {/* FIFA-style Player Card at the top */}
+      <ProgressPlayerCard />
 
       <Tabs defaultValue="activities" className="space-y-6">
         <TabsList className="flex w-full overflow-x-auto">
