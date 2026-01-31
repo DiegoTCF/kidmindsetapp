@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ChevronDown, TrendingUp } from "lucide-react";
+import { ChevronDown, TrendingUp, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { StatBar } from "@/components/performance/StatBar";
 import { PlayerCardSkeleton } from "@/components/performance/PerformanceSkeletons";
 import { adaptPerformanceData, AdaptedPerformanceData } from "@/components/performance/PerformanceAdapter";
 import { TimePeriodFilter, TimePeriod, getDateRangeForPeriod } from "@/components/performance/TimePeriodFilter";
+import { AdminEditPlayerDialog } from "./AdminEditPlayerDialog";
 
 interface AdminPlayerCardProps {
   childId: string;
@@ -20,6 +21,10 @@ export function AdminPlayerCard({ childId, userId }: AdminPlayerCardProps) {
   const [loading, setLoading] = useState(true);
   const [showDetails, setShowDetails] = useState(false);
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('all');
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [parentUserId, setParentUserId] = useState<string | null>(null);
+  const [childName, setChildName] = useState<string>('Player');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (childId) {
@@ -44,11 +49,14 @@ export function AdminPlayerCard({ childId, userId }: AdminPlayerCardProps) {
         return;
       }
 
+      // Store child name for edit dialog
+      setChildName(childData.name);
+
       // Get parent's user_id to fetch player identity
-      let avatarUrl: string | null = null;
-      let parentUserId: string | null = userId || null;
+      let fetchedAvatarUrl: string | null = null;
+      let fetchedParentUserId: string | null = userId || null;
       
-      if (!parentUserId) {
+      if (!fetchedParentUserId) {
         // Try to get user_id from parent
         const { data: parentData } = await supabase
           .from('parents')
@@ -56,17 +64,21 @@ export function AdminPlayerCard({ childId, userId }: AdminPlayerCardProps) {
           .eq('id', childData.parent_id)
           .single();
 
-        parentUserId = parentData?.user_id || null;
+        fetchedParentUserId = parentData?.user_id || null;
       }
 
-      if (parentUserId) {
+      // Store parent user ID for edit dialog
+      setParentUserId(fetchedParentUserId);
+
+      if (fetchedParentUserId) {
         const { data: identityData } = await supabase
           .from('player_identities')
           .select('avatar_url')
-          .eq('user_id', parentUserId)
+          .eq('user_id', fetchedParentUserId)
           .maybeSingle();
         
-        avatarUrl = identityData?.avatar_url || null;
+        fetchedAvatarUrl = identityData?.avatar_url || null;
+        setAvatarUrl(fetchedAvatarUrl);
       }
 
       // Fetch super behaviour ratings with date filter
@@ -173,7 +185,7 @@ export function AdminPlayerCard({ childId, userId }: AdminPlayerCardProps) {
       // Use the adapter to transform the data
       const adapted = adaptPerformanceData(
         childData?.name || 'Player',
-        avatarUrl,
+        fetchedAvatarUrl,
         behaviourAverages,
         activityRatings,
         bestSelfAverage
@@ -214,7 +226,7 @@ export function AdminPlayerCard({ childId, userId }: AdminPlayerCardProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="flex justify-center">
+        <div className="flex flex-col items-center gap-4">
           <PlayerCard
             playerName={performanceData.profile.playerName}
             position={performanceData.profile.position}
@@ -222,8 +234,28 @@ export function AdminPlayerCard({ childId, userId }: AdminPlayerCardProps) {
             avatarUrl={performanceData.profile.avatarUrl}
             hasData={performanceData.hasData}
           />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowEditDialog(true)}
+            className="flex items-center gap-2"
+          >
+            <Pencil className="w-4 h-4" />
+            Edit Player
+          </Button>
         </div>
       </motion.div>
+
+      {/* Edit Player Dialog */}
+      <AdminEditPlayerDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        childId={childId}
+        parentUserId={parentUserId}
+        currentName={childName}
+        currentAvatarUrl={avatarUrl}
+        onSaved={loadPerformanceData}
+      />
 
       {/* Stats Bars - Same as player sees */}
       {performanceData.stats.length > 0 && (
