@@ -36,8 +36,8 @@ const DiamondCircle = ({
   };
 
   const sizeClasses = isCenter 
-    ? 'w-28 h-28 sm:w-36 sm:h-36' 
-    : 'w-20 h-20 sm:w-24 sm:h-24';
+    ? 'w-24 h-24 sm:w-32 sm:h-32' 
+    : 'w-16 h-16 sm:w-20 sm:h-20';
 
   return (
     <motion.div 
@@ -282,16 +282,16 @@ export default function HomeTest() {
 
       {/* Header */}
       <motion.div 
-        className="text-center pt-8 pb-4 px-4 relative z-10"
+        className="text-center pt-4 pb-2 px-4 relative z-10"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="flex flex-col items-center justify-center gap-2 mb-3">
+        <div className="flex flex-col items-center justify-center gap-1 mb-2">
           <motion.img 
             src="/lovable-uploads/new-logo.png" 
             alt="The Confident Footballer Logo" 
-            className="h-16 sm:h-20 w-auto drop-shadow-2xl"
+            className="h-32 sm:h-40 w-auto drop-shadow-2xl"
             whileHover={{ scale: 1.05 }}
             animate={{
               filter: ['drop-shadow(0 0 20px hsl(0, 85%, 50%, 0.3))', 'drop-shadow(0 0 30px hsl(0, 85%, 50%, 0.5))', 'drop-shadow(0 0 20px hsl(0, 85%, 50%, 0.3))']
@@ -301,24 +301,16 @@ export default function HomeTest() {
             }}
           />
           <motion.h1 
-            className="text-xl sm:text-2xl font-black text-white tracking-tight text-center"
+            className="text-lg sm:text-xl font-black text-white tracking-tight text-center"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
             The Confident Footballer
           </motion.h1>
-          <motion.p 
-            className="text-sm sm:text-base font-semibold text-primary tracking-wide"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            Player App
-          </motion.p>
         </div>
         <motion.p 
-          className="text-white/70 text-sm font-medium"
+          className="text-white/70 text-xs font-medium"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
@@ -328,8 +320,8 @@ export default function HomeTest() {
       </motion.div>
 
       {/* Diamond Layout */}
-      <div className="flex items-center justify-center px-4 py-6 sm:py-10 relative z-10">
-        <div className="grid grid-cols-3 grid-rows-3 gap-3 sm:gap-5 max-w-sm">
+      <div className="flex items-center justify-center px-2 py-2 sm:py-6 relative z-10">
+        <div className="grid grid-cols-3 grid-rows-3 gap-2 sm:gap-4 max-w-xs sm:max-w-sm">
           {/* Top - Your Journey (Tasks) */}
           <DiamondCircle
             icon={<Map className="w-8 h-8 sm:w-10 sm:h-10" />}
@@ -398,7 +390,7 @@ export default function HomeTest() {
 
       {/* Footer hint */}
       <motion.div 
-        className="text-center pb-8 px-4 relative z-10"
+        className="text-center pb-4 px-4 relative z-10"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6 }}
