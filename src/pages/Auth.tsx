@@ -749,7 +749,7 @@ const Auth = () => {
         <CardHeader>
           <div className="flex justify-center mb-4">
             <img 
-              src="/lovable-uploads/12821ebd-705b-4e17-b537-45a7e96dd74f.png" 
+              src="/lovable-uploads/new-logo.png" 
               alt="The Confident Footballer Logo" 
               className="h-48 w-auto"
             />
