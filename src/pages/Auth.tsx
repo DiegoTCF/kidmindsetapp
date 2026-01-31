@@ -749,9 +749,9 @@ const Auth = () => {
         <CardHeader>
           <div className="flex flex-col items-center mb-6">
             <img 
-              src="/lovable-uploads/new-logo.png" 
+              src="/lovable-uploads/The_Confident_Footballer.png" 
               alt="The Confident Footballer Logo" 
-              className="h-48 w-auto"
+              className="h-32 w-auto"
             />
             <h1 
               className="text-2xl font-bold text-primary mt-2"
@@ -759,12 +759,12 @@ const Auth = () => {
             >
               The Confident Footballer
             </h1>
-            <p 
-              className="text-lg font-semibold text-white mt-1"
+            <span 
+              className="text-sm font-semibold text-black bg-white px-3 py-0.5 rounded-full mt-1"
               style={{ fontFamily: "'Baloo 2', cursive" }}
             >
-              Player App
-            </p>
+              Players App
+            </span>
           </div>
           <CardDescription className="text-center">
             Sign in to your account
