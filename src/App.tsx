@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { MaintenanceGuard } from "@/components/guards/MaintenanceGuard";
 import Home from "./pages/Home";
 import Stadium from "./pages/Stadium";
 import Progress from "./pages/Progress";
@@ -16,6 +17,7 @@ import ClientManager from "./pages/ClientManager";
 import AdminPlayerView from "./pages/AdminPlayerView";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
+import Maintenance from "./pages/Maintenance";
 import { useAuth } from "./hooks/useAuth";
 import { AdminProvider } from "./hooks/useAdmin";
 import { ProfileProvider } from "./hooks/useProfile";
@@ -67,9 +69,13 @@ const App = () => {
               <Toaster />
               <Sonner />
               <BrowserRouter>
+                <MaintenanceGuard>
             <Routes>
-              {/* Auth route */}
+              {/* Auth route - allowed during maintenance */}
               <Route path="/auth" element={<Auth />} />
+              
+              {/* Maintenance page */}
+              <Route path="/maintenance" element={<Maintenance />} />
               
               {/* Main app routes with navigation - protected */}
               <Route path="/" element={
@@ -249,6 +255,7 @@ const App = () => {
               {/* Catch-all route */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+                </MaintenanceGuard>
           </BrowserRouter>
             </ProfileProvider>
           </AdminProvider>
