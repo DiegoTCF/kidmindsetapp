@@ -1,35 +1,58 @@
 
 
-## Plan: Remove Empty Space Below Player Card on Home Page
+## Plan: Fix Large Gap Between Player Card and Bottom Navigation
 
-### Problem Analysis
-The Home page currently has a large gap below the FIFA-style player card. This happens because:
-- The card container uses `flex-1` which expands to fill all available vertical space
-- Combined with `items-start`, the card is pushed to the top while the container fills the remaining space, creating the gap below
-- The `TopNavigation` is fixed-positioned, so it doesn't affect the layout
+### Root Cause Identified
+
+The gap is caused by the **AppLayout** wrapper around the Home page. Here's what's happening:
+
+1. **AppLayout** adds a fixed header with `h-20` (80px) logo and `pt-24` (96px padding) to the main content
+2. The Home page has its own logout button and TopNavigation - causing redundancy
+3. The content structure doesn't account for the bottom nav properly
+
+The Home page is being double-wrapped with navigation elements:
+- AppLayout provides: Header (logo + logout), BottomNav
+- Home provides: Logout button, TopNavigation
 
 ### Solution
-Change the layout approach to remove the expanding behavior and instead use a compact, centered layout without stretching.
 
-### Changes Required
+**Option A (Recommended): Remove AppLayout from Home Page**
 
-**File: `src/pages/Home.tsx`**
+Since the Home page has custom layout needs, exclude it from AppLayout entirely:
 
-1. Remove `flex-1` from the outer container (line 183) - this stops it from stretching to fill `min-h-screen`
-2. Change the card wrapper (line 209) from `flex-1 flex items-start justify-center` to just `flex justify-center` - this removes the expansion behavior
-3. Keep the navigation at the bottom by adding a small margin-top to it, or let it naturally follow the content
-
-The updated structure will be:
+**File: `src/App.tsx`** - Change the Home route from:
+```jsx
+<Route path="/" element={
+  <ProtectedRoute>
+    <AppLayout>
+      <Home />
+    </AppLayout>
+  </ProtectedRoute>
+} />
 ```
-Container (no flex-1)
-  - Logout button
-  - Welcome message  
-  - Player card (no flex-1, just centered)
-  - TopNavigation (follows content naturally)
+To:
+```jsx
+<Route path="/" element={
+  <ProtectedRoute>
+    <Home />
+  </ProtectedRoute>
+} />
 ```
 
-### Technical Details
-- Line 183-184: Remove `flex flex-col` and `flex-1 flex flex-col` from the outer containers
-- Line 209: Change from `flex-1 flex items-start justify-center` to `flex justify-center`
-- Add `mt-4` to the TopNavigation wrapper for slight spacing after the card
+**File: `src/pages/Home.tsx`** - Add BottomNav directly:
+- Import and add `<BottomNav />` at the bottom of the component
+- Add `pb-24` padding to account for the fixed bottom nav
+- Keep the current compact layout structure
+
+### Technical Changes
+
+1. **`src/App.tsx`** (Line 81-87):
+   - Remove `<AppLayout>` wrapper from the Home route
+
+2. **`src/pages/Home.tsx`**:
+   - Import `BottomNav` component
+   - Add `<BottomNav />` inside the return JSX
+   - Add `pb-24` (96px) bottom padding to main container for the fixed nav
+
+This keeps the Home page self-contained with a compact layout while still having proper bottom navigation.
 
