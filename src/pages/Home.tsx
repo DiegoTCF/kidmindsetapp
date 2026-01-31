@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { TopNavigation } from "@/components/nav/TopNavigation";
+import { BottomNav } from "@/components/nav/BottomNav";
 import { LevelUpNotification } from "@/components/Progress/LevelUpNotification";
 import CompleteProfileFlow from "@/components/Profile/CompleteProfileFlow";
 import { HomePlayerCard } from "@/components/Home/HomePlayerCard";
@@ -180,7 +181,7 @@ export default function Home() {
   }
 
   return (
-    <div className="bg-background pb-4">
+    <div className="bg-background pb-24">
       <div className="w-full max-w-sm mx-auto px-4 pt-4">
         {/* Logout Button - Top Left */}
         <div className="flex justify-start mb-2">
@@ -220,6 +221,9 @@ export default function Home() {
         newLevel={playerData.level} 
         onClose={() => setShowLevelUpNotification(false)} 
       />
+
+      {/* Bottom Navigation */}
+      <BottomNav />
     </div>
   );
 }
