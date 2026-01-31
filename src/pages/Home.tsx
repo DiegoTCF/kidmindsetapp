@@ -181,7 +181,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(180deg, hsl(220 20% 96%) 0%, hsl(220 15% 88%) 100%)' }}>
       {/* Top Header Bar - Light theme with red accent */}
       <header className="w-full bg-card/98 backdrop-blur-md border-b border-border shadow-soft py-3 relative">
         {/* Red accent bar at top */}
