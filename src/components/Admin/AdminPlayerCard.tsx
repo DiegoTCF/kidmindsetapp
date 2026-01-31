@@ -8,6 +8,7 @@ import { PlayerCard } from "@/components/performance/PlayerCard";
 import { StatBar } from "@/components/performance/StatBar";
 import { PlayerCardSkeleton } from "@/components/performance/PerformanceSkeletons";
 import { adaptPerformanceData, AdaptedPerformanceData } from "@/components/performance/PerformanceAdapter";
+import { TimePeriodFilter, TimePeriod, getDateRangeForPeriod } from "@/components/performance/TimePeriodFilter";
 
 interface AdminPlayerCardProps {
   childId: string;
@@ -18,16 +19,19 @@ export function AdminPlayerCard({ childId, userId }: AdminPlayerCardProps) {
   const [performanceData, setPerformanceData] = useState<AdaptedPerformanceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [showDetails, setShowDetails] = useState(false);
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>('all');
 
   useEffect(() => {
     if (childId) {
       loadPerformanceData();
     }
-  }, [childId, userId]);
+  }, [childId, userId, timePeriod]);
 
   const loadPerformanceData = async () => {
     setLoading(true);
     try {
+      const { startDate } = getDateRangeForPeriod(timePeriod);
+      
       // Fetch child details for name
       const { data: childData } = await supabase
         .from('children')
@@ -65,12 +69,18 @@ export function AdminPlayerCard({ childId, userId }: AdminPlayerCardProps) {
         avatarUrl = identityData?.avatar_url || null;
       }
 
-      // Fetch super behaviour ratings
-      const { data: behaviourData } = await supabase
+      // Fetch super behaviour ratings with date filter
+      let behaviourQuery = supabase
         .from('super_behaviour_ratings')
-        .select('behaviour_type, average_score')
+        .select('behaviour_type, average_score, created_at')
         .eq('child_id', childId)
         .order('created_at', { ascending: false });
+      
+      if (startDate) {
+        behaviourQuery = behaviourQuery.gte('created_at', startDate.toISOString());
+      }
+      
+      const { data: behaviourData } = await behaviourQuery;
 
       // Group behaviour data and calculate averages
       const behaviourAverages: { behaviour_type: string; average_score: number }[] = [];
@@ -93,14 +103,20 @@ export function AdminPlayerCard({ childId, userId }: AdminPlayerCardProps) {
         });
       }
 
-      // Fetch activity ratings from post_activity_data
-      const { data: activities } = await supabase
+      // Fetch activity ratings from post_activity_data with date filter
+      let activitiesQuery = supabase
         .from('activities')
-        .select('post_activity_data')
+        .select('post_activity_data, activity_date')
         .eq('child_id', childId)
         .eq('post_activity_completed', true)
         .order('activity_date', { ascending: false })
-        .limit(20);
+        .limit(50);
+      
+      if (startDate) {
+        activitiesQuery = activitiesQuery.gte('activity_date', startDate.toISOString().split('T')[0]);
+      }
+      
+      const { data: activities } = await activitiesQuery;
 
       let activityRatings = null;
       if (activities && activities.length > 0) {
@@ -132,15 +148,21 @@ export function AdminPlayerCard({ childId, userId }: AdminPlayerCardProps) {
         }
       }
 
-      // Fetch best self scores - need user_id from parent
+      // Fetch best self scores - need user_id from parent with date filter
       let bestSelfAverage: number | null = null;
       if (parentUserId) {
-        const { data: bestSelfData } = await supabase
+        let bestSelfQuery = supabase
           .from('best_self_scores')
-          .select('score')
+          .select('score, created_at')
           .eq('user_id', parentUserId)
           .order('created_at', { ascending: false })
-          .limit(10);
+          .limit(50);
+        
+        if (startDate) {
+          bestSelfQuery = bestSelfQuery.gte('created_at', startDate.toISOString());
+        }
+        
+        const { data: bestSelfData } = await bestSelfQuery;
 
         if (bestSelfData && bestSelfData.length > 0) {
           const totalScore = bestSelfData.reduce((sum, item) => sum + item.score, 0);
@@ -179,6 +201,13 @@ export function AdminPlayerCard({ childId, userId }: AdminPlayerCardProps) {
 
   return (
     <div className="space-y-6">
+      {/* Time Period Filter */}
+      <TimePeriodFilter 
+        value={timePeriod} 
+        onChange={setTimePeriod}
+        className="mb-2"
+      />
+      
       {/* FIFA-Style Player Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
