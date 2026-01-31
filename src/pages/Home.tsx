@@ -231,7 +231,7 @@ export default function Home() {
               >
                 THE CONFIDENT FOOTBALLER
               </span>
-              <span className="text-sm font-bold text-foreground bg-white px-4 py-1 rounded-full shadow-lg uppercase tracking-widest mt-1">
+              <span className="text-sm font-bold text-black bg-white px-4 py-1 rounded-full shadow-lg uppercase tracking-widest mt-1">
                 Players App
               </span>
             </div>
