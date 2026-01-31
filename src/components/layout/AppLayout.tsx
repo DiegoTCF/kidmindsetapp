@@ -24,7 +24,7 @@ export function AppLayout({ children, hideNavigation = false }: AppLayoutProps) 
         <div className="flex items-center justify-between px-4 py-2">
           <div className="w-8" /> {/* Spacer for balance */}
           <img 
-            src="/lovable-uploads/confident-footballer-logo.png" 
+            src="/lovable-uploads/new-logo.png" 
             alt="The Confident Footballer Logo" 
             className="h-14 w-auto"
           />

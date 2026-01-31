@@ -289,7 +289,7 @@ export default function HomeTest() {
       >
         <div className="flex flex-col items-center justify-center gap-2 mb-3">
           <motion.img 
-            src="/lovable-uploads/confident-footballer-logo.png" 
+            src="/lovable-uploads/new-logo.png" 
             alt="The Confident Footballer Logo" 
             className="h-16 sm:h-20 w-auto drop-shadow-2xl"
             whileHover={{ scale: 1.05 }}
