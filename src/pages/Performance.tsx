@@ -20,6 +20,7 @@ import { PlayerCard } from "@/components/performance/PlayerCard";
 import { StatBar } from "@/components/performance/StatBar";
 import { adaptPerformanceData, AdaptedPerformanceData } from "@/components/performance/PerformanceAdapter";
 import { PerformancePageSkeleton } from "@/components/performance/PerformanceSkeletons";
+import { TimePeriodFilter, TimePeriod, getDateRangeForPeriod } from "@/components/performance/TimePeriodFilter";
 
 const activityFilters = ["All", "Match", "Training", "1to1", "Futsal", "Small Group", "Other"];
 
@@ -33,13 +34,14 @@ export default function Performance() {
   const [childName, setChildName] = useState<string>('Player');
   const [loading, setLoading] = useState(true);
   const [showDetails, setShowDetails] = useState(false);
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>('all');
 
   useEffect(() => {
     if (childId) {
       loadPerformanceData();
       loadAvatarUrl();
     }
-  }, [childId]);
+  }, [childId, timePeriod]);
 
   const loadAvatarUrl = async () => {
     if (!childId) return;
@@ -71,6 +73,7 @@ export default function Performance() {
     
     try {
       setLoading(true);
+      const { startDate } = getDateRangeForPeriod(timePeriod);
 
       // Load child name
       const { data: childData, error: childError } = await supabase
@@ -83,11 +86,17 @@ export default function Performance() {
         setChildName(childData.name);
       }
 
-      // Load behaviour ratings
-      const { data: behaviourData, error: behaviourError } = await supabase
+      // Load behaviour ratings with date filter
+      let behaviourQuery = supabase
         .from('super_behaviour_ratings')
-        .select('behaviour_type, average_score')
+        .select('behaviour_type, average_score, created_at')
         .eq('child_id', childId);
+      
+      if (startDate) {
+        behaviourQuery = behaviourQuery.gte('created_at', startDate.toISOString());
+      }
+      
+      const { data: behaviourData, error: behaviourError } = await behaviourQuery;
 
       if (behaviourError) throw behaviourError;
 
@@ -107,14 +116,20 @@ export default function Performance() {
         average_score: scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null
       }));
 
-      // Load activity ratings
-      const { data: activities, error: activitiesError } = await supabase
+      // Load activity ratings with date filter
+      let activitiesQuery = supabase
         .from('activities')
-        .select('post_activity_data')
+        .select('post_activity_data, activity_date')
         .eq('child_id', childId)
         .eq('post_activity_completed', true)
         .not('post_activity_data', 'is', null)
         .limit(50);
+      
+      if (startDate) {
+        activitiesQuery = activitiesQuery.gte('activity_date', startDate.toISOString().split('T')[0]);
+      }
+      
+      const { data: activities, error: activitiesError } = await activitiesQuery;
 
       if (activitiesError) throw activitiesError;
 
@@ -142,11 +157,17 @@ export default function Performance() {
         performance: performanceSum / ratingsCount
       } : null;
 
-      // Load best self average
-      const { data: bestSelfData, error: bestSelfError } = await supabase
+      // Load best self average with date filter
+      let bestSelfQuery = supabase
         .from('best_self_scores')
-        .select('score')
+        .select('score, created_at')
         .not('activity_id', 'is', null);
+      
+      if (startDate) {
+        bestSelfQuery = bestSelfQuery.gte('created_at', startDate.toISOString());
+      }
+      
+      const { data: bestSelfData, error: bestSelfError } = await bestSelfQuery;
 
       let bestSelfAverage: number | null = null;
       if (!bestSelfError && bestSelfData && bestSelfData.length > 0) {
@@ -193,6 +214,13 @@ export default function Performance() {
     <div className="min-h-screen bg-background p-4">
       <BackToHomeButton className="mb-4" />
       <PlayerViewIndicator />
+      
+      {/* Time Period Filter */}
+      <TimePeriodFilter 
+        value={timePeriod} 
+        onChange={setTimePeriod}
+        className="mb-4"
+      />
       
       {/* FIFA-Style Player Card */}
       <motion.div
