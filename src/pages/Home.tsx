@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { LogOut } from "lucide-react";
+import { LogOut, Crown, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,6 +9,7 @@ import { BottomNav } from "@/components/nav/BottomNav";
 import { LevelUpNotification } from "@/components/Progress/LevelUpNotification";
 import CompleteProfileFlow from "@/components/Profile/CompleteProfileFlow";
 import { HomePlayerCard } from "@/components/Home/HomePlayerCard";
+import { FloatingParticles, LevelProgress, QuickStats, PowerRing } from "@/components/Home/GameEffects";
 import stadiumBackground from "@/assets/stadium-background.jpg";
 
 interface PlayerData {
@@ -189,88 +190,114 @@ export default function Home() {
         style={{ backgroundImage: `url(${stadiumBackground})` }}
       >
         {/* Gradient overlay for better readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/60 to-background/95" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/70 to-background/98" />
         {/* Hexagonal pattern overlay */}
-        <div className="absolute inset-0 hex-pattern opacity-40" />
+        <div className="absolute inset-0 hex-pattern opacity-30" />
         {/* Animated light rays effect */}
-        <div className="absolute inset-0 opacity-30 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/30 via-transparent to-transparent animate-pulse" />
+        <div className="absolute inset-0 opacity-40 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/40 via-transparent to-transparent animate-pulse" />
+        {/* Cyan accent from bottom */}
+        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-cyan/30 via-transparent to-transparent" />
       </div>
+
+      {/* Floating Particles */}
+      <FloatingParticles />
 
       {/* Content layer */}
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* Top Header Bar - FIFA Style */}
-        <header className="w-full bg-gradient-to-b from-card/95 to-card/80 backdrop-blur-md border-b border-primary/20 py-4">
-          {/* Gradient accent line */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
+        <header className="w-full bg-gradient-to-b from-card/98 to-card/90 backdrop-blur-md border-b border-primary/30 py-3 relative">
+          {/* Animated gradient accent line */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-gold to-cyan animate-shimmer" 
+               style={{ backgroundSize: '200% 100%' }} />
           
-          <div className="flex flex-col items-center gap-2">
-            {/* Logo with glow effect */}
+          <div className="flex flex-col items-center gap-1">
+            {/* Logo with enhanced glow effect */}
             <div className="relative">
               <img 
                 src="/lovable-uploads/The_Confident_Footballer.png" 
                 alt="The Confident Footballer Logo" 
-                className="h-16 w-auto drop-shadow-lg relative z-10"
+                className="h-14 w-auto drop-shadow-lg relative z-10"
               />
-              {/* Glow behind logo */}
-              <div className="absolute inset-0 blur-xl bg-primary/20 scale-150" />
+              {/* Multi-layer glow behind logo */}
+              <div className="absolute inset-0 blur-2xl bg-primary/30 scale-150 animate-pulse" />
+              <div className="absolute inset-0 blur-xl bg-gold/20 scale-125" />
             </div>
             
             {/* Branding Text */}
-            <div className="flex flex-col items-center gap-1">
-              <span 
-                className="text-lg font-bold text-primary drop-shadow-md tracking-wide"
-                style={{ fontFamily: "'Orbitron', sans-serif" }}
-              >
-                THE CONFIDENT FOOTBALLER
-              </span>
-              <span className="text-xs font-bold text-primary-foreground bg-gradient-to-r from-primary to-primary/80 px-4 py-1 rounded-full shadow-lg uppercase tracking-widest">
+            <div className="flex flex-col items-center">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-gold animate-pulse" />
+                <span 
+                  className="text-base font-bold text-primary drop-shadow-md tracking-wider"
+                  style={{ fontFamily: "'Orbitron', sans-serif" }}
+                >
+                  THE CONFIDENT FOOTBALLER
+                </span>
+                <Sparkles className="w-4 h-4 text-gold animate-pulse" />
+              </div>
+              <span className="text-xs font-bold text-primary-foreground bg-gradient-to-r from-primary via-primary to-primary/80 px-4 py-0.5 rounded-full shadow-lg shadow-primary/30 uppercase tracking-widest mt-1">
                 Players App
               </span>
             </div>
           </div>
           
-          {/* Logout Button - positioned in header */}
-          <div className="absolute top-4 left-4">
+          {/* Logout Button */}
+          <div className="absolute top-3 left-3">
             <Button 
               variant="outline" 
               size="sm" 
               onClick={handleLogout} 
-              className="flex items-center gap-2 bg-card/80 border-border/50 text-muted-foreground hover:text-foreground hover:bg-card hover:border-primary/50 transition-all duration-300"
+              className="flex items-center gap-2 bg-card/80 border-border/50 text-muted-foreground hover:text-foreground hover:bg-card hover:border-primary/50 hover:shadow-glow-primary transition-all duration-300"
             >
               <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline">Logout</span>
             </Button>
           </div>
         </header>
 
         {/* Main content - centered */}
-        <div className="flex-1 flex flex-col items-center justify-center px-4 pb-28">
+        <div className="flex-1 flex flex-col items-center justify-center px-4 pb-28 pt-4">
           {/* Welcome Message - FIFA Style */}
-          <div className="text-center mb-8">
-            <h1 
-              className="text-2xl sm:text-3xl font-bold text-foreground drop-shadow-lg tracking-wide"
-              style={{ fontFamily: "'Orbitron', sans-serif" }}
-            >
-              WELCOME BACK
-            </h1>
+          <div className="text-center mb-4">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <Crown className="w-5 h-5 text-gold animate-pulse-glow" />
+              <h1 
+                className="text-xl sm:text-2xl font-bold text-foreground drop-shadow-lg tracking-wider"
+                style={{ fontFamily: "'Orbitron', sans-serif" }}
+              >
+                WELCOME BACK
+              </h1>
+              <Crown className="w-5 h-5 text-gold animate-pulse-glow" />
+            </div>
             <p 
-              className="text-xl font-bold text-gradient-gold mt-1"
+              className="text-lg font-bold text-gradient-gold"
               style={{ fontFamily: "'Orbitron', sans-serif" }}
             >
               {playerData.name.toUpperCase()}
             </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              Tap your card to edit profile
-            </p>
           </div>
 
-          {/* FIFA-style Player Card (clickable for edit) */}
-          <div className="animate-float">
-            <HomePlayerCard onNameChange={handleNameChange} />
+          {/* Level Progress Bar */}
+          <div className="w-full max-w-sm mb-6">
+            <LevelProgress level={playerData.level} points={playerData.points} />
           </div>
+
+          {/* FIFA-style Player Card with Power Ring */}
+          <PowerRing>
+            <div className="animate-float">
+              <HomePlayerCard onNameChange={handleNameChange} />
+            </div>
+          </PowerRing>
+
+          {/* Quick Stats */}
+          <QuickStats stats={{ matches: 12, goals: 5, achievements: 3 }} />
+
+          {/* Tap hint */}
+          <p className="text-xs text-muted-foreground mt-4 animate-pulse">
+            ✨ Tap your card to edit profile
+          </p>
 
           {/* Top Navigation (action buttons) */}
-          <div className="mt-8">
+          <div className="mt-4">
             <TopNavigation />
           </div>
         </div>
