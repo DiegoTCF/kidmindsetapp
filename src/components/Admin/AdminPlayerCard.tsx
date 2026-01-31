@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { ChevronDown, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { PlayerCard } from "@/components/performance/PlayerCard";
+import { StatBar } from "@/components/performance/StatBar";
 import { PlayerCardSkeleton } from "@/components/performance/PerformanceSkeletons";
 import { adaptPerformanceData, AdaptedPerformanceData } from "@/components/performance/PerformanceAdapter";
 
@@ -12,6 +17,7 @@ interface AdminPlayerCardProps {
 export function AdminPlayerCard({ childId, userId }: AdminPlayerCardProps) {
   const [performanceData, setPerformanceData] = useState<AdaptedPerformanceData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
     if (childId) {
@@ -36,15 +42,9 @@ export function AdminPlayerCard({ childId, userId }: AdminPlayerCardProps) {
 
       // Get parent's user_id to fetch player identity
       let avatarUrl: string | null = null;
-      if (userId) {
-        const { data: identityData } = await supabase
-          .from('player_identities')
-          .select('avatar_url')
-          .eq('user_id', userId)
-          .maybeSingle();
-        
-        avatarUrl = identityData?.avatar_url || null;
-      } else {
+      let parentUserId: string | null = userId || null;
+      
+      if (!parentUserId) {
         // Try to get user_id from parent
         const { data: parentData } = await supabase
           .from('parents')
@@ -52,15 +52,17 @@ export function AdminPlayerCard({ childId, userId }: AdminPlayerCardProps) {
           .eq('id', childData.parent_id)
           .single();
 
-        if (parentData?.user_id) {
-          const { data: identityData } = await supabase
-            .from('player_identities')
-            .select('avatar_url')
-            .eq('user_id', parentData.user_id)
-            .maybeSingle();
-          
-          avatarUrl = identityData?.avatar_url || null;
-        }
+        parentUserId = parentData?.user_id || null;
+      }
+
+      if (parentUserId) {
+        const { data: identityData } = await supabase
+          .from('player_identities')
+          .select('avatar_url')
+          .eq('user_id', parentUserId)
+          .maybeSingle();
+        
+        avatarUrl = identityData?.avatar_url || null;
       }
 
       // Fetch super behaviour ratings
@@ -132,17 +134,11 @@ export function AdminPlayerCard({ childId, userId }: AdminPlayerCardProps) {
 
       // Fetch best self scores - need user_id from parent
       let bestSelfAverage: number | null = null;
-      const { data: parentData } = await supabase
-        .from('parents')
-        .select('user_id')
-        .eq('id', childData.parent_id)
-        .single();
-
-      if (parentData?.user_id) {
+      if (parentUserId) {
         const { data: bestSelfData } = await supabase
           .from('best_self_scores')
           .select('score')
-          .eq('user_id', parentData.user_id)
+          .eq('user_id', parentUserId)
           .order('created_at', { ascending: false })
           .limit(10);
 
@@ -182,14 +178,100 @@ export function AdminPlayerCard({ childId, userId }: AdminPlayerCardProps) {
   }
 
   return (
-    <div className="flex justify-center">
-      <PlayerCard
-        playerName={performanceData.profile.playerName}
-        position={performanceData.profile.position}
-        overallRating={performanceData.overallRating}
-        avatarUrl={performanceData.profile.avatarUrl}
-        hasData={performanceData.hasData}
-      />
+    <div className="space-y-6">
+      {/* FIFA-Style Player Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="flex justify-center">
+          <PlayerCard
+            playerName={performanceData.profile.playerName}
+            position={performanceData.profile.position}
+            overallRating={performanceData.overallRating}
+            avatarUrl={performanceData.profile.avatarUrl}
+            hasData={performanceData.hasData}
+          />
+        </div>
+      </motion.div>
+
+      {/* Stats Bars - Same as player sees */}
+      {performanceData.stats.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-primary" />
+                Performance Stats Breakdown
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {performanceData.stats.slice(0, 4).map((stat, index) => (
+                <StatBar
+                  key={stat.label}
+                  label={stat.label}
+                  value={stat.value}
+                  icon={stat.icon}
+                  lowLabel={stat.lowLabel}
+                  highLabel={stat.highLabel}
+                  delay={index * 0.1}
+                />
+              ))}
+              
+              {performanceData.stats.length > 4 && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full text-muted-foreground"
+                    onClick={() => setShowDetails(!showDetails)}
+                  >
+                    {showDetails ? 'Show Less' : `Show ${performanceData.stats.length - 4} More Stats`}
+                    <ChevronDown className={`w-4 h-4 ml-2 transition-transform ${showDetails ? 'rotate-180' : ''}`} />
+                  </Button>
+                  
+                  {showDetails && (
+                    <motion.div
+                      className="space-y-5"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {performanceData.stats.slice(4).map((stat, index) => (
+                        <StatBar
+                          key={stat.label}
+                          label={stat.label}
+                          value={stat.value}
+                          icon={stat.icon}
+                          lowLabel={stat.lowLabel}
+                          highLabel={stat.highLabel}
+                          delay={index * 0.1}
+                        />
+                      ))}
+                    </motion.div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* Empty state when no data */}
+      {!performanceData.hasData && (
+        <Card className="bg-card/50 backdrop-blur-sm border-destructive/30">
+          <CardContent className="py-8 text-center">
+            <p className="text-muted-foreground">
+              No performance data yet. The player needs to complete some activities to see stats here.
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
