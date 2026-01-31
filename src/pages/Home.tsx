@@ -189,63 +189,88 @@ export default function Home() {
         style={{ backgroundImage: `url(${stadiumBackground})` }}
       >
         {/* Gradient overlay for better readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/60 to-background/95" />
+        {/* Hexagonal pattern overlay */}
+        <div className="absolute inset-0 hex-pattern opacity-40" />
         {/* Animated light rays effect */}
-        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/30 via-transparent to-transparent animate-pulse" />
+        <div className="absolute inset-0 opacity-30 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/30 via-transparent to-transparent animate-pulse" />
       </div>
 
       {/* Content layer */}
       <div className="relative z-10 flex flex-col min-h-screen">
-        {/* Top Header Bar */}
-        <header className="w-full bg-black/60 backdrop-blur-md border-b border-white/10 py-3">
-          <div className="flex flex-col items-center gap-1">
-            {/* Logo */}
-            <img 
-              src="/lovable-uploads/The_Confident_Footballer.png" 
-              alt="The Confident Footballer Logo" 
-              className="h-16 w-auto drop-shadow-lg"
-            />
+        {/* Top Header Bar - FIFA Style */}
+        <header className="w-full bg-gradient-to-b from-card/95 to-card/80 backdrop-blur-md border-b border-primary/20 py-4">
+          {/* Gradient accent line */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
+          
+          <div className="flex flex-col items-center gap-2">
+            {/* Logo with glow effect */}
+            <div className="relative">
+              <img 
+                src="/lovable-uploads/The_Confident_Footballer.png" 
+                alt="The Confident Footballer Logo" 
+                className="h-16 w-auto drop-shadow-lg relative z-10"
+              />
+              {/* Glow behind logo */}
+              <div className="absolute inset-0 blur-xl bg-primary/20 scale-150" />
+            </div>
+            
             {/* Branding Text */}
-            <div className="flex flex-col items-center">
-              <span className="font-['Baloo_2'] text-lg font-bold text-primary drop-shadow-md">
-                The Confident Footballer
+            <div className="flex flex-col items-center gap-1">
+              <span 
+                className="text-lg font-bold text-primary drop-shadow-md tracking-wide"
+                style={{ fontFamily: "'Orbitron', sans-serif" }}
+              >
+                THE CONFIDENT FOOTBALLER
               </span>
-              <span className="font-['Baloo_2'] text-sm font-semibold text-black bg-white px-3 py-0.5 rounded-full shadow-md">
+              <span className="text-xs font-bold text-primary-foreground bg-gradient-to-r from-primary to-primary/80 px-4 py-1 rounded-full shadow-lg uppercase tracking-widest">
                 Players App
               </span>
             </div>
           </div>
+          
           {/* Logout Button - positioned in header */}
-          <div className="absolute top-3 left-3">
+          <div className="absolute top-4 left-4">
             <Button 
               variant="outline" 
               size="sm" 
               onClick={handleLogout} 
-              className="flex items-center gap-2 bg-black/50 border-white/20 text-white hover:bg-black/70"
+              className="flex items-center gap-2 bg-card/80 border-border/50 text-muted-foreground hover:text-foreground hover:bg-card hover:border-primary/50 transition-all duration-300"
             >
               <LogOut className="h-4 w-4" />
-              Logout
+              <span className="hidden sm:inline">Logout</span>
             </Button>
           </div>
         </header>
 
         {/* Main content - centered */}
-        <div className="flex-1 flex flex-col items-center justify-center px-4 pb-24">
-          {/* Welcome Message */}
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-white drop-shadow-lg">
-              Welcome Back, {playerData.name}
+        <div className="flex-1 flex flex-col items-center justify-center px-4 pb-28">
+          {/* Welcome Message - FIFA Style */}
+          <div className="text-center mb-8">
+            <h1 
+              className="text-2xl sm:text-3xl font-bold text-foreground drop-shadow-lg tracking-wide"
+              style={{ fontFamily: "'Orbitron', sans-serif" }}
+            >
+              WELCOME BACK
             </h1>
-            <p className="text-sm text-white/80 mt-1 drop-shadow-md">
+            <p 
+              className="text-xl font-bold text-gradient-gold mt-1"
+              style={{ fontFamily: "'Orbitron', sans-serif" }}
+            >
+              {playerData.name.toUpperCase()}
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
               Tap your card to edit profile
             </p>
           </div>
 
           {/* FIFA-style Player Card (clickable for edit) */}
-          <HomePlayerCard onNameChange={handleNameChange} />
+          <div className="animate-float">
+            <HomePlayerCard onNameChange={handleNameChange} />
+          </div>
 
           {/* Top Navigation (action buttons) */}
-          <div className="mt-6">
+          <div className="mt-8">
             <TopNavigation />
           </div>
         </div>
