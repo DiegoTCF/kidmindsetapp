@@ -19,6 +19,7 @@ import CoreSkillsEvaluation from '@/components/Admin/CoreSkillsEvaluation';
 import AdminCoreSkillsAssessment from '@/components/Admin/AdminCoreSkillsAssessment';
 import AdminCoreSkillsResults from '@/components/Admin/AdminCoreSkillsResults';
 import { WeeklyScheduleCard } from '@/components/Home/WeeklyScheduleCard';
+import { AdminPlayerCard } from '@/components/Admin/AdminPlayerCard';
 
 interface Child {
   id: string;
@@ -378,6 +379,11 @@ export default function AdminPlayerView() {
 
           {/* Home Tab */}
           <TabsContent value="home" className="space-y-6">
+            {/* Player Card - FIFA Style */}
+            <div className="flex justify-center py-4">
+              <AdminPlayerCard childId={child.id} />
+            </div>
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
