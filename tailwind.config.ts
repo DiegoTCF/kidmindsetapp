@@ -69,9 +69,16 @@ export default {
 					foreground: 'hsl(var(--level-foreground))'
 				},
 				gold: {
-					400: 'hsl(43, 85%, 60%)',
-					500: 'hsl(43, 85%, 55%)',
-					600: 'hsl(43, 85%, 50%)',
+					DEFAULT: 'hsl(43, 90%, 55%)',
+					400: 'hsl(43, 90%, 65%)',
+					500: 'hsl(43, 90%, 55%)',
+					600: 'hsl(43, 90%, 45%)',
+				},
+				cyan: {
+					DEFAULT: 'hsl(190, 100%, 50%)',
+					400: 'hsl(190, 100%, 60%)',
+					500: 'hsl(190, 100%, 50%)',
+					600: 'hsl(190, 100%, 40%)',
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
@@ -135,7 +142,33 @@ export default {
 						boxShadow: '0 0 20px hsl(var(--primary) / 0.3)'
 					},
 					'50%': {
-						boxShadow: '0 0 30px hsl(var(--primary) / 0.6)'
+						boxShadow: '0 0 40px hsl(var(--primary) / 0.6)'
+					}
+				},
+				'pulse-glow': {
+					'0%, 100%': {
+						opacity: '0.6',
+						transform: 'scale(1)'
+					},
+					'50%': {
+						opacity: '1',
+						transform: 'scale(1.05)'
+					}
+				},
+				'float': {
+					'0%, 100%': {
+						transform: 'translateY(0px)'
+					},
+					'50%': {
+						transform: 'translateY(-10px)'
+					}
+				},
+				'shimmer': {
+					'0%': {
+						backgroundPosition: '-200% 0'
+					},
+					'100%': {
+						backgroundPosition: '200% 0'
 					}
 				}
 			},
@@ -144,7 +177,10 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'bounce-in': 'bounce-in 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
 				'slide-up': 'slide-up 0.3s ease-out',
-				'glow': 'glow 2s ease-in-out infinite'
+				'glow': 'glow 2s ease-in-out infinite',
+				'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+				'float': 'float 3s ease-in-out infinite',
+				'shimmer': 'shimmer 2s linear infinite'
 			}
 		}
 	},
