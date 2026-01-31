@@ -227,11 +227,11 @@ export default function Home() {
             <div className="flex flex-col items-center">
               <span 
                 className="text-base font-bold text-primary drop-shadow-md tracking-wider"
-                style={{ fontFamily: "'Orbitron', sans-serif" }}
+                style={{ fontFamily: "'Baloo 2', sans-serif" }}
               >
                 THE CONFIDENT FOOTBALLER
               </span>
-              <span className="text-xs font-bold text-primary-foreground bg-gradient-to-r from-primary via-primary to-primary/80 px-4 py-0.5 rounded-full shadow-lg shadow-primary/30 uppercase tracking-widest mt-1">
+              <span className="text-sm font-bold text-foreground bg-white px-4 py-1 rounded-full shadow-lg uppercase tracking-widest mt-1">
                 Players App
               </span>
             </div>
