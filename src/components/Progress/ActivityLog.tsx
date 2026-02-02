@@ -3,10 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { CheckCircle, Clock, Trophy, Target, Trash2 } from "lucide-react";
+import { CheckCircle, Clock, Trophy, Target, Trash2, Pencil } from "lucide-react";
 import { CustomIcon } from "@/components/ui/custom-emoji";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { EditActivityDialog } from "./EditActivityDialog";
+
 interface Activity {
   id: string;
   activity_name: string;
@@ -24,10 +26,12 @@ interface Activity {
   worry_reason?: string;
   worry_answers?: any;
 }
+
 interface ActivityLogProps {
   selectedFilter: string;
   childId?: string;
 }
+
 export default function ActivityLog({
   selectedFilter,
   childId
@@ -36,6 +40,7 @@ export default function ActivityLog({
   const [loading, setLoading] = useState(true);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [bestSelfScores, setBestSelfScores] = useState<{[activityId: string]: number}>({});
+  const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const {
     toast
   } = useToast();
@@ -264,9 +269,20 @@ export default function ActivityLog({
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">Activity Details</CardTitle>
-            <Button variant="outline" size="sm" onClick={() => setSelectedActivity(null)}>
-              Back to List
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setEditingActivity(selectedActivity)}
+                className="gap-1"
+              >
+                <Pencil className="w-4 h-4" />
+                Edit
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setSelectedActivity(null)}>
+                Back to List
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -618,6 +634,17 @@ export default function ActivityLog({
                       +{activity.points_awarded}
                     </p>
                   </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary" 
+                    onClick={e => {
+                      e.stopPropagation();
+                      setEditingActivity(activity);
+                    }}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive" onClick={e => e.stopPropagation()}>
@@ -647,5 +674,24 @@ export default function ActivityLog({
             {selectedFilter === 'All' ? "No activities completed yet. Start your first activity in the Stadium!" : `No ${selectedFilter} activities found. Try a different filter.`}
           </div>}
       </CardContent>
+      
+      {/* Edit Activity Dialog */}
+      {editingActivity && (
+        <EditActivityDialog
+          open={!!editingActivity}
+          onOpenChange={(open) => {
+            if (!open) setEditingActivity(null);
+          }}
+          activity={editingActivity}
+          onSaved={() => {
+            loadActivities();
+            // Update selectedActivity if it was the one being edited
+            if (selectedActivity && selectedActivity.id === editingActivity.id) {
+              // Refetch to get updated data
+              setSelectedActivity(null);
+            }
+          }}
+        />
+      )}
     </Card>;
 }
