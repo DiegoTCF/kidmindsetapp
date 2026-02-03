@@ -14,6 +14,7 @@ interface Activity {
   activity_name: string;
   activity_type: string;
   activity_date: string;
+  child_id: string;
   final_score?: string;
   goals_scored?: number;
   assists_made?: number;
@@ -21,6 +22,10 @@ interface Activity {
   post_activity_completed: boolean;
   pre_activity_data?: any;
   post_activity_data?: any;
+  pre_confidence_excited?: number;
+  pre_confidence_nervous?: number;
+  pre_confidence_body_ready?: number;
+  pre_confidence_believe_well?: number;
   points_awarded: number;
   created_at: string;
   worry_reason?: string;
