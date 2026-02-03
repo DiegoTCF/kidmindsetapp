@@ -1,148 +1,89 @@
 
-
-# Design Refresh: Kid-Friendly Gamified Theme
+# Plan: Complete Activity Edit Dialog with All Form Fields
 
 ## Overview
+Rebuild the EditActivityDialog to include all the actual form fields that exist in the activity creation flow, remove non-existent fields like "satisfaction", and add the ability to edit super behaviour ratings.
 
-Transform the app from a dark "Netflix-style" aesthetic into a vibrant, engaging, and kid-friendly design that feels more like a fun sports game while respecting the brand colours (red and black from the logo).
+## Current Issues
+1. **Pre-Activity tab** shows generic "Confidence Level" and "Intention" - missing the 4 actual confidence questions (excited, nervous, bodyReady, believeWell)
+2. **Post-Activity tab** includes "satisfaction" slider which doesn't exist in the actual form
+3. **Missing reflection sliders**: workRate, focus, mistakes, performance (not just confidence)
+4. **Missing super behaviour editing**: The 4 behaviour types (Brave on Ball, Brave off Ball, Electric, Aggressive) each with 4 questions are not editable
+5. **Missing intentionAchieved** field (yes/partial/no/forgot options)
+6. **Missing Best Self Score** editing
 
-## Design Philosophy
+## Technical Implementation
 
-The new design will be:
-- **Brighter and more inviting** - Light backgrounds instead of dark
-- **Gamified feel** - Inspired by FIFA/EA Sports mobile games and sports apps for kids
-- **Brand-consistent** - Keeping the red as the hero accent colour
-- **High contrast** - Easy to read for all ages
-- **Energetic** - Using gradients, subtle patterns, and playful elements
+### File: `src/components/Progress/EditActivityDialog.tsx`
 
----
+**Changes to Pre-Activity Tab:**
+- Replace single "confidence" slider with 4 sliders:
+  - Excited (0-10)
+  - Nervous/Calm (0-10)
+  - Body Ready (0-10)
+  - Believe Well (0-10)
+- Load from both `pre_activity_data.confidenceRatings` and the individual columns (`pre_confidence_excited`, etc.)
+- Keep intention field
+- Add selected goal display (read-only reference)
 
-## Colour Palette Changes
+**Changes to Post-Activity Tab:**
+- Remove the non-existent "satisfaction" slider
+- Add all 5 reflection sliders: workRate, confidence, focus, mistakes, performance
+- Add mood selection (1-5 emoji options)
+- Add intentionAchieved selector (yes/partial/no/forgot)
+- Add Best Self Score slider (0-100)
 
-### From (Current Dark Netflix Theme)
-- Background: Nearly black
-- Cards: Dark grey  
-- Primary: Pure red
-- Text: White/light grey
+**Add New Tab: Super Behaviours**
+- Create a 4th tab for editing super behaviour ratings
+- Fetch existing ratings from `super_behaviour_ratings` table by activity_id
+- Display each behaviour type (Brave on Ball, Brave off Ball, Electric, Aggressive) with 4 question sliders each
+- Update both the `super_behaviour_ratings` table and `post_activity_data.superBehaviours` on save
 
-### To (New Bright Gamified Theme)
-- **Background**: Light grey with subtle warmth (off-white/cream tones)
-- **Cards**: White with soft shadows
-- **Primary**: Brand red (kept from logo)
-- **Secondary**: Warm grey with red undertones
-- **Accent**: A complementary orange-red for energy
-- **Success**: Vibrant green (for positive achievements)
-- **Highlights**: Gold accents for achievements/tiers
+**Save Logic Updates:**
+- Update pre_activity_data with correct confidence ratings structure
+- Update individual columns: pre_confidence_excited, pre_confidence_nervous, pre_confidence_body_ready, pre_confidence_believe_well
+- Update post_activity_data with all reflection values, mood, and intentionAchieved
+- Upsert super_behaviour_ratings records for each behaviour type
+- Update/insert best_self_scores record
 
----
+### Database Queries
+- On dialog open: Fetch super_behaviour_ratings where activity_id matches
+- On save: Upsert to super_behaviour_ratings table with onConflict: 'activity_id,behaviour_type'
+- On save: Upsert to best_self_scores table
 
-## Technical Changes
+## UI Structure
 
-### 1. Update CSS Variables (src/index.css)
-
-Replace the dark theme with a bright, kid-friendly palette:
-
-```text
-Light Theme Variables:
-- --background: 30 20% 97%     (warm off-white)
-- --foreground: 0 0% 15%        (dark grey text)
-- --card: 0 0% 100%             (pure white cards)
-- --card-foreground: 0 0% 15%   (dark text on cards)
-- --primary: 0 85% 50%          (vibrant red)
-- --secondary: 30 15% 93%       (warm light grey)
-- --muted: 30 10% 90%           (subtle grey)
-- --accent: 15 90% 55%          (orange-red for energy)
-- --success: 145 65% 42%        (fresh green)
-- --border: 30 15% 88%          (subtle warm borders)
+```
+Tabs:
+├── Basic Info (existing - activity name, type, date, match stats)
+├── Pre-Activity
+│   ├── Confidence Questions (4 sliders: excited, nervous, bodyReady, believeWell)
+│   └── Intention (textarea)
+├── Post-Activity
+│   ├── Mood (5 emoji buttons)
+│   ├── Intention Achieved (4 options: yes, partial, no, forgot)
+│   ├── Reflection Sliders (5: workRate, confidence, focus, mistakes, performance)
+│   ├── Journal Prompts (3 textareas: wentWell, couldImprove, whatAffected)
+│   └── Best Self Score (0-100 slider)
+└── Behaviours (NEW TAB)
+    ├── Brave on Ball (4 question sliders)
+    ├── Brave off Ball (4 question sliders)
+    ├── Electric (4 question sliders)
+    └── Aggressive (4 question sliders)
 ```
 
-Add new custom properties:
-- Playful gradients for buttons and headers
-- Softer, friendlier shadows
-- Enhanced achievement colours (gold, silver, bronze preserved)
+## State Management
+Add new state variables:
+- `confidenceRatings: { excited, nervous, bodyReady, believeWell }`
+- `reflections: { workRate, confidence, focus, mistakes, performance }`
+- `mood: number | null`
+- `intentionAchieved: string | null`
+- `bestSelfScore: number`
+- `superBehaviours: { braveOnBall, braveOffBall, electric, aggressive }` each with q1-q4
 
-### 2. Update Tailwind Config (tailwind.config.ts)
-
-- Add new colour tokens for the refreshed palette
-- Keep existing animation keyframes (bounce-in, slide-up, glow)
-- Add new kid-friendly animations (wiggle, pop, sparkle)
-
-### 3. Component Updates
-
-**Header/Layout (AppLayout.tsx, Home.tsx)**
-- White/light header background
-- Add subtle red accent bar or gradient
-- Softer shadows
-
-**Bottom Navigation (BottomNav.tsx)**
-- Light background with frosted glass effect
-- Active state uses red with a subtle glow
-- Larger, more tappable touch targets
-
-**Cards throughout the app**
-- White backgrounds with soft shadows
-- Red accent borders or highlights
-- Rounded corners (keep friendly feel)
-
-**Buttons**
-- Primary: Red gradient with subtle glow on hover
-- Secondary: Light grey with red text
-- Add micro-interactions (scale on tap)
-
-### 4. What Stays the Same
-
-- **FIFA Player Card** - Completely unchanged (dark hexagonal design with tier colours)
-- **Logo and branding** - Same assets
-- **Baloo 2 font** - Kept for brand consistency
-- **Core component structure** - No functional changes
-
----
-
-## Visual Examples
-
-### Before vs After Concept
-
-```text
-BEFORE (Netflix Dark):
-┌─────────────────────────┐
-│  ███ DARK HEADER ███    │
-│  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  │  <- Black background
-│  ┌───────────────┐      │
-│  │ DARK CARD     │      │  <- Dark grey cards
-│  └───────────────┘      │
-│  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  │
-└─────────────────────────┘
-
-AFTER (Gamified Bright):
-┌─────────────────────────┐
-│  ☀️ LIGHT HEADER ☀️      │  <- White with red accent
-│  ░░░░░░░░░░░░░░░░░░░░░  │  <- Warm off-white background
-│  ┌───────────────┐      │
-│  │ WHITE CARD    │      │  <- White cards with shadows
-│  │ 🔴 Red accent │      │
-│  └───────────────┘      │
-│  ░░░░░░░░░░░░░░░░░░░░░  │
-└─────────────────────────┘
-```
-
----
-
-## Files to Modify
-
-1. **src/index.css** - Complete colour palette overhaul
-2. **tailwind.config.ts** - Add new utility colours and animations
-3. **src/components/layout/AppLayout.tsx** - Update header styling
-4. **src/pages/Home.tsx** - Update header and page styling
-5. **src/components/nav/BottomNav.tsx** - Light navigation bar
-6. **src/pages/Auth.tsx** - Login page with bright, welcoming design
-7. **src/pages/Stadium.tsx** - Update card and button styling
-8. **src/pages/Progress.tsx** - Ensure consistency
-9. **src/pages/Goals.tsx** - Apply theme
-10. **src/pages/DNAYou.tsx** - Apply theme
-
----
-
-## Summary
-
-This refresh transforms the app from a dark, adult-oriented streaming aesthetic into a bright, energetic, kid-friendly sports app. The red brand colour remains the hero accent, while the dark backgrounds become light and inviting. The FIFA player card stays exactly as designed (dark with metallic tiers) to provide contrast and maintain its premium "collectible card" feel against the lighter app background.
-
+## Admin Access
+The same dialog will work for both players and admins since:
+- Admins have full RLS access to activities table
+- Admins have full RLS access to super_behaviour_ratings table
+- Admins have full RLS access to best_self_scores table
+- The dialog is already used in ActivityLog which is shared by both player Progress page and Admin player view
