@@ -134,28 +134,28 @@ export default function CompleteProfileFlow({ onComplete }: CompleteProfileFlowP
         throw new Error('No authenticated user');
       }
 
-      // Create profile
+      // Upsert profile
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert({
+        .upsert({
           user_id: user.id,
           email: user.email!,
-        });
+        }, { onConflict: 'user_id' });
 
-      if (profileError && profileError.code !== '23505') { // Ignore duplicate key errors
+      if (profileError) {
         throw profileError;
       }
 
-      // Create parent record
+      // Upsert parent record
       const { data: parentData, error: parentError } = await supabase
         .from('parents')
-        .insert({
+        .upsert({
           user_id: user.id,
           name: parentName,
           phone: '',
           payment_status: 'pending',
           pin: pin,
-        })
+        }, { onConflict: 'user_id' })
         .select('id')
         .single();
 
