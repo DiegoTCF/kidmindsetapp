@@ -220,7 +220,7 @@ export default function CompleteProfileFlow({ onComplete }: CompleteProfileFlowP
             <div className="w-8" />
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="max-h-[60vh] overflow-y-auto">
           {step === 1 && (
             <form onSubmit={handleStep1Submit} className="space-y-4">
               <div className="space-y-2">
