@@ -264,50 +264,7 @@ export default function PersonalStats() {
 
   return (
     <div className="space-y-6">
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 gap-4">
-        <Card className="shadow-soft cursor-pointer group hover:shadow-md transition-all duration-200" onClick={() => setShowMoodDetails(!showMoodDetails)}>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-primary" />
-              Weekly Mood Average
-              <span className="text-xs text-muted-foreground ml-auto">
-                Click to see details
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="text-center">
-              <p className={`text-3xl font-bold ${getMoodColor(stats.weeklyMoodAvg)} group-hover:scale-105 transition-transform duration-200`}>
-                {stats.weeklyMoodAvg > 0 ? `${stats.weeklyMoodAvg}/5` : 'No data'}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {weeklyMoodDetails.length > 0 ? `From ${weeklyMoodDetails.length} logged days this week` : 'Past 7 days'}
-              </p>
-            </div>
-            {showMoodDetails && weeklyMoodDetails.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-border/50">
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {weeklyMoodDetails.map((mood, index) => (
-                    <div key={`${mood.date}-${index}`} className="flex items-center gap-1 text-sm bg-muted/50 rounded-full px-2 py-1">
-                      <span className="text-lg">{getMoodEmoji(mood.value)}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(mood.date).toLocaleDateString('en-US', { weekday: 'short' })}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-      </div>
-
-      {/* Daily Activities Pie Chart */}
-      <DailyActivityPieChart />
-
-      {/* Motivational Message */}
+      {/* Motivational Message - only show if there's activity data */}
       {stats.weeklyMoodAvg > 0 && (
         <Card className="shadow-soft bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
           <CardContent className="p-4">
