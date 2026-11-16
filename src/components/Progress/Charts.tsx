@@ -3,6 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { supabase } from "@/integrations/supabase/client";
 import PersonalStats from "./PersonalStats";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { seasonStartYear, seasonLabel, seasonRange, inRange, SeasonRange } from "@/lib/seasons";
 interface ActivityStats {
   type: string;
   count: number;
@@ -95,9 +98,16 @@ export default function Charts({
   const [superBehaviourStats, setSuperBehaviourStats] = useState<SuperBehaviourStats[]>([]);
   const [activityRatingStats, setActivityRatingStats] = useState<ActivityRatingStats | null>(null);
   const [bestSelfStats, setBestSelfStats] = useState<{average: number, count: number}>({average: 0, count: 0});
+  const currentSeason = seasonStartYear(new Date());
+  const [period, setPeriod] = useState<string>(String(currentSeason));
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
+  const range: SeasonRange = period === "all" ? { start: null, end: null }
+    : period === "custom" ? { start: customStart || null, end: customEnd || null }
+    : seasonRange(Number(period));
   useEffect(() => {
     loadChartData();
-  }, [selectedFilter, childId]);
+  }, [selectedFilter, childId, period, customStart, customEnd]);
   const loadChartData = async () => {
     try {
       let targetChildId = childId;
@@ -129,11 +139,16 @@ export default function Charts({
         ascending: false
       });
       if (activitiesError) throw activitiesError;
-      if (activities && activities.length > 0) {
+      setTotalActivities(0); setTotalGoals(0); setTotalAssists(0); setTotalMatches(0);
+      setAvgConfidence(0); setAvgMood(0); setCompletionRate(0);
+      setSuperBehaviourStats([]); setBestSelfStats({ average: 0, count: 0 }); setActivityRatingStats(null);
+      setActivityStats([]); setConfidenceTrends([]);
+      const periodActivities = (activities || []).filter(a => inRange(a.activity_date, range));
+      if (periodActivities.length > 0) {
         // Filter activities based on selected filter
-        let filteredActivities = activities;
+        let filteredActivities = periodActivities;
         if (selectedFilter !== "All") {
-          filteredActivities = activities.filter(activity => activity.activity_type.toLowerCase() === selectedFilter.toLowerCase());
+          filteredActivities = periodActivities.filter(activity => activity.activity_type.toLowerCase() === selectedFilter.toLowerCase());
         }
 
         // Calculate activity type distribution
@@ -310,14 +325,14 @@ export default function Charts({
         .select('behaviour_type, average_score, question_1_rating, question_2_rating, question_3_rating, question_4_rating, created_at')
         .eq('child_id', targetChildId)
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(500);
 
       if (behaviourError) {
         console.error('Error loading behaviour data:', behaviourError);
       } else if (behaviourData && behaviourData.length > 0) {
         // Group by behaviour type and calculate averages
         const behaviourGroups: {[key: string]: any[]} = {};
-        behaviourData.forEach(rating => {
+        behaviourData.filter(r => inRange(r.created_at, range)).forEach(rating => {
           if (!behaviourGroups[rating.behaviour_type]) {
             behaviourGroups[rating.behaviour_type] = [];
           }
@@ -358,11 +373,11 @@ export default function Charts({
           // Get activity IDs that belong to the current child - need to fetch activities with IDs
           const { data: activitiesWithIds, error: activitiesError } = await supabase
             .from('activities')
-            .select('id')
+            .select('id, activity_date')
             .eq('child_id', targetChildId);
             
           if (!activitiesError && activitiesWithIds) {
-            const childActivityIds = activitiesWithIds.map(activity => activity.id);
+            const childActivityIds = activitiesWithIds.filter(a => inRange(a.activity_date, range)).map(activity => activity.id);
             const childBestSelfScores = bestSelfData.filter(score => 
               score.activity_id && childActivityIds.includes(score.activity_id)
             );
@@ -451,6 +466,27 @@ export default function Charts({
       {/* Activity-based Stats Header */}
       <div className="border-t pt-6">
         <h3 className="text-lg font-semibold text-foreground mb-4">Activity-based Analytics</h3>
+        <div className="flex flex-wrap items-center gap-2">
+          <Select value={period} onValueChange={setPeriod}>
+            <SelectTrigger className="w-[220px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 4 }, (_, i) => currentSeason - i).map(y => (
+                <SelectItem key={y} value={String(y)}>
+                  {y === currentSeason ? `Current Season (${seasonLabel(y)})` : `Season ${seasonLabel(y)}`}
+                </SelectItem>
+              ))}
+              <SelectItem value="all">All Time</SelectItem>
+              <SelectItem value="custom">Custom Dates</SelectItem>
+            </SelectContent>
+          </Select>
+          {period === "custom" && (
+            <>
+              <Input type="date" className="w-[160px]" value={customStart} onChange={e => setCustomStart(e.target.value)} />
+              <span className="text-muted-foreground">to</span>
+              <Input type="date" className="w-[160px]" value={customEnd} onChange={e => setCustomEnd(e.target.value)} />
+            </>
+          )}
+        </div>
       </div>
       {/* Summary Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
